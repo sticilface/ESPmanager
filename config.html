@@ -1,0 +1,557 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+  <title>Melvide</title> 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+<!--
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+-->
+  <link rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+  <script src="jquery-1.11.1.min.js"></script>
+  <script src="jquery.mobile-1.4.5.min.js"></script>
+
+<!--
+<script>
+  if (typeof jQuery == 'undefined')
+{
+    document.write(unescape("%3Cscript src='jquery-1.11.1.min.js' type='text/javascript'%3E%3C/script%3E"));
+}
+</script>
+
+<script>
+  if(typeof $.mobile == 'undefined')
+{
+    document.write(unescape("%3Cscript src='jquery.mobile-1.4.5.min.js' type='text/javascript'%3E%3C/script%3E"));
+}
+$(function() {
+    if($('.ui-helper-hidden:first').is(':visible') === true){
+        $('<link rel="stylesheet" type="text/css" href="jquery.mobile-1.4.5.min.css" />').appendTo('head');
+    }
+});
+</script>
+-->  
+   <STYLE type="text/css">
+   .centerwrapper {margin:0 auto;margin-left:auto;margin-right:auto;align:center;text-align:center}
+   .ui-btn.my-tooltip-btn,
+   .ui-btn.my-tooltip-btn:hover,
+   .ui-btn.my-tooltip-btn:active {
+     background: none;
+     border: 0;
+     }
+    </STYLE>
+  
+  <script>
+  
+
+  
+  $(document).ready(function(){
+    // $(".onesend").onclick(function(){
+    //   $.post("data.esp",
+    //   $(this).serialize());
+    // });
+    
+    $("#flip-dhcp").change(function() {
+      if ($(this).val() == "on" ) { $("#STAform :text").textinput('disable');};
+      if ($(this).val() == "off" ) { $("#STAform :text").textinput('enable');};      
+    });
+    
+    $("#flip-STA").change(function() {
+      if ($(this).val() == "on" ){ $("#flip-dhcp").flipswitch('enable');};
+      if ($(this).val() == "off" ){ $("#flip-dhcp").flipswitch('disable');}; //.slider('disable');
+    });
+    
+    
+    $("#flip-AP").change(function(){
+      if ($(this).val() == "on" ) { 
+        $("#APform :text").textinput('enable');
+        $("#flip-AP-hidden").flipswitch('enable');
+      };
+      if ($(this).val() == "off" ) { 
+        $("#APform :text").textinput('disable');
+        $("#flip-AP-hidden").flipswitch('disable');
+      };     
+    });
+    
+  });
+
+      
+$( document ).delegate("#wifipage", "pageinit", function() {
+  //alert('A page with an id of "aboutPage" was just created by jQuery Mobile!');
+        getWiFiVars(true);
+        
+        $(".sendbutton").click(function() {
+          $.post("data.esp", $(this.form).serialize());
+          e.preventDefault();
+          return false;
+        });
+        
+    // function senddata() {
+    //   $.post("data.esp", $(this).serialize());
+    // }; 
+    
+    // $("#flip-otaenable").bind("change", senddata() );
+
+//});
+
+   // $(document).ready(function(){
+
+      // $(document).on('pageshow', '#wifipage', function () {
+      // getWiFiVars(true);
+      // });
+   // });
+
+    // $(document).ready(function(){
+    //   $("#wifi-1-submit").click(function(){
+    //     $.post("data.esp", $("#general-form").serialize());
+    //   });
+    // });   
+    
+//    $(document).ready(function(){
+      $(".sendsubmit").click(function(){
+        $.post("data.esp", $(this.form).serialize());
+        $('[data-role="popup"]').popup("close");
+          setTimeout( function(){ 
+             getWiFiVars(false);
+          }  , 5000 );
+      });
+ //   }); 
+    
+//<!-- About page -->
+    var results; 
+    var staticwifi; 
+    function GetAboutVars() {
+       $.getJSON("data.esp?plain=AboutPage", function(results){
+        $("#aboutvars").empty();
+        $("#aboutvars").append("<br>Version = " + results.version_var);
+        $("#aboutvars").append("<br>Compile Date = " + results.compiletime_var);
+        $("#aboutvars").append("<br>SDK Version = " + results.sdk_var);
+        $("#aboutvars").append("<br>Heap = " + results.heap_var);
+        $("#aboutvars").append("<br>Flash Size = " + results.flashsize_var);
+        $("#aboutvars").append("<br>Chip ID = " + results.chipid_var);
+        $("#aboutvars").append("<br>Flash ID = " + results.flashid_var);
+        $("#aboutvars").append("<br>Sketch Size = " + results.sketchsize_var);
+        $("#aboutvars").append("<br>Free Space = " + results.freespace_var);
+        $("#aboutvars").append("<br>Millis = " + results.millis_var);
+        $("#aboutvars").append("<br>UpTime = " + results.uptime_var);
+        $("#aboutvars").append("<br>VCC = " + results.vcc_var);
+        $("#aboutvars").append("<br>RSSI = " + results.rssi_var);
+        $("#aboutvars").append("<br> CPU Speed = " + results.cpu_var + "Mhz");
+        });     
+    };
+
+//    $(document).ready(function(){
+      $(document).on('pageshow', '#aboutpage', function () {
+      GetAboutVars(); 
+      });
+      $("#aboutvars").click( function() { GetAboutVars(); }); 
+      $("#STA_settings_div").click( function() { getWiFiVars(false); });
+      $("#AP_settings_div").click( function() { getWiFiVars(false); });
+      
+ //   });
+
+
+// function getAPvars() {
+//       alert("cock on balls");
+  
+// };
+
+function getWiFiVars(scan) {
+  var request;
+  if (scan) { request = "data.esp?plain=PerformWiFiScan" };
+  if (!scan) { request = "data.esp?plain=WiFiDetails" ; } ;
+  $.getJSON(request, function(result){
+         globalwifi = result; 
+
+          if ("networks" in result ) {
+            staticwifi = result.networks; 
+          $("#wifinetworks-data").empty();
+          $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
+             $.each(result.networks, function(i, object){
+                var isconnected = " "; 
+                if (object.connected == "true") isconnected = "checked=\"checked\"";
+                $("#wifinetworks-data").append("<input class = \"wifiradio\" type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" + 
+                  object.ssid +"\""+ isconnected +"><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>" );
+              });
+            $("#wifinetworks-data").enhanceWithin(); };
+          //};  / end of if for data test
+          
+          if (result.STA.dhcp == "on") { $('#flip-dhcp').val('on').flipswitch('refresh'); };
+          if (result.STA.dhcp == "off") { $('#flip-dhcp').val('off').flipswitch('refresh'); };
+          
+          if (result.STA.state == "ENABLED") { $("#flip-STA").val('on').flipswitch('refresh'); };
+          if (result.STA.state == "DISABLED") { $("#flip-STA").val('off').flipswitch('refresh'); };
+          
+          $("#STA_state").empty().append("State: " + result.STA.state);
+          
+          $("#STA_ip").empty().append("IP: " + result.STA.IP);
+          $("#text-STA-set-ip").val(result.STA.IP); 
+          $("#STA_gateway").empty().append("Gateway: " + result.STA.gateway);
+          $("#text-STA-set-gw").val(result.STA.gateway);
+          $("#STA_subnet").empty().append("Subnet: " + result.STA.subnet);
+          $("#text-STA-set-sn").val(result.STA.subnet);
+          
+         // DNS.. no functions in espWiFi lib to store it yet... 
+         // $("#STA_dns").empty().append("DNS: " + result.DNS.subnet);
+         // $("#text-DNS-set-sn").val(result.DNS.subnet);          
+          if (result.AP.state == "ENABLED") { $('#flip-AP').val('on').flipswitch('refresh'); };
+          if (result.AP.state == "DISABLED") { $('#flip-AP').val('off').flipswitch('refresh'); };
+          
+          if (result.AP.hidden == "true") { $('#flip-AP-hidden').val('on').flipswitch('refresh'); }; 
+          if (result.AP.hidden == "false") { $('#flip-AP-hidden').val('off').flipswitch('refresh'); }; 
+          
+          $("#AP_hidden").empty().append("Hidden: " + result.AP.hidden);
+          
+          $("#STA_mac").empty().append("MAC: " + result.STA.MAC);
+          $("#text-STA-set-mac").val(result.STA.MAC);
+          
+          $("#AP_state").empty().append("State: " + result.AP.state);
+
+          $("#AP_ssid").empty().append("SSID: " + result.AP.ssid);
+          $("#text-AP-set-ssid").val(result.AP.ssid); 
+          
+          $("#AP_pass").empty().append("Password: " + result.AP.password);
+          $("#text-AP-set-pass").val(result.AP.pass); 
+          
+          $("#AP_ip").empty().append("IP: " + result.AP.IP);
+          $("#text-AP-set-ip").val(result.AP.IP); 
+  
+          $("#AP_channel").empty().append("Channel: " + result.AP.channel);
+          $("#text-AP-set-channel").val(result.AP.channel); 
+          
+          $("#AP_mac").empty().append("MAC: " + result.AP.MAC);
+          $("#text-AP-set-mac").val(result.AP.MAC); 
+ //  Update slider elements etc.. 
+ 
+      if ($("#flip-AP").val() == "on" ) { 
+        $("#APform :text").textinput('enable');
+        $("#flip-AP-hidden").flipswitch('enable');
+      };
+      if ($("#flip-AP").val() == "off" ) { 
+        $("#APform :text").textinput('disable');
+        $("#flip-AP-hidden").flipswitch('disable');
+      }; 
+      if ($("#flip-dhcp").val() == "on" ) { $("#STAform :text").textinput('disable');};
+      if ($("#flip-dhcp").val() == "off" ) { $("#STAform :text").textinput('enable');};      
+      if ($("flip-STA").val() == "on" ){ $("#flip-dhcp").flipswitch('enable');};
+      if ($("flip-STA").val() == "off" ){ $("#flip-dhcp").flipswitch('disable');}; //.slider('disable');
+    
+          $("#wifipage").enhanceWithin(); 
+
+//  update general settings
+      
+      $("#device-name").attr("placeholder", result.general.deviceid).blur();
+      if (result.general.otaenabled == "enabled" ) { $("#flip-otaenable").val('on').flipswitch('refresh');} else { $("#flip-otaenable").val('off').flipswitch('refresh');  } 
+
+        });
+}
+
+//var globalwifi;
+
+function refreshAPlist() {
+  $.getJSON("data.esp?plain=PerformWiFiScan", function(result){
+        staticwifi = result.networks; 
+         $("#wifinetworks-data").empty();
+         $("#wifinetworks-data").append("<div>");
+          $.each(result.networks, function(i, object){
+            var isconnected = ""; 
+            if (object.connected == "true") isconnected = "checked=\"checked\"";
+            $("#wifinetworks-data").append("<input type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" + 
+            object.ssid +"\""+ isconnected +"><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>") ; 
+          });
+          $("#wifinetworks-data").append("</div>");
+          $("#wifinetworks-data").enhanceWithin(); 
+        });
+}
+
+function submitnewssid() {
+          
+          $.post("data.esp", $("#wifinetworks-form,#removesaftey-1").serialize() , function(data, success) {
+            if(data == "accepted") {
+              var startTime = new Date().getTime();                
+              $.mobile.loading('show');
+              timer = setTimeout(function(){
+                $.post("data.esp", "WiFiresult",function(data,success2) {
+                  if (success2) {
+                    if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied"); 
+                    if (data == "2") alert(data + " :ERROR Reverted to previous settings");
+                    if (data == "3") alert(data + " :Settings applied: NOT CONNECTED");
+                    $.mobile.loading('hide');
+                    clearTimeout(timer);
+                    refreshAPlist();
+                  };
+                  setTimeout(5000);
+                }, "text");
+                    if(new Date().getTime() - startTime > 65000){
+                      $.mobile.loading('hide');
+                      alert("TIMEOUT: NO RESPONSE FROM ESP");
+                      clearInterval(timer);
+                      return;
+                    };
+              },5000);
+            };
+          }, "text" ); 
+          $("#pass-1").val(""); // clear the password field after submit
+}
+
+function rebootesp() {
+          $.post("data.esp", "reboot");
+}
+
+function WiFiMoreinfo() {
+  radioanswer = $('.wifiradio:checked').val();
+  $.each(staticwifi, function(i, object){
+   if (object.ssid === radioanswer) {
+    $("#wifiinsert").empty();
+    $("#wifiinsert").append(
+      "<h3 class=\"centerwrapper\">"+ radioanswer +"</h3>" +
+        "<div class=\"popup\">" +
+        "<br>Connected: " + object.connected +
+        "<br>RSSI: " + object.rssi +
+        "<br>Channel: " + object.channel + 
+        "<br>Security: " + object.encyrpted + 
+        "<br>BSSID: " + object.BSSID +
+        "</div>"
+      ); 
+    $( "#wifiinsert").popup( "open" ); 
+   }; 
+  });
+};
+
+}
+
+
+</script>
+  
+  
+</head> 
+
+<body> 
+<div class='ui-helper-hidden'></div>
+
+
+
+<!--  PAGE BOUNDARY -->
+
+<div data-role="page" id="wifipage">
+<div data-role="panel" id="mypanel" data-position="right" display="push" data-theme="b" >
+    <!-- panel content goes here -->
+    <h1>More</h1>
+    <form>
+      <input type="button" onclick="rebootesp()" value="Reboot" id="reboot">
+      <label for="removesaftey-1">Disable Checks:</label>
+      <select id="removesaftey-1" name="removesaftey" data-role="flipswitch" class="onesend">
+      <option>No</option>
+      <option>Yes</option>
+      </select>
+      <!--<label for="enable-AP-switch">Enable AP:</label>-->
+      <!--<select id="enable-AP-switch" name="APenable" data-role="flipswitch" class="onesend">-->
+      <!--<option>No</option>-->
+      <!--<option>Yes</option>-->
+      <!--</select>      -->
+    </form>
+</div><!-- /panel -->
+
+  <div data-role="header">
+    <h1>Config</h1>
+    <a href="#mypanel" class="ui-btn-right ui-btn ui-btn-inline ui-mini ui-corner-all ui-btn-icon-right ui-icon-gear">More</a>
+  </div><!-- /header -->
+
+  <div data-role="content"> 
+    <div data-role="tabs">
+      <div data-role="navbar">
+        <ul>
+          <li><a href="#config_general" data-theme="a" data-ajax="false">General</a></li>
+          <li><a href="#config_networks" data-theme="a" data-ajax="false">Networks</a></li>
+          <li><a href="#config_ips"  data-theme="a" data-ajax="false">IPs</a></li>
+          </ul>
+      </div>
+      <div id="config_general" class="ui-content">
+         <!--   FIRST TAB --> 
+          <form id="general-form">
+            <label for="device-name">Device Name:</label>
+            <input type="text" name="deviceid" id="device-name" value="">
+            <label for="flip-otaenable">Enable OTA:</label>
+              <select id="flip-otaenable" name="otaenable" data-role="flipswitch">
+              <option>off</option>
+              <option>on</option>
+              </select>
+          <!--  <label for="text-2">MQTT Server:</label>-->
+          <!--  <input type="text" name="mqttserver" id="text-2" value="">   -->
+          <input type="button" value="Submit" id="general-1-submit" class="sendbutton">
+          </form>
+      </div>
+      <div id="config_networks" class="ui-content">
+         <!--   SECOND TAB --> 
+         <form id="wifinetworks-form">
+            <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data">
+            
+            </fieldset>
+            
+            <label for="pass-1">Password:</label>
+            <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">   
+            <input type="button" onclick=WiFiMoreinfo() value="More Info" id="ssid-1-moreinfo">
+            <input type="button" onclick="refreshAPlist()" value="Rescan" id="ssid-1-rescan"> 
+            <input type="button" onclick="submitnewssid()" value="Connect" id="ssid-1-submit"> 
+         </form>
+      </div> <!-- /two -->
+      <div id="config_ips" class="ui-content">
+         <!--   THIRD TAB --> 
+         <h3>Station Settings</h3>
+          <div id="STA_settings_div">
+          <div id="STA_state"></div>
+          <div id="STA_ip"></div>
+          <div id="STA_gateway"></div>
+          <div id="STA_subnet"></div>
+          <div id="STA_mac"></div>
+          </div>
+          <a href="#popup-STA-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-a" data-transition="pop">Edit</a>
+          
+          <h3>AP Settings</h3>
+          <div id="AP_settings_div">
+          <div id="AP_state"></div>
+          <div id="AP_ssid"></div>
+          <div id="AP_pass"></div>
+          <div id="AP_channel"></div>
+          <div id="AP_ip"></div>
+          <div id="AP_hidden"></div>
+          <div id="AP_mac"></div>
+          </div>
+          <a href="#popup-AP-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline  ui-btn-a" data-transition="pop">Edit</a>
+
+          
+
+      </div>      
+<!--  POP UPS -->
+
+      <div id="wifiinsert" data-role="popup" data-theme="a" class="ui-content"> </div>
+
+      <div data-role="popup" id="popup-STA-edit" data-theme="a" class="ui-corner-all">
+        <form id="STAform">
+        <div style="padding:10px 20px;">
+        <h3>Edit Station</h3>
+        <div class="ui-field-contain">
+          <label for="flip-STA">Enable:</label>
+          <select name="enable-STA" id="flip-STA" data-role="flipswitch" data-mini="true">
+            <option value="off">Off</option>
+            <option value="on">On</option>
+          </select>
+        </div>  
+        <div class="ui-field-contain">
+          <label for="flip-dhcp">DHCP:</label>
+          <select name="enable-dhcp" id="flip-dhcp" data-role="flipswitch" data-mini="true">
+            <option value="off">Off</option>
+            <option value="on">On</option>
+          </select>
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-STA-set-ip">IP:</label>
+          <input type="text" data-mini="true" name="setSTAsetip" id="text-STA-set-ip" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-STA-set-gw">Gateway:</label>
+          <input type="text" data-mini="true" name="setSTAsetgw" id="text-STA-set-gw" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-STA-set-sn">Subnet:</label>
+          <input type="text" data-mini="true" name="setSTAsetsn" id="text-STA-set-sn" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-STA-set-mac">MAC:</label>
+          <input type="text" data-mini="true" name="setSTAsetmac" id="text-STA-set-mac" value="">
+        </div>
+        
+        <button type="button" class="sendsubmit ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+          </div>
+          </form>
+      </div>
+
+      <div data-role="popup" id="popup-AP-edit" data-theme="a" class="ui-corner-all">
+        <form id="APform">
+        <div style="padding:10px 20px;">
+        <h3>Edit AP</h3>
+        <fieldset data-role="fieldcontain">
+        <div class="ui-field-contain">
+          <label for="flip-AP">Enable:</label>
+          <select name="enable-AP" id="flip-AP" data-role="flipswitch" data-mini="true">
+            <option value="off">Off</option>
+            <option value="on">On</option>
+          </select>
+        </div>       
+        <div class="ui-field-contain">
+          <label for="flip-AP-hidden">Hidden:</label>
+          <select name="APhidden" id="flip-AP-hidden" data-role="flipswitch" data-mini="true">
+            <option value="off">No</option>
+            <option value="on">Yes</option>
+          </select>
+        </div> 
+        <div class="ui-field-contain">
+          <label for="text-AP-set-ssid">SSID:</label>
+          <input type="text" data-mini="true" name="setAPsetssid" id="text-AP-set-ssid" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-AP-set-pass">Password:</label>
+          <input type="text" data-mini="true" name="setAPsetpass" id="text-AP-set-pass" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-AP-set-channel">Channel:</label>
+          <input type="text" data-mini="true" name="setAPsetchannel" id="text-AP-set-channel" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-AP-set-ip">IP:</label>
+          <input type="text" data-mini="true" name="setAPsetip" id="text-AP-set-ip" value="">
+        </div>
+        <div class="ui-field-contain">
+          <label for="text-AP-set-mac">MAC:</label>
+          <input type="text" data-mini="true" name="setAPsetmac" id="text-AP-set-mac" value="">
+        </div>
+        </fieldset>
+         <button type="button" class="sendsubmit ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+          </div>
+          </form>
+
+      </div>
+      
+    </div> <!-- /tabs -->
+
+    
+  </div><!-- /content -->
+
+  <div data-role="footer">
+   <div data-role="navbar">
+     <ul>
+       <li><a href="#homepage">Home</a></li>
+       <li><a href="#wifipage">Config</a></li>
+       <li><a href="#aboutpage">About</a></li>
+     </ul>
+    </div><!-- /navbar -->
+  </div><!-- /footer -->
+</div><!-- /page -->
+
+<!--  PAGE BOUNDARY -->
+
+<div data-role="page" id="aboutpage">
+
+  <div data-role="header">
+    <h1>About</h1>
+  </div><!-- /header -->
+
+  <div data-role="content"> 
+    <div id="aboutvars"></div>
+  </div><!-- /content -->
+
+  <div data-role="footer">
+   <div data-role="navbar">
+     <ul>
+       <li><a href="#homepage">Home</a></li>
+       <li><a href="#wifipage">Config</a></li>
+       <li><a href="#aboutpage">About</a></li>
+     </ul>
+    </div><!-- /navbar -->
+  </div><!-- /footer -->
+</div><!-- /page -->
+
+</body>
+</html>
