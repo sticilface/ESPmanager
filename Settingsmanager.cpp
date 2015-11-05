@@ -77,9 +77,9 @@ void cache Settingsmanager::begin() {
 }
 
 void cache Settingsmanager::LoadSettings() {
-      Serial.print("OLD ----- "); 
+      //Serial.print("OLD ----- "); 
 
-      PrintVariables();
+      //PrintVariables();
 
       DynamicJsonBuffer jsonBuffer;
 
@@ -177,9 +177,9 @@ void cache Settingsmanager::LoadSettings() {
       _IPs->SN = StringtoIP(String(sn));
     }
   }
-      Serial.print("NEW ----- "); 
+      Serial.print  ("----- Saved Variables -----"); 
       PrintVariables();
-
+      Serial.println("---------------------------");
 
 
 }
@@ -187,7 +187,7 @@ void cache Settingsmanager::LoadSettings() {
 
 void cache Settingsmanager::PrintVariables() {
 
-      Serial.println(F("VARIABLE STATES: ")); 
+      //Serial.println(F("VARIABLE STATES: ")); 
       Serial.printf("_host = %s\n", _host); 
       Serial.printf("_ssid = %s\n", _ssid); 
       Serial.printf("_pass = %s\n", _pass); 
@@ -271,7 +271,7 @@ void cache Settingsmanager::SaveSettings() {
       root.prettyPrintTo(f);
       f.close(); 
 
-      Serial.printf("Save done. %ums\n", millis() - starttime); 
+      //Serial.printf("Save done. %ums\n", millis() - starttime); 
 
 }
 
@@ -432,7 +432,6 @@ IPAddress cache Settingsmanager::StringtoIP(const String IP_string){
 
 void cache Settingsmanager::HandleDataRequest() {
 
-
  String buf;
   uint8_t _wifinetworksfound = 0; 
 
@@ -462,161 +461,70 @@ void cache Settingsmanager::HandleDataRequest() {
 	    DynamicJsonBuffer jsonBuffer;    
       JsonObject& root = jsonBuffer.createObject();
 
-
-
-    //String connected; 
-
-    //buf = F("{");
-
     if (_wifinetworksfound) {
       
       JsonArray&  Networkarray  = root.createNestedArray("networks");
     
-    //buf +=  F("\"networks\": [");
-
     for (int i = 0; i < _wifinetworksfound; ++i)
   {
       JsonObject& ssidobject = Networkarray.createNestedObject();
-    //    if(WiFi.status() == WL_CONNECTED && strcmp( config.ssid, WiFi.SSID(i).c_str()) == 0)
-    //if(WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) { connected = F("true"); } else { connected = F("false"); }
-    bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID())? true : false; 
 
-    uint8_t encryptiontype = WiFi.encryptionType(i);
-    //String encryptionString; 
-
-    const char * encryptionchar = "OPEN"; 
-
-
-
+      bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID())? true : false; 
+      uint8_t encryptiontype = WiFi.encryptionType(i);
       ssidobject["ssid"] = WiFi.SSID(i); 
       ssidobject["rssi"] = WiFi.RSSI(i); 
       ssidobject["connected"] = connectedbool; 
       ssidobject["channel"] = WiFi.channel(i); 
       switch (encryptiontype) {
          case ENC_TYPE_NONE:
-          //encryptionString = F("OPEN");
           ssidobject["encyrpted"] = "OPEN"; 
           break;
          case ENC_TYPE_WEP:
-          //encryptionString = F("WEP");
           ssidobject["encyrpted"] = "WEP"; 
           break;
          case ENC_TYPE_TKIP:
-          //encryptionString = F("WPA_PSK");
           ssidobject["encyrpted"] = "WPA_PSK"; 
           break;
          case ENC_TYPE_CCMP:
-          //encryptionString = F("WPA2_PSK");
           ssidobject["encyrpted"] = "WPA2_PSK"; 
           break;
          case ENC_TYPE_AUTO:
-          //encryptionString = F("AUTO");
           ssidobject["encyrpted"] = "AUTO";          
           break;
       }
       
       ssidobject["BSSID"] = WiFi.BSSIDstr(i); 
-
-    // if (i > 0) buf += ",";
-    // buf += F("{\"ssid\":\""); 
-    // buf += String(WiFi.SSID(i)); 
-    // buf += F("\",\"rssi\":\"" );
-    // buf += String(WiFi.RSSI(i)) ;
-    // buf += F("\",\"connected\":\""); 
-    // buf += connected ;
-    // buf += F("\",\"channel\":\"" );
-    // buf += String(WiFi.channel(i)) ;
-    // buf += F("\",\"encyrpted\":\"" );
-    // buf += encryptionString ;
-    // buf += F("\",\"BSSID\":\""); 
-    // buf += WiFi.BSSIDstr(i) ;
-    // buf += F("\"}");
     
      }
-
-    //if (_wifinetworksfound == 0 ) buf += F("{\"ssid\":\"\",\"rssi\":\"\",\"connected\":\"\",\"channel\":\"\",\"encyrpted\":\"\",\"BSSID\":\"\"}");
- 
-     // buf += F("],");
 	
    }
 
     WiFiMode mode = WiFi.getMode();
 
-    // String APstate = (mode == WIFI_AP || mode == WIFI_AP_STA ) ? F("ENABLED") : F("DISABLED");
-    // String STAstate = (mode == WIFI_STA || mode == WIFI_AP_STA ) ? F("ENABLED") : F("DISABLED");
-    // String dhcpstate = (_DHCP)? F("on") : F("off");
-    // String isHidden = (_APhidden)? F("true") : F("false"); 
-    // String APip = (WiFi.softAPIP()[0] == 0 && WiFi.softAPIP()[1] == 0 && WiFi.softAPIP()[2] == 0 && WiFi.softAPIP()[3] == 0)? F("192.168.4.1") : IPtoString(WiFi.softAPIP()); 
-    // String otastate = (_OTAenabled)? F("enabled") : F("disabled");
-
     JsonObject& generalobject = root.createNestedObject("general");
-
-    // buf += F("\"general\":{");
-    // buf += "\"deviceid\":\"" + String(_host) + "\",";    
-    // buf += "\"otaenabled\":\"" + otastate + "\"";
-    // buf += F("},");
-
-    generalobject["deviceid"] = _host; 
-    generalobject["OTAenabled"] = (_OTAenabled)? true : false;
-
-    // buf += F("\"STA\":{");
-    // buf += F("\"dhcp\":\""); 
-    // buf += dhcpstate + "\",";
-    // buf += F("\"state\":\"" );
-    // buf += STAstate + "\",";
-    // buf += F("\"IP\":\"" );
-    // buf += IPtoString(WiFi.localIP()) + "\",";
-    // buf += F("\"gateway\":\"" );
-    // buf += IPtoString(WiFi.gatewayIP()) + "\",";
-    // buf += F("\"subnet\":\"" );
-    // buf += IPtoString(WiFi.subnetMask()) + "\",";
-    // buf += F("\"MAC\":\"" );
-    // buf += WiFi.macAddress() +"\"";
-    //buf += "\"DNS\":\"" + WiFi.  DNS not implemeneted...
-
+      generalobject["deviceid"] = _host; 
+      generalobject["OTAenabled"] = (_OTAenabled)? true : false;
     JsonObject& STAobject = root.createNestedObject("STA");
-
-    STAobject["dhcp"] = (_DHCP)? true : false; 
-    STAobject["state"] = (mode == WIFI_STA || mode == WIFI_AP_STA )? true : false ; 
-    STAobject["IP"] =  IPtoString(WiFi.localIP()); 
-    STAobject["gateway"] =  IPtoString(WiFi.gatewayIP()); 
-    STAobject["subnet"] =  IPtoString(WiFi.subnetMask()); 
-    STAobject["MAC"] = WiFi.macAddress() ; 
-
-
-   //  buf += F("},");
-
-   //  buf += F("\"AP\":{");
-	  // buf += "\"ssid\":\"" + String(_APssid) + "\",";
-   //  buf += "\"state\":\"" + APstate + "\",";
-   //  buf += "\"IP\":\"" + APip + "\",";
-   //  buf += "\"hidden\":\"" + isHidden + "\",";
-   //  if(_APpass) buf += "\"password\":\"" + String(_APpass) + "\","; else 
-   //  			buf += "\"password\":\"\",";
-   //  buf += "\"channel\":\"" + String(_APchannel) + "\",";
-   //  buf += "\"MAC\":\"" + WiFi.softAPmacAddress() + "\"";
-   //  buf += "}}";
-
+      STAobject["dhcp"] = (_DHCP)? true : false; 
+      STAobject["state"] = (mode == WIFI_STA || mode == WIFI_AP_STA )? true : false ; 
+      STAobject["IP"] =  IPtoString(WiFi.localIP()); 
+      STAobject["gateway"] =  IPtoString(WiFi.gatewayIP()); 
+      STAobject["subnet"] =  IPtoString(WiFi.subnetMask()); 
+      STAobject["MAC"] = WiFi.macAddress() ; 
     JsonObject& APobject = root.createNestedObject("AP");
-    APobject["ssid"] = _APssid ;
-    APobject["state"] = (mode == WIFI_AP || mode == WIFI_AP_STA ) ? true : false;   ;
-    APobject["IP"] =   (WiFi.softAPIP()[0] == 0 && WiFi.softAPIP()[1] == 0 && WiFi.softAPIP()[2] == 0 && WiFi.softAPIP()[3] == 0)? F("192.168.4.1") : IPtoString(WiFi.softAPIP()) ;
-    APobject["hidden"] =  (_APhidden)? true : false  ;
-    APobject["password"] = (_APpass)? _APpass: "" ;
-    APobject["channel"] =  _APchannel  ;
-    APobject["MAC"] =   WiFi.softAPmacAddress()   ;
+      APobject["ssid"] = _APssid ;
+      APobject["state"] = (mode == WIFI_AP || mode == WIFI_AP_STA ) ? true : false;   ;
+      APobject["IP"] =   (WiFi.softAPIP()[0] == 0 && WiFi.softAPIP()[1] == 0 && WiFi.softAPIP()[2] == 0 && WiFi.softAPIP()[3] == 0)? F("192.168.4.1") : IPtoString(WiFi.softAPIP()) ;
+      APobject["hidden"] =  (_APhidden)? true : false  ;
+      APobject["password"] = (_APpass)? _APpass: "" ;
+      APobject["channel"] =  _APchannel  ;
+      APobject["MAC"] =   WiFi.softAPmacAddress()   ;
 
-
-
-   //_HTTP->send(200, "text/json", buf);
-    
-    root.prettyPrintTo(Serial);
     size_t jsonlength = root.measureLength(); 
     _HTTP->setContentLength(jsonlength);
     _HTTP->send(200, "text/json"); 
     WiFiClient c = _HTTP->client(); 
     root.printTo(c);
-
 
   	WiFi.scanDelete();
   	_wifinetworksfound = 0;
@@ -659,45 +567,12 @@ void cache Settingsmanager::HandleDataRequest() {
     root["rssi_var"] = WiFi.RSSI();
     root["cpu_var"] = ESP.getCpuFreqMHz(); 
 
-    //root.prettyPrintTo(Serial);
     size_t jsonlength = root.measureLength(); 
     _HTTP->setContentLength(jsonlength);
     _HTTP->send(200, "text/json"); 
     WiFiClient c = _HTTP->client(); 
     root.printTo(c);
 
-    // buf = "{";
-    // buf += F("\"version_var\":\""); 
-    // buf += String(version) + "\","; // to remove this... change to host
-    // buf += F("\"compiletime_var\":\""); 
-    // buf += String(_compile_date_time) + "\",";
-    // buf += F("\"sdk_var\":\"");
-    // buf += String(ESP.getSdkVersion()) + "\",";
-    // buf += F("\"heap_var\":\"");
-    // buf += String(ESP.getFreeHeap()) + "\",";  
-    // buf += F("\"flashsize_var\":\"");
-    // buf += String(ESP.getFlashChipSize()) + "\",";   
-    // buf += F("\"chipid_var\":\"");
-    // buf += String(ESP.getChipId()) + "\",";
-    // buf += F("\"flashid_var\":\"");
-    // buf += String(ESP.getFlashChipId()) + "\",";   
-    // buf += F("\"sketchsize_var\":\"");
-    // buf += String(ESP.getSketchSize()) + "\",";
-    // buf += F("\"freespace_var\":\"");
-    // buf += String(ESP.getFreeSketchSpace()) + "\",";    
-    // buf += F("\"millis_var\":\"");
-    // buf += String(millis()) + "\",";   
-    // buf += F("\"uptime_var\":\"");
-    // buf += String(Up_time) + "\",";
-    // buf += F("\"vcc_var\":\"");
-    // buf += String(ESP.getVcc() ) + "\",";
-    // buf += F("\"rssi_var\":\"");
-    // buf += String(WiFi.RSSI()) + "\",";
-    // buf += F("\"cpu_var\":\"");
-    // buf += String(ESP.getCpuFreqMHz()) + "\"";
-    // buf += "}";
-
-    // _HTTP->send(200, "text/json", buf);
     return;
 
   }
