@@ -14,6 +14,7 @@ Password management
 #include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>
 
                       
 #include <Settingsmanager.h>
@@ -23,13 +24,14 @@ const char * host = "Melvide-ESP";
 const char * ssid = "SKY";
 const char * pass = "wellcometrust";
 
+bool settingsenabled = false; 
 
 #define DBG_OUTPUT_PORT Serial
 
 
 ESP8266WebServer HTTP(80);
-Settingsmanager settings(&HTTP, &SPIFFS, host, ssid, pass);
-
+//Settingsmanager settings(&HTTP, &SPIFFS, host, ssid, pass);
+Settingsmanager * settings = NULL; 
 
 void setup() {
 
@@ -38,8 +40,8 @@ void setup() {
 
   Serial.begin(115200);
 
-
   SPIFFS.begin();
+
   
   delay(500);
 
@@ -60,12 +62,9 @@ void setup() {
     DBG_OUTPUT_PORT.printf("\n");
   }
 
-  
-
-  settings.begin(); 
 
 
-  if(WiFi.waitForConnectResult() == WL_CONNECTED || WiFi.getMode() == WIFI_AP_STA){
+ // if(WiFi.waitForConnectResult() == WL_CONNECTED || WiFi.getMode() == WIFI_AP_STA){
 
 
 
@@ -94,9 +93,9 @@ void setup() {
 
     HTTP.begin();
     Serial.println(F("Services Started...."));
-  } else {
-    Serial.println(F("Services NOT Started...."));
-  }
+  // } else {
+  //   Serial.println(F("Services NOT Started...."));
+  // }
 
   Serial.print(F("Free Heap: "));
   Serial.println(ESP.getFreeHeap());
@@ -108,7 +107,6 @@ void setup() {
 
 void loop() {
 
-  settings.handle();
 
   HTTP.handleClient();
   
@@ -123,6 +121,21 @@ void loop() {
   heap_timer = millis(); 
  }
   
+ if (millis() > 1000) {
+  static bool triggered = false; 
+  if (!triggered) {
+    Serial.println("Settingsmanager started..");
+      uint32_t before = ESP.getFreeHeap(); 
+      settings = new Settingsmanager(&HTTP); 
+      settings->begin(); 
+      Serial.printf("Heap used by settings Manager: %u\n", before - ESP.getFreeHeap());      
+      triggered = true; 
+  }
+
+ if (settings) settings->handle();
+
+ }
+
 
 }
 

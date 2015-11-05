@@ -6,6 +6,7 @@ Requires data folder to be uploaded
 
 ToDo
 
+0) Sort out text string and memory storage of variables.... 
 1) Save settings to SPIFFS
 2) Integrate all wifi management still to do MAC address
 4) Async wifi management using my own init callback instead of setup...for wifi services... 
@@ -24,6 +25,7 @@ ToDo
 #include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
+#include <ArduinoJson.h>
 
 #include <functional>
 
@@ -41,7 +43,7 @@ class FS;
 class Settingsmanager  
 {
 public:
-	ArduinoOTA* ota_server;
+	ArduinoOTA* ota_server = NULL;
 
 	Settingsmanager(ESP8266WebServer* HTTP, fs::FS* fs = &SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL); 
 	~Settingsmanager();
@@ -49,38 +51,52 @@ public:
 	void handle();
 	static String IPtoString(IPAddress address);
 	static IPAddress StringtoIP(const String IP_string);
+ 	static void printdiagnositics();
 
- 	void printdiagnositics();
  	bool Wifistart();
 
 private:
 
-//typedef struct settings_s {
-	const char * _host = NULL;
-	const char * _ssid = NULL;
-	const char * _pass = NULL;
-	      char * _APpass = NULL; 
-	char * _OTAhost = NULL; 
-
-	String _APssid;
-	fs::FS * _fs; 
-
-	uint8_t _APchannel = 1;
-//	WiFiMode _mode;     // WIFI_STA = 1, WIFI_AP = 2, WIFI_AP_STA = 3
-//};
-	ESP8266WebServer * _HTTP = NULL; 
-	bool _DHCP = true; 
-	uint8_t _wifinetworksfound = 0; 
 
 	void HandleDataRequest();
 	void InitialiseFeatures(); 
 	void InitialiseSoftAP();
+	void LoadSettings();
+	void SaveSettings(); 
+	void PrintVariables();
+
+    const char * C_true = "true";
+    const char * C_false = "false";
+    const char * C_null = ""; 
+
+	const char * _host = NULL;
+	const char * _ssid = NULL;
+	const char * _pass = NULL;
+	const char * _APpass = NULL; 
+	const char * _APssid = NULL; 
+
+
+	fs::FS * _fs = NULL; 
+	ESP8266WebServer * _HTTP = NULL; 
+
+	uint8_t _APchannel = 1;
+
 
 	bool _APhidden = false; 
 	bool _APenabled = false; 
 	bool _OTAenabled = true; 
+	bool save_flag = false; 
+	bool _DHCP = true; 
+	bool _manageWiFi = true; 
 
 
+	struct IPconfigs_t {
+		IPAddress IP;
+		IPAddress GW;
+		IPAddress SN;
+	};
+
+	IPconfigs_t * _IPs = NULL; // will hold IPs if they are set by the user..  
 
 };
 
