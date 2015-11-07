@@ -26,8 +26,21 @@ ToDo
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
-
+#include <ESP8266mDNS.h>
 #include <functional>
+
+#ifdef DEBUG_YES
+	#define Debug(x)    Serial.print(x)
+	#define Debugln(x)  Serial.println(x)
+	#define Debugf(...) Serial.printf(__VA_ARGS__)
+	#define Debugflush  Serial.flush
+#else
+	#define Debug(x)    {}
+	#define Debugln(x)  {}
+	#define Debugf(...) {}
+	#define Debugflush  {}
+#endif
+
 
 #define cache  ICACHE_FLASH_ATTR
 
@@ -88,6 +101,7 @@ private:
 	bool save_flag = false; 
 	bool _DHCP = true; 
 	bool _manageWiFi = true; 
+	bool _mDNSenabled = true; 
 
 
 	struct IPconfigs_t {

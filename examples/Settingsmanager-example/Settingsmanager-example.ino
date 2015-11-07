@@ -82,7 +82,10 @@ void setup() {
   //called after file upload
   HTTP.on("/edit", HTTP_POST, [](){ HTTP.send(200, "text/plain", ""); });
   //called when a file is received inside POST data
-  HTTP.onFileUpload(handleFileUpdate);
+  HTTP.onFileUpload([&](){ 
+    handleFileUpdate();
+    handleUpgrade(); }
+    );
 
   //called when the url is not defined here
   //use it to load content from SPIFFS
@@ -90,6 +93,13 @@ void setup() {
     if(!handleFileRead(HTTP.uri()))
       HTTP.send(404, "text/plain", "FileNotFound");
   });
+
+      HTTP.on("/update", HTTP_POST, [&](){
+      HTTP.sendHeader("Connection", "close");
+      HTTP.sendHeader("Access-Control-Allow-Origin", "*");
+      HTTP.send(200, "text/plain", (Update.hasError())?"FAIL":"OK");
+      ESP.restart();
+    });
 
     HTTP.begin();
     Serial.println(F("Services Started...."));

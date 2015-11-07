@@ -33,8 +33,10 @@ Settingsmanager::~Settingsmanager() {
 
 void cache Settingsmanager::begin() {
 
+  Serial.println("Settings Manager V1.0");
+
     if(SPIFFS.begin()) { 
-      Serial.println(F("File System mounted sucessfully"));
+      Debugln(F("File System mounted sucessfully"));
       LoadSettings(); 
     } else {
       Serial.println(F("File System mount failed"));
@@ -65,14 +67,14 @@ void cache Settingsmanager::begin() {
     //  to add timeout on AP... 
    }
 
-    printdiagnositics(); 
+    //printdiagnositics(); 
 
     InitialiseFeatures(); 
-
-    _HTTP->on("/data.esp", std::bind(&Settingsmanager::HandleDataRequest, this)); 
-    _HTTP->serveStatic("/config.htm", *_fs, "/config.htm"); 
-	   
     
+    _HTTP->on("/data.esp", std::bind(&Settingsmanager::HandleDataRequest, this));     
+    _HTTP->serveStatic("/config.htm", *_fs, "/config.htm"); 
+    _HTTP->serveStatic("/images/ajax-loader.gif", *_fs, "/ajax-loader.gif");  //temp fix
+
   
 }
 
@@ -82,24 +84,19 @@ void cache Settingsmanager::LoadSettings() {
       //PrintVariables();
 
       DynamicJsonBuffer jsonBuffer;
-
       File f = SPIFFS.open("/settings.txt", "r");   
-      
       if (!f) {
          Serial.println(F("Settings file open failed!"));
          return; 
       }
 
       f.seek(0,SeekSet); 
-
       char data[f.size()]; 
-
       for (int i = 0; i < f.size(); i++) {
         data[i] = f.read(); 
       }
 
       f.close(); 
-
       JsonObject& root = jsonBuffer.parseObject(data);
 
       if (!root.success())
@@ -110,64 +107,75 @@ void cache Settingsmanager::LoadSettings() {
       //root.prettyPrintTo(Serial);
   
   if (root.containsKey("host")) {
-      const char* host = root["host"]; 
+      const char* host = root[F("host")]; 
       if (_host) { free((void*)_host); _host = NULL; }; 
       _host = strdup (host);       
   }
 
   if (root.containsKey("ssid")) {
-      const char* ssid = root["ssid"]; 
+      const char* ssid = root[F("ssid")]; 
       if (_ssid) { free((void*)_ssid); _ssid = NULL; };
       _ssid = strdup (ssid); 
   }
   
   if (root.containsKey("pass")) {
-      const char* pass = root["pass"]; 
+      const char* pass = root[F("pass")]; 
       if (_pass) { free((void*)_pass); _pass = NULL; }; 
       _pass = strdup (pass); 
   }
 
   if (root.containsKey("APpass")) {
-      const char* APpass = root["APpass"]; 
+      const char* APpass = root[F("APpass")]; 
       if (_APpass) { free((void*)_APpass); _APpass = NULL; };
       _APpass = strdup (APpass); 
   }
   
   if (root.containsKey("APpass")) {
-      const char* APssid = root["APssid"]; 
+      const char* APssid = root[F("APssid")]; 
       if (_APssid) { free((void*)_APssid); _APssid = NULL; }; 
       _APssid = strdup (APssid); 
   }
 
   if (root.containsKey("APpass")) {
-      long APchannel = root["APchannel"];
+      long APchannel = root[F("APchannel")];
       if (APchannel < 13 && APchannel > 0) _APchannel = (uint8_t)APchannel; 
     }
 
   if (root.containsKey("DHCP")) { 
-    const char* dhcp = root["DHCP"];
+    const char* dhcp = root[F("DHCP")];
     _DHCP = (strcmp(dhcp,"true") == 0)? true : false ; 
   }
   
   if (root.containsKey("APenabled")) {  
-    const char* APenabled = root["APenabled"]; 
+    const char* APenabled = root[F("APenabled")]; 
     _APenabled = (strcmp(APenabled,"true") == 0)? true : false ; 
   }
   
   if (root.containsKey("APhidden")) { 
-    const char* APhidden = root["APhidden"];
+    const char* APhidden = root[F("APhidden")];
     _APhidden = (strcmp(APhidden,"true") == 0)? true : false ; 
   }
   
   if (root.containsKey("OTAenabled")) { 
-    const char* OTAenabled = root["OTAenabled"];
+    const char* OTAenabled = root[F("OTAenabled")];
     _OTAenabled = (strcmp(OTAenabled, "true") == 0)? true: false ; 
   }
 
+  if (root.containsKey("mdnsenable")) { 
+    const char* mDNSenabled = root[F("mDNSenable")];
+    _mDNSenabled = (strcmp(mDNSenabled, "true") == 0)? true: false ; 
+  }
+
+  if (root.containsKey("wifimanage")) { 
+    const char* manageWiFi = root[F("WiFimanage")];
+    _manageWiFi = (strcmp(manageWiFi, "true") == 0)? true: false ; 
+  }  
+
+
   if (root.containsKey("IPaddress") && root.containsKey("Gateway") && root.containsKey("Subnet")) {
-      const char * ip = root["IPaddress"]; 
-      const char * gw = root["Gateway"]; 
-      const char * sn = root["Subnet"]; 
+      const char * ip = root[F("IPaddress")]; 
+      const char * gw = root[F("Gateway")]; 
+      const char * sn = root[F("Subnet")]; 
       
     if (!_DHCP) { // only bother to allocate memory if dhcp is NOT being used. 
       if (_IPs) { delete _IPs; _IPs = NULL;}; 
@@ -177,10 +185,9 @@ void cache Settingsmanager::LoadSettings() {
       _IPs->SN = StringtoIP(String(sn));
     }
   }
-      Serial.print  ("----- Saved Variables -----"); 
+      Serial.println  (F("----- Saved Variables -----")); 
       PrintVariables();
-      Serial.println("---------------------------");
-
+      Serial.println(F("---------------------------"));
 
 }
 
@@ -198,6 +205,7 @@ void cache Settingsmanager::PrintVariables() {
       (_APenabled)? Serial.println(F("_APenabled = true")): Serial.println(F("_APenabled = false")); 
       (_APhidden)? Serial.println(F("_APhidden = true")): Serial.println(F("_APhidden = false")); 
       (_OTAenabled)? Serial.println(F("_OTAenabled = true")): Serial.println(F("_OTAenabled = false")); 
+
 
       if (_IPs) {
       Serial.print(F("IPs->IP = "));
@@ -235,16 +243,18 @@ void cache Settingsmanager::SaveSettings() {
       DynamicJsonBuffer jsonBuffer;    
       JsonObject& root = jsonBuffer.createObject();
 
-      root["host"] = (_host)? _host: C_null;
-      root["ssid"] = (_ssid)? _ssid: C_null;
-      root["pass"] = (_pass)? _pass: C_null;
-      root["APpass"] = (_APpass)? _APpass: C_null;
-      root["APssid"] = (_APssid)? _APssid: C_null; 
-      root["DHCP"] = (_DHCP)? C_true : C_false; 
-      root["APchannel"] = (_APchannel)? C_true : C_false; 
-      root["APenabled"] = (_APenabled)? C_true : C_false; 
-      root["APhidden"] = (_APhidden)? C_true : C_false; 
-      root["OTAenabled"] = (_OTAenabled)? C_true : C_false; 
+      root[F("host")] = (_host)? _host: C_null;
+      root[F("ssid")] = (_ssid)? _ssid: C_null;
+      root[F("pass")] = (_pass)? _pass: C_null;
+      root[F("APpass")] = (_APpass)? _APpass: C_null;
+      root[F("APssid")] = (_APssid)? _APssid: C_null; 
+      root[F("DHCP")] = (_DHCP)? C_true : C_false; 
+      root[F("APchannel")] = (_APchannel)? C_true : C_false; 
+      root[F("APenabled")] = (_APenabled)? C_true : C_false; 
+      root[F("APhidden")] = (_APhidden)? C_true : C_false; 
+      root[F("OTAenabled")] = (_OTAenabled)? C_true : C_false; 
+      root[F("mDNSenable")] = (_mDNSenabled)? C_true : C_false; 
+      root[F("WiFimanage")] = (_manageWiFi)? C_true : C_false; 
       
       char IP[30];
       String ip = IPtoString(WiFi.localIP());
@@ -256,9 +266,9 @@ void cache Settingsmanager::SaveSettings() {
       String sn = IPtoString(WiFi.subnetMask()); 
       sn.toCharArray(SN, sn.length() + 3 );
       
-      root["IPaddress"] = IP; 
-      root["Gateway"] = GW; 
-      root["Subnet"] = SN; 
+      root[F("IPaddress")] = IP; 
+      root[F("Gateway")] = GW; 
+      root[F("Subnet")] = SN; 
 
 
       //Serial.printf("IP = %s, GW = %s, SN = %s\n", IP, GW, SN); 
@@ -302,6 +312,15 @@ void cache Settingsmanager::InitialiseFeatures() {
     if (ota_server) { delete ota_server; ota_server = NULL; };  
     ota_server = new ArduinoOTA(OTAhost, 8266, true);
     ota_server->setup();
+  } else {
+    if (ota_server) { delete ota_server; ota_server = NULL; };      
+  }
+
+  if (_mDNSenabled) {
+    if (!_OTAenabled) {
+         MDNS.begin(_host);
+       }
+    MDNS.addService("http", "tcp", 80);
   }
     
     WiFi.hostname(_host);
@@ -311,11 +330,8 @@ void cache Settingsmanager::InitialiseFeatures() {
  void cache Settingsmanager::InitialiseSoftAP() {
 
       WiFiMode mode = WiFi.getMode();
-
       if (mode == WIFI_AP_STA || mode == WIFI_AP) {
-
         WiFi.softAP(_APssid, _APpass, _APchannel, _APhidden);
-
       }
 
  }
@@ -356,7 +372,7 @@ bool cache Settingsmanager::Wifistart() {
 
   if (WiFi.status() == WL_CONNECTED ) { 
     return true; 
-    Serial.printf("\nconnected: SSID = %s, pass = %s\n", WiFi.SSID().c_str(), WiFi.psk().c_str()); 
+    //Serial.printf("\nconnected: SSID = %s, pass = %s\n", WiFi.SSID().c_str(), WiFi.psk().c_str()); 
 
   }
      else return false ;
@@ -365,35 +381,35 @@ bool cache Settingsmanager::Wifistart() {
 
 void cache Settingsmanager::printdiagnositics() {
 
-	Serial.println(F("\n------------------"));
-	WiFi.printDiag(Serial);
+	// Serial.println(F("\n------------------"));
+	// WiFi.printDiag(Serial);
 
-	Serial.print(F("ssid: "));
-	Serial.println( WiFi.SSID()   );
-	Serial.print(F("psk: "));
-	Serial.println( WiFi.psk()  );
+	// Serial.print(F("ssid: "));
+	// Serial.println( WiFi.SSID()   );
+	// Serial.print(F("psk: "));
+	// Serial.println( WiFi.psk()  );
 	
-	Serial.print(F("host: "));
-	Serial.println( WiFi.hostname()  );
+	// Serial.print(F("host: "));
+	// Serial.println( WiFi.hostname()  );
 
-	Serial.print(F("BSSID: "));
-	Serial.println(  WiFi.BSSIDstr() );
+	// Serial.print(F("BSSID: "));
+	// Serial.println(  WiFi.BSSIDstr() );
 
-	Serial.print(F("IP: "));
-	Serial.println( WiFi.localIP()  );
+	// Serial.print(F("IP: "));
+	// Serial.println( WiFi.localIP()  );
 
-	Serial.print(F("Subnet: "));
-	Serial.println(  WiFi.subnetMask() );
+	// Serial.print(F("Subnet: "));
+	// Serial.println(  WiFi.subnetMask() );
 
-	Serial.print(F("gateway: "));
-	Serial.println(  WiFi.gatewayIP() );
+	// Serial.print(F("gateway: "));
+	// Serial.println(  WiFi.gatewayIP() );
 
-	Serial.print(F("DHCP: "));
+	// Serial.print(F("DHCP: "));
 
-	uint8_t dhcpstate =  wifi_station_dhcpc_status(); 
-	Serial.println(dhcpstate);
+	// uint8_t dhcpstate =  wifi_station_dhcpc_status(); 
+	// Serial.println(dhcpstate);
 
-	Serial.println(F("--------END-------"));
+	// Serial.println(F("--------END-------"));
 
 
 }
@@ -471,29 +487,29 @@ void cache Settingsmanager::HandleDataRequest() {
 
       bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID())? true : false; 
       uint8_t encryptiontype = WiFi.encryptionType(i);
-      ssidobject["ssid"] = WiFi.SSID(i); 
-      ssidobject["rssi"] = WiFi.RSSI(i); 
-      ssidobject["connected"] = connectedbool; 
-      ssidobject["channel"] = WiFi.channel(i); 
+      ssidobject[F("ssid")] = WiFi.SSID(i); 
+      ssidobject[F("rssi")] = WiFi.RSSI(i); 
+      ssidobject[F("connected")] = connectedbool; 
+      ssidobject[F("channel")] = WiFi.channel(i); 
       switch (encryptiontype) {
          case ENC_TYPE_NONE:
-          ssidobject["encyrpted"] = "OPEN"; 
+          ssidobject[F("encyrpted")] = "OPEN"; 
           break;
          case ENC_TYPE_WEP:
-          ssidobject["encyrpted"] = "WEP"; 
+          ssidobject[F("encyrpted")] = "WEP"; 
           break;
          case ENC_TYPE_TKIP:
-          ssidobject["encyrpted"] = "WPA_PSK"; 
+          ssidobject[F("encyrpted")] = "WPA_PSK"; 
           break;
          case ENC_TYPE_CCMP:
-          ssidobject["encyrpted"] = "WPA2_PSK"; 
+          ssidobject[F("encyrpted")] = "WPA2_PSK"; 
           break;
          case ENC_TYPE_AUTO:
-          ssidobject["encyrpted"] = "AUTO";          
+          ssidobject[F("encyrpted")] = "AUTO";          
           break;
       }
       
-      ssidobject["BSSID"] = WiFi.BSSIDstr(i); 
+      ssidobject[F("BSSID")] = WiFi.BSSIDstr(i); 
     
      }
 	
@@ -502,29 +518,30 @@ void cache Settingsmanager::HandleDataRequest() {
     WiFiMode mode = WiFi.getMode();
 
     JsonObject& generalobject = root.createNestedObject("general");
-      generalobject["deviceid"] = _host; 
-      generalobject["OTAenabled"] = (_OTAenabled)? true : false;
+      generalobject[F("deviceid")] = _host; 
+      generalobject[F("OTAenabled")] = (_OTAenabled)? true : false;
     JsonObject& STAobject = root.createNestedObject("STA");
-      STAobject["dhcp"] = (_DHCP)? true : false; 
-      STAobject["state"] = (mode == WIFI_STA || mode == WIFI_AP_STA )? true : false ; 
-      STAobject["IP"] =  IPtoString(WiFi.localIP()); 
-      STAobject["gateway"] =  IPtoString(WiFi.gatewayIP()); 
-      STAobject["subnet"] =  IPtoString(WiFi.subnetMask()); 
-      STAobject["MAC"] = WiFi.macAddress() ; 
+      STAobject[F("dhcp")] = (_DHCP)? true : false; 
+      STAobject[F("state")] = (mode == WIFI_STA || mode == WIFI_AP_STA )? true : false ; 
+      STAobject[F("IP")] =  IPtoString(WiFi.localIP()); 
+      STAobject[F("gateway")] =  IPtoString(WiFi.gatewayIP()); 
+      STAobject[F("subnet")] =  IPtoString(WiFi.subnetMask()); 
+      STAobject[F("MAC")] = WiFi.macAddress() ; 
     JsonObject& APobject = root.createNestedObject("AP");
-      APobject["ssid"] = _APssid ;
-      APobject["state"] = (mode == WIFI_AP || mode == WIFI_AP_STA ) ? true : false;   ;
-      APobject["IP"] =   (WiFi.softAPIP()[0] == 0 && WiFi.softAPIP()[1] == 0 && WiFi.softAPIP()[2] == 0 && WiFi.softAPIP()[3] == 0)? F("192.168.4.1") : IPtoString(WiFi.softAPIP()) ;
-      APobject["hidden"] =  (_APhidden)? true : false  ;
-      APobject["password"] = (_APpass)? _APpass: "" ;
-      APobject["channel"] =  _APchannel  ;
-      APobject["MAC"] =   WiFi.softAPmacAddress()   ;
+      APobject[F("ssid")] = _APssid ;
+      APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA ) ? true : false;   ;
+      APobject[F("IP")] =   (WiFi.softAPIP()[0] == 0 && WiFi.softAPIP()[1] == 0 && WiFi.softAPIP()[2] == 0 && WiFi.softAPIP()[3] == 0)? F("192.168.4.1") : IPtoString(WiFi.softAPIP()) ;
+      APobject[F("hidden")] =  (_APhidden)? true : false  ;
+      APobject[F("password")] = (_APpass)? _APpass: "" ;
+      APobject[F("channel")] =  _APchannel  ;
+      APobject[F("MAC")] =   WiFi.softAPmacAddress()   ;
 
-    size_t jsonlength = root.measureLength(); 
-    _HTTP->setContentLength(jsonlength);
-    _HTTP->send(200, "text/json"); 
-    WiFiClient c = _HTTP->client(); 
-    root.printTo(c);
+
+    size_t jsonlength = root.measureLength() +1; 
+    char buffer[jsonlength+1];
+    root.printTo(buffer, jsonlength+1);
+    _HTTP->send(200, "text/json", String(buffer)); 
+    Serial.printf("Min Heap: %u\n", ESP.getFreeHeap());
 
   	WiFi.scanDelete();
   	_wifinetworksfound = 0;
@@ -552,26 +569,26 @@ void cache Settingsmanager::HandleDataRequest() {
     DynamicJsonBuffer jsonBuffer;    
     JsonObject& root = jsonBuffer.createObject();
 
-    root["version_var"] = version;
-    root["compiletime_var"] = _compile_date_time;
-    root["sdk_var"] = ESP.getSdkVersion();
-    root["heap_var"] = ESP.getFreeHeap();
-    root["flashsize_var"] = ESP.getFlashChipSize();
-    root["chipid_var"] = ESP.getChipId();
-    root["flashid_var"] = ESP.getFlashChipId();
-    root["sketchsize_var"] = ESP.getSketchSize();
-    root["freespace_var"] = ESP.getFreeSketchSpace();
-    root["millis_var"] = millis();
-    root["uptime_var"] = Up_time;
-    root["vcc_var"] = ESP.getVcc();
-    root["rssi_var"] = WiFi.RSSI();
-    root["cpu_var"] = ESP.getCpuFreqMHz(); 
+    root[F("version_var")] = version;
+    root[F("compiletime_var")] = _compile_date_time;
+    root[F("sdk_var")] = ESP.getSdkVersion();
+    root[F("heap_var")] = ESP.getFreeHeap();
+    root[F("flashsize_var")] = ESP.getFlashChipSize();
+    root[F("chipid_var")] = ESP.getChipId();
+    root[F("flashid_var")] = ESP.getFlashChipId();
+    root[F("sketchsize_var")] = ESP.getSketchSize();
+    root[F("freespace_var")] = ESP.getFreeSketchSpace();
+    root[F("millis_var")] = millis();
+    root[F("uptime_var")] = Up_time;
+    root[F("vcc_var")] = ESP.getVcc();
+    root[F("rssi_var")] = WiFi.RSSI();
+    root[F("cpu_var")] = ESP.getCpuFreqMHz(); 
 
-    size_t jsonlength = root.measureLength(); 
-    _HTTP->setContentLength(jsonlength);
-    _HTTP->send(200, "text/json"); 
-    WiFiClient c = _HTTP->client(); 
-    root.printTo(c);
+    size_t jsonlength = root.measureLength() +1; 
+    char buffer[jsonlength+1];
+    root.printTo(buffer, jsonlength+1);
+    _HTTP->send(200, "text/json", String(buffer)); 
+    Serial.printf("Min Heap: %u\n", ESP.getFreeHeap());
 
     return;
 
@@ -654,7 +671,7 @@ static int8_t WiFiresult = -1;
             _pass = strdup((const char *)_HTTP->arg("pass").c_str());          
             Serial.println(F("New SSID and PASS work:  copied to system vars")); 
         }
-        return; 
+        //return; 
 
           }
         }
@@ -870,19 +887,24 @@ if ( _HTTP->hasArg("enable-AP")) {
 
     if (command != _OTAenabled) {
       _OTAenabled = command; 
-      long before = ESP.getFreeHeap(); 
+
 
       if (_OTAenabled) {
+      //long before = ESP.getFreeHeap(); 
+      Serial.println(F("Enable OTA"));
 
         InitialiseFeatures(); 
-        String insert = F("OTA Enabled, heap used: %u \n");
-        Serial.printf(insert.c_str(), before - ESP.getFreeHeap() );
+       // String insert = F("OTA Enabled, heap used: %u \n");
+       // Serial.printf(insert.c_str(), before - ESP.getFreeHeap() );
 
       } else  {
+      
+      //long before = ESP.getFreeHeap(); 
+      Serial.println(F("Disable OTA"));
 
         if (ota_server) { delete ota_server; ota_server = NULL; } ;
         
-        Serial.printf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
+        //Serial.printf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
 
       }
 
@@ -894,6 +916,37 @@ ARG: 0, "enable-AP" = "on"
 ARG: 1, "setAPsetip" = "0.0.0.0"
 ARG: 2, "setAPsetmac" = "1A%3AFE%3A34%3AA4%3A4C%3A73"
 */
+
+  if ( _HTTP->hasArg("mdnsenable") ) {
+    save_flag = true; 
+
+    bool command = (_HTTP->arg("mdnsenable") == "on") ? true: false; 
+
+    if (command != _mDNSenabled) {
+      _mDNSenabled = command; 
+       
+       InitialiseFeatures(); 
+
+
+      if (_mDNSenabled) {
+      //long before = ESP.getFreeHeap(); 
+      Serial.println(F("Enable mDNS"));
+
+       // String insert = F("OTA Enabled, heap used: %u \n");
+       // Serial.printf(insert.c_str(), before - ESP.getFreeHeap() );
+
+      } else  {
+      
+      //long before = ESP.getFreeHeap(); 
+      Serial.println(F("Disable mDNS"));
+
+        
+        //Serial.printf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
+
+      }
+
+    }
+  } // end of OTA enable 
 
 
  _HTTP->send(200, "text", "OK");  // return ok to speed up AJAX stuff 

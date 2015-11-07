@@ -130,7 +130,46 @@ void handleFileList() {
   HTTP.send(200, "text/json", output);
 }
 
+#define _serial_output Serial
 
+void handleUpgrade() {
+    if(HTTP.uri() != "/update") return;
+    
+    //Serial.println("HTTP update started");
+
+      HTTPUpload& upload = HTTP.upload();
+      if(upload.status == UPLOAD_FILE_START){
+        if (_serial_output)
+          Serial.setDebugOutput(true);
+        WiFiUDP::stopAll();
+        if (_serial_output)
+          Serial.printf("Update: %s\n", upload.filename.c_str());
+        uint32_t maxSketchSpace = (ESP.getFreeSketchSpace() - 0x1000) & 0xFFFFF000;
+        if(!Update.begin(maxSketchSpace)){//start with max available size
+          if (_serial_output) 
+            Update.printError(Serial);
+        }
+      } else if(upload.status == UPLOAD_FILE_WRITE){
+        if (_serial_output) Serial.printf(".");
+        if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
+          if (_serial_output) Update.printError(Serial);
+
+        }
+      } else if(upload.status == UPLOAD_FILE_END){
+        if(Update.end(true)){ //true to set the size to the current progress
+          if (_serial_output) Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+          //ESP.restart();
+        } else {
+          if (_serial_output) Update.printError(Serial);
+        }
+        if (_serial_output) Serial.setDebugOutput(false);
+      } else if(upload.status == UPLOAD_FILE_ABORTED){
+        Update.end();
+        if (_serial_output) Serial.println("Update was aborted");
+      }
+
+
+}
 
 
 
