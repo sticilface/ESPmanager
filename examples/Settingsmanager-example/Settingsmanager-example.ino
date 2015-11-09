@@ -19,6 +19,8 @@ Password management
                       
 #include <Settingsmanager.h>
 
+//#define MANAGE_DYNAMIC
+
 
 const char * host = "Melvide-ESP";
 const char * ssid = "SKY";
@@ -30,8 +32,14 @@ bool settingsenabled = false;
 
 
 ESP8266WebServer HTTP(80);
-//Settingsmanager settings(&HTTP, &SPIFFS, host, ssid, pass);
-Settingsmanager * settings = NULL; 
+
+#ifdef MANAGE_DYNAMIC
+  Settingsmanager * settings = NULL; 
+#else
+  //Settingsmanager settings(&HTTP, &SPIFFS, host, ssid, pass);
+  Settingsmanager settings(&HTTP) ;//, &SPIFFS, host, ssid, pass);
+#endif
+
 
 void setup() {
 
@@ -57,11 +65,15 @@ void setup() {
     while (dir.next()) {    
       String fileName = dir.fileName();
       size_t fileSize = dir.fileSize();
-      DBG_OUTPUT_PORT.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
+      DBG_OUTPUT_PORT.printf("     FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
     }
     DBG_OUTPUT_PORT.printf("\n");
   }
 
+
+#ifndef MANAGE_DYNAMIC
+  settings.begin(); 
+#endif
 
 
  // if(WiFi.waitForConnectResult() == WL_CONNECTED || WiFi.getMode() == WIFI_AP_STA){
@@ -131,6 +143,8 @@ void loop() {
   heap_timer = millis(); 
  }
   
+#ifdef MANAGE_DYNAMIC
+
  if (millis() > 1000) {
   static bool triggered = false; 
   if (!triggered) {
@@ -142,12 +156,18 @@ void loop() {
       triggered = true; 
   }
 
- if (settings) settings->handle();
+    if (settings) settings->handle();
 
- }
+  }
 
+#else
+
+settings.handle(); 
+
+#endif
 
 }
+
 
 
 

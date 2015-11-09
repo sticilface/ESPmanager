@@ -1,21 +1,74 @@
 
+/****************************************************
+ *                    Variables
+ * 
+ ****************************************************/
+
+//$(  globalwifi ); 
+//$(document).on("pageinit", function() {
+
+    // $( document ).on( "mobileinit", function() {
+
+
+    // });
+
+
+/****************************************************
+ *                    POP up creates
+ * 
+ ****************************************************/
+$( "popup" ).on( "popupcreate", function( event, ui ) {
 
 
 
-//  Functions to attach to the external panels
+} );
+
+
+
+// }
+/****************************************************
+ *                    Panel Create 
+ * 
+ ****************************************************/
 $( document ).on( "panelcreate", function( event, ui ) {
 
-    $("#rebootbutton").click(function() {
-        $.post("data.esp", "reboot");
-    });
+         $("#rebootbutton").click(function() {
+            $.post("data.esp", "reboot");
+         });
 
-    $("#resetwifi").click(function() {
-        $.post("data.esp", "resetwifi");
-    });
 
 });
 
+/****************************************************
+ *                   General Page
+ * 
+ ****************************************************/
+$(document).on("pagecreate", "#generalpage", function() {
 
+    getGenvars();
+    
+    function getGenvars() {
+        $.getJSON("data.esp?plain=WiFiDetails", function(result) {
+            //$("#device-name").val("").attr("placeholder", result.general.deviceid );
+            $("#device-name").val(result.general.deviceid);
+
+            if (result.STA.state) {
+                $("#gen-page-status").empty().append(" <p> Connected to " + result.STA.connectedssid + " (" + result.STA.IP + ")</p>");
+            }
+
+        }); 
+    } // end of getgenvars func
+    
+    $("#general-1-submit").click(function() { 
+        $.post("data.esp", $(this.form).serialize());
+    });
+    
+}); // end of general page.. 
+
+/****************************************************
+ *                    OTA Page 
+ * 
+ ****************************************************/
 $(document).on("pagecreate", "#otapage", function() {
 
         $('#updaterform').fileUpload({
@@ -25,7 +78,7 @@ $(document).on("pagecreate", "#otapage", function() {
 
     $.getJSON("data.esp?plain=WiFiDetails", function(result) {
     
-        $("#device-name").val("").attr("placeholder", result.general.deviceid).blur();
+        //$("#device-name").val("").attr("placeholder", result.general.deviceid).blur();
             if (result.general.OTAenabled === true) {
                 $("#flip-otaenable").val('on').flipswitch('refresh');
             } else {
@@ -42,14 +95,14 @@ $(document).on("pagecreate", "#otapage", function() {
 
 });
 
-
-
-
+/****************************************************
+ *                    WiFi Page 
+ * 
+ ****************************************************/
 $(document).on("pagecreate", "#wifipage", function() {
 
     // Variables
 
-    var globalwifi;
     getWiFiVars(false);
 
     setTimeout( function() { getWiFiVars(true); }  , 1000);
@@ -61,14 +114,19 @@ $(document).on("pagecreate", "#wifipage", function() {
         stationboxes();
     });
 
+    $("#apply_sta").click(function() {
+        $.post("data.esp", $(this.form).serialize());
+        $( "#stacollapse" ).collapsible( "collapse" );
+            setTimeout(function() {
+                getWiFiVars(false);
+            } , 2000);
 
+    })
 
     $("#STA_settings_div").click(function() {
         getWiFiVars(false);
     });
-    $("#AP_settings_div").click(function() {
-        getWiFiVars(false);
-    });
+
     $("#ssid-1-rescan").click(function() {
         getWiFiVars(true);
     });
@@ -98,13 +156,13 @@ $(document).on("pagecreate", "#wifipage", function() {
         //return false;
     });
 
-    $(".sendsubmit").click(function() {
-        $.post("data.esp", $(this.form).serialize());
-        $('[data-role="popup"]').popup("close");
-        setTimeout(function() {
-            getWiFiVars(false);
-        }, 5000);
-    });
+    // $(".sendsubmit").click(function() {
+    //     $.post("data.esp", $(this.form).serialize());
+    //     $('[data-role="popup"]').popup("close");
+    //     setTimeout(function() {
+    //         getWiFiVars(false);
+    //     }, 5000);
+    // });
 
     $('form').submit(function() {
       //if( $(this).id == "updater-button") { alert("yes"); return true;}
@@ -196,10 +254,92 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     }
 
+ function getWiFiVars(scan) {
+        
+        var request;
+        if (scan) {
+            request = "data.esp?plain=PerformWiFiScan";
+        }
+        if (!scan) {
+            request = "data.esp?plain=WiFiDetails";
+        }
+        $.getJSON(request, function(result) {
+            globalwifi = result;
 
+            if ("networks" in result) {
+                staticwifi = result.networks;
+                $("#wifinetworks-data").empty();
+                $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
+                $.each(result.networks, function(i, object) {
+                    var isconnected = " ";
+                    if (object.connected === true) isconnected = "checked=\"checked\"";
+                    $("#wifinetworks-data").append("<input class = \"wifiradio\" type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
+                        object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
+                });
+                $("#wifinetworks-data").enhanceWithin();
+            }
+            //};  / end of if for data test
+
+            if (result.STA.dhcp === true) {
+                $('#flip-dhcp').val('on').flipswitch('refresh');
+                $("#STA_dhcp").empty().append("DHCP: Enabled");
+
+            }
+            if (result.STA.dhcp === false) {
+                $('#flip-dhcp').val('off').flipswitch('refresh');
+                $("#STA_dhcp").empty().append("DHCP: Disabled");
+            }
+
+            if (result.STA.state === true) {
+                $("#flip-STA").val('on').flipswitch('refresh');
+            }
+            if (result.STA.state === false) {
+                $("#flip-STA").val('off').flipswitch('refresh');
+            }
+
+            $("#STA_state").empty().append((result.STA.state)? "State: Enabled":"State: Disabled");
+
+            if (result.STA.state) {
+                $("#STA_connectedto").empty().append("Connected to: "+result.STA.connectedssid);
+            }
+
+            $("#STA_ip").empty().append("IP: " + result.STA.IP);
+            $("#text-STA-set-ip").val(result.STA.IP);
+            $("#STA_gateway").empty().append("Gateway: " + result.STA.gateway);
+            $("#text-STA-set-gw").val(result.STA.gateway);
+            $("#STA_subnet").empty().append("Subnet: " + result.STA.subnet);
+            $("#text-STA-set-sn").val(result.STA.subnet);
+            $("#STA_mac").empty().append("MAC: " + result.STA.MAC);
+            $("#text-STA-set-mac").val(result.STA.MAC);
+
+            // DNS.. no functions in espWiFi lib to store it yet... 
+            // $("#STA_dns").empty().append("DNS: " + result.DNS.subnet);
+            // $("#text-DNS-set-sn").val(result.DNS.subnet);          
+
+            if ($("#flip-dhcp").val() == "on") {
+                $("#STAform :text").textinput('disable');
+            }
+            if ($("#flip-dhcp").val() == "off") {
+                $("#STAform :text").textinput('enable');
+            }
+            if ($("flip-STA").val() == "on") {
+                $("#flip-dhcp").flipswitch('enable');
+            }
+            if ($("flip-STA").val() == "off") {
+                $("#flip-dhcp").flipswitch('disable');
+            } //.slider('disable');
+
+            $("#wifipage").enhanceWithin();
+
+        });
+    }
 
 }); // end of wifipage create.. 
 
+/****************************************************
+ *                    About Page
+ * 
+ ****************************************************/
 $(document).on("pagecreate", "#aboutpage", function() {
     //<!-- About page -->
     //var results; 
@@ -238,33 +378,34 @@ $(document).on("pagecreate", "#aboutpage", function() {
 
 });
 
-
-
+/****************************************************
+ *                    AP Page
+ * 
+ ****************************************************/
 $(document).on("pagecreate", "#appage", function() {
     //<!-- About page -->
-    //var results; 
-    //var staticwifi; 
 
-    //  $(document).ready(function(){
-//    $(document).on('pageinit', '#appage', function() {
-        //getWiFiVars(false);
+        getAPvars(); 
 
-            $("#flip-AP").change(function() {
+      $("#flip-AP").change(function() {
         if ($(this).val() == "on") {
             $("#APform :text").textinput('enable');
             $("#flip-AP-hidden").flipswitch('enable');
-        }
+          }
         if ($(this).val() == "off") {
             $("#APform :text").textinput('disable');
             $("#flip-AP-hidden").flipswitch('disable');
-        }
-    });
+          }
+        });
 
+      $("#AP_settings_div").click(function() {
+            getAPvars();
+        });
+
+
+    function getAPvars() {
 
         $.getJSON("data.esp?plain=WiFiDetails", function(result) {
-            
-
-            //var result = Get_Data(false);
             
             if (result.AP.state === true) {
                 $('#flip-AP').val('on').flipswitch('refresh');
@@ -313,103 +454,23 @@ $(document).on("pagecreate", "#appage", function() {
                 $("#flip-AP-hidden").flipswitch('disable');
             }
 
-   });
+        });
+
+    }
 
     $("#apply_ap").click(function() {
         $.post("data.esp", $(this.form).serialize());
-            $('[data-role="collapsible"]').collapsible( "collapse" );
-            setTimeout(function() {
-
-                //getWiFiVars(false);
-                alert("should refresh");
-            
-            } , 5000);
+        $( "#apcollapse" ).collapsible( "collapse" );
+        setTimeout(function() {
+            getAPvars();            
+        } , 2000);
 
     })
 
 });
 
-    function getWiFiVars(scan) {
-        var request;
-        if (scan) {
-            request = "data.esp?plain=PerformWiFiScan";
-        }
-        if (!scan) {
-            request = "data.esp?plain=WiFiDetails";
-        }
-        $.getJSON(request, function(result) {
-            globalwifi = result;
 
-            if ("networks" in result) {
-                staticwifi = result.networks;
-                $("#wifinetworks-data").empty();
-                $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
-                $.each(result.networks, function(i, object) {
-                    var isconnected = " ";
-                    if (object.connected === true) isconnected = "checked=\"checked\"";
-                    $("#wifinetworks-data").append("<input class = \"wifiradio\" type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
-                        object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
-                });
-                $("#wifinetworks-data").enhanceWithin();
-            }
-            //};  / end of if for data test
-
-            if (result.STA.dhcp === true) {
-                $('#flip-dhcp').val('on').flipswitch('refresh');
-            }
-            if (result.STA.dhcp === false) {
-                $('#flip-dhcp').val('off').flipswitch('refresh');
-            }
-
-            if (result.STA.state === true) {
-                $("#flip-STA").val('on').flipswitch('refresh');
-            }
-            if (result.STA.state === false) {
-                $("#flip-STA").val('off').flipswitch('refresh');
-            }
-
-            $("#STA_state").empty().append((result.STA.state)? "State: Enabled":"State: Disabled");
-
-            $("#STA_ip").empty().append("IP: " + result.STA.IP);
-            $("#text-STA-set-ip").val(result.STA.IP);
-            $("#STA_gateway").empty().append("Gateway: " + result.STA.gateway);
-            $("#text-STA-set-gw").val(result.STA.gateway);
-            $("#STA_subnet").empty().append("Subnet: " + result.STA.subnet);
-            $("#text-STA-set-sn").val(result.STA.subnet);
-
-            // DNS.. no functions in espWiFi lib to store it yet... 
-            // $("#STA_dns").empty().append("DNS: " + result.DNS.subnet);
-            // $("#text-DNS-set-sn").val(result.DNS.subnet);          
-
-
-
-            if ($("#flip-dhcp").val() == "on") {
-                $("#STAform :text").textinput('disable');
-            }
-            if ($("#flip-dhcp").val() == "off") {
-                $("#STAform :text").textinput('enable');
-            }
-            if ($("flip-STA").val() == "on") {
-                $("#flip-dhcp").flipswitch('enable');
-            }
-            if ($("flip-STA").val() == "off") {
-                $("#flip-dhcp").flipswitch('disable');
-            } //.slider('disable');
-
-            $("#wifipage").enhanceWithin();
-
-            //  update general settings
-
-            // $("#device-name").val("").attr("placeholder", result.general.deviceid).blur();
-            // if (result.general.OTAenabled === true) {
-            //     $("#flip-otaenable").val('on').flipswitch('refresh');
-            // } else {
-            //     $("#flip-otaenable").val('off').flipswitch('refresh');
-            // }
-
-        });
-    }
-
+//}); // page init
 
 /**
  * fileUpload

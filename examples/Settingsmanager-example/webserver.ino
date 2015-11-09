@@ -44,9 +44,12 @@ bool handleFileRead(String path){
   String contentType = getContentType(path);
   String pathWithGz = path + ".gz";
 
-  if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path)){
+  if(SPIFFS.exists(pathWithGz) || SPIFFS.exists(path) ){
     if(SPIFFS.exists(pathWithGz))
       path += ".gz";
+    //if(SPIFFS.exists(pathWithjGz))
+    //  path += ".jgz";
+    //HTTP.sendHeader("Cache-Control"," max-age=2592000"); 
     DBG_OUTPUT_PORT.println("handleFileRead: " + path);
     File file = SPIFFS.open(path, "r");
     HTTP.streamFile(file, contentType);

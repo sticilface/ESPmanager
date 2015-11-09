@@ -7,10 +7,10 @@ Requires data folder to be uploaded
 ToDo
 
 0) Sort out text string and memory storage of variables.... 
-1) Save settings to SPIFFS
-2) Integrate all wifi management still to do MAC address
+1) Save settings to SPIFFS - done ish
+2) Integrate all wifi management still to do MAC address 
 4) Async wifi management using my own init callback instead of setup...for wifi services... 
-5) Integrate HTTP upload of bin, via web form
+5) Add character checking to SSID / HOST 
 6) Add ability to upload bin to SPIFFS and switch between them.
  
 --------------------------------------------------------------------*/
@@ -29,16 +29,16 @@ ToDo
 #include <ESP8266mDNS.h>
 #include <functional>
 
+#define DEBUG_YES
+
 #ifdef DEBUG_YES
 	#define Debug(x)    Serial.print(x)
 	#define Debugln(x)  Serial.println(x)
 	#define Debugf(...) Serial.printf(__VA_ARGS__)
-	#define Debugflush  Serial.flush
 #else
 	#define Debug(x)    {}
 	#define Debugln(x)  {}
 	#define Debugf(...) {}
-	#define Debugflush  {}
 #endif
 
 
@@ -47,6 +47,7 @@ ToDo
 
 const char _compile_date_time[] = __DATE__ " " __TIME__;
 const char version[] = "SettingsManager 1.0";
+
 
 
 namespace fs {
@@ -70,6 +71,11 @@ public:
 
 private:
 
+    const char * jq1 =  "/jquery-1.11.1.min.js.gz"; 
+    const char * jq2 =  "/jquery.mobile-1.4.5.min.css.gz"; 
+    const char * jq3 =  "/jquery.mobile-1.4.5.min.js.gz"; 
+    const char * jq4 =  "/configjava.js"; 
+    const char * htm1 = "/config.htm"; 
 
 	void HandleDataRequest();
 	void InitialiseFeatures(); 
@@ -77,7 +83,9 @@ private:
 	void LoadSettings();
 	void SaveSettings(); 
 	void PrintVariables();
+	bool FilesCheck(); 
 
+	// get rid of these....  by using natives....
     const char * C_true = "true";
     const char * C_false = "false";
     const char * C_null = ""; 

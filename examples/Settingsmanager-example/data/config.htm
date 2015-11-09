@@ -9,10 +9,9 @@
   <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
   <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 -->
-  <link rel="stylesheet" href="jquery.mobile-1.4.5.min.css.gz">
-  <script src="jquery-1.11.1.min.js.gz"></script>
-  <script src="jquery.mobile-1.4.5.min.js.gz"></script>
- <script src="configjava.js"></script>
+  <link rel="stylesheet" href="jquery.mobile-1.4.5.min.css">
+  <script src="jquery-1.11.1.min.js"></script>
+  <script src="jquery.mobile-1.4.5.min.js"></script>
 
 <!--
 <script>
@@ -48,24 +47,37 @@ $(function() {
     </STYLE>
   
 
-   <script id="panel-init">
-      $(function() {
-         $( "body>[data-role='panel']" ).panel();
-      });
-              $(function(){
-            $( "[data-role='header']").toolbar();
-        });
-   </script>
+    <script id="panel-init">
 
-   <script>
+    $( function() {
+
+    
+        $( "[data-role='header']").toolbar();
+        $( "body>[data-role='panel']" ).panel();
+            
+        $( "#popupDialogSPIFFS" ).enhanceWithin().popup();
+        $( "#popupDialogDeleteSettings" ).enhanceWithin().popup();
+        $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
+
+         $("#clearwifibutton").click(function() {
+            $.post("data.esp", "resetwifi");
+         });
+         
+         $("#formatspiffsbutton").click(function() {
+            $.post("data.esp", "formatSPIFFS");
+         });
+         $("#deletesettingsbutton").click(function() {
+             $.post("data.esp", "deletesettings");
+         });
 
 
 
+    });
 
 
-   </script>
-  
-  
+    </script>
+
+
 </head> 
 <body>
    <div class='ui-helper-hidden'></div>
@@ -100,7 +112,9 @@ $(function() {
          <div>
          <h1>More</h1>
                <a id="rebootbutton" data-role="button" class="ui-btn">Reboot</a>
-               <a id="resetwifi" data-role="button" class="ui-btn">WipeWiFi</a>
+               <a href="#popupDialogClearWiFi" data-rel="popup" class="ui-btn" data-transition="pop">Clear WiFi</a>
+               <a href="#popupDialogDeleteSettings" data-rel="popup" class="ui-btn" data-transition="pop">Delete Settings</a>
+               <a href="#popupDialogSPIFFS" data-rel="popup" class="ui-btn" data-transition="pop" >Format SPIFFS</a>
                <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
 
 <!--             <label for="removesaftey-1">Disable Checks:</label>
@@ -111,11 +125,48 @@ $(function() {
          </div>
       </div>
 
-<!---
+<div id="popupDialogSPIFFS" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;" >
+    <div data-role="header" data-theme="a">
+         <h2>FORMAT SPIFFS?</h2>
+        </div>
+        <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Format SPIFFS?</h3>
+        <p>This action cannot be undone, and will require all javascript files to be uploaded to SPIFFs.</p>
+        <p>It will BREAK settings manager</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+        <a id="formatspiffsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+    </div>
+</div>
+
+<div id="popupDialogDeleteSettings" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;" >
+    <div data-role="header" data-theme="a">
+         <h2>Delete Settings?</h2>
+        </div>
+        <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Delete Settings File?</h3>
+        <p>This action cannot be undone.</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+        <a id="deletesettingsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+    </div>
+</div>
+
+<div id="popupDialogClearWiFi" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;" >
+    <div data-role="header" data-theme="a">
+         <h2>Clear Wifi?</h2>
+        </div>
+        <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Clear the WiFi?</h3>
+        <p>This action removed stored credentials from WiFi, you will have to supply them.</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+        <a id="clearwifibutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+    </div>
+</div>
+
+<!-- ***********************************************************************
 
          General Page 
 
--->
+*********************************************************************** -->
 
 <div data-role="page" id="generalpage">
 
@@ -124,6 +175,8 @@ $(function() {
    </div><!-- /header -->
 
    <div role="main" class="ui-content">
+
+         <div id="gen-page-status"></div>
                <form id="general-form">
                   <label for="device-name">Device Name:</label>
                   <input type="text" name="deviceid" id="device-name" value="">
@@ -150,11 +203,11 @@ $(function() {
 </div><!-- /page -->
 
 
-<!---
+<!-- ***********************************************************************
 
          WiFi Page 
 
--->
+*********************************************************************** -->
 
 <div data-role="page" id="wifipage">
 
@@ -179,13 +232,15 @@ $(function() {
                <h3>Station Settings</h3>
                <div id="STA_settings_div">
                   <div id="STA_state"></div>
+                  <div id="STA_connectedto"></div>
+                  <div id="STA_dhcp"></div>
                   <div id="STA_ip"></div>
                   <div id="STA_gateway"></div>
                   <div id="STA_subnet"></div>
                   <div id="STA_mac"></div>
                </div>
 <!--                <a href="#popup-STA-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-a" data-transition="pop">Edit</a> -->
-               <div data-role="collapsible">
+               <div data-role="collapsible" id="stacollapse">
                <h4>Edit</h4>
                <form id="STAform">
 <!--                   <div style="padding:10px 20px;">
@@ -248,16 +303,15 @@ $(function() {
          <!-- /tabs -->
       </div>
 
-   </div><!-- /content -->
 
 </div><!-- /page -->
 
 
-<!---
+<!-- *******************************************************************
 
          AP Page 
 
--->
+*********************************************************************** -->
 
 <div data-role="page" id="appage">
 
@@ -277,7 +331,7 @@ $(function() {
                   <div id="AP_mac"></div>
                </div>
 <!--                <a href="#popup-AP-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline  ui-btn-a" data-transition="pop">Edit</a> -->
-         <div data-role="collapsible">
+         <div data-role="collapsible" id="apcollapse">
            <h4>Edit</h4>
             <form id="APform">
 <!--                   <div style="padding:10px 20px;">
@@ -318,7 +372,7 @@ $(function() {
                            <input type="text" data-mini="true" name="setAPsetmac" id="text-AP-set-mac" value="">
                         </div>
                      </fieldset>
-                     <button id="apply_ap" type="button" class="sendsubmit ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+                     <button id="apply_ap" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
                      </form>
                      </div>
    </div><!-- /content -->
@@ -326,11 +380,11 @@ $(function() {
 </div><!-- /page -->
 
 
-<!---
+<!-- ***********************************************************************
 
          OTA Page 
 
--->
+*********************************************************************** -->
 
 <div data-role="page" id="otapage">
 
@@ -359,11 +413,11 @@ $(function() {
 
 </div><!-- /page -->
 
-<!---
+<!-- ***********************************************************************
 
          About Page 
 
--->
+*********************************************************************** -->
 
 <div data-role="page" id="aboutpage">
 
@@ -378,42 +432,12 @@ $(function() {
 </div><!-- /page -->
 
 
-
-
-
-
-
-
-
-
-
-
    <!--  PAGE BOUNDARY -->
-   <div data-role="page" id="wifipageOLD">
-      
-
-      <!-- /panel -->
-
-      <!-- /header -->
-      <div data-role="content">
-
-
-      <!-- /content -->
-      <div data-role="footer">
-<!--          <div data-role="navbar">
-            <ul>
-               <li><a href="#homepage">Home</a></li>
-               <li><a href="#wifipage">Config</a></li>
-               <li><a href="#aboutpage">About</a></li>
-            </ul>
-         </div> -->
-         <!-- /navbar -->
-      </div>
-      <!-- /footer -->
-   </div>
-   </div><!-- /page -->
    <!--  PAGE BOUNDARY -->
 
    <!-- /page -->
+  <script src="configjava.js"></script>
+
 </body>
+
 </html>
