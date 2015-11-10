@@ -84,6 +84,7 @@ private:
 	void SaveSettings(); 
 	void PrintVariables();
 	bool FilesCheck(); 
+	bool DownloadtoSPIFFS();
 
 	// get rid of these....  by using natives....
     const char * C_true = "true";
