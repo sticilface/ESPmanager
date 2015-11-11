@@ -440,7 +440,116 @@ void cache Settingsmanager::InitialiseFeatures()
     WiFi.hostname(_host);
 }
 
+// bool cache Settingsmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
+            
+//     const size_t buf_size = 1024;
+//     uint8_t buf[buf_size]; 
+//     WiFiClientSecure client;
+//     const int httpsPort = 443;
 
+//     size_t totalbytes = 0; 
+        
+//     File f = SPIFFS.open(file, "w");
+
+//     if (!f) {
+//         Serial.println("file open failed");
+//         return false; 
+//     } else { 
+//         Serial.println("File Created");
+//         delay(100);
+//         Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
+
+//         if (!client.connect(remotehost, httpsPort)) {
+//             Serial.println("Connection failed");
+//             return false;
+//         } else {
+//             Serial.printf("Connected to %s\n", remotehost); 
+
+//             if (client.verify(fingerprint, remotehost)) {
+//                 Serial.println("certificate matches");
+//             } else {
+//                 Serial.println("certificate doesn't match");
+//                 return false; 
+//             }
+//             // send GET request
+
+//             String request = "GET " + String(path) + String(file) + " HTTP/1.1\r\n"; 
+//             request += "Host: " + String(remotehost) + "\r\n";
+//             request += "User-Agent: BuildFailureDetectorESP8266\r\n"; 
+//             request += "Accept: */*\r\n"; 
+//             request += "Connection: close\r\n\r\n";
+//             client.print(request);
+//             Serial.print(request);
+//   // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+//   //              "Host: " + host + "\r\n" +
+//   //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
+//   //              "Connection: close\r\n\r\n");
+// /*
+
+
+// > GET /sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.css.gz HTTP/1.1
+// > Host: raw.githubusercontent.com
+// > User-Agent: curl/7.43.0
+// > Accept: 
+
+// */
+
+//            // wait up to 5 seconds for server response
+//             Serial.println("Waiting for server response: ");
+//             int i = 0;
+//             while ((!client.connected()) && (i < 500)) {
+//                 delay(100);
+//                 i++;
+//                 yield(); 
+//                 if ( i % 10 == 0) Serial.print(".");
+//             }
+
+//            //  // return if no connection
+
+//            // if (!client.available()) return false; 
+
+//            //  Serial.println("Download begun"); 
+//            //  // go though header...  change this to get content length
+//             // while (client.available()) { 
+//             //     if (client.find("\r\n\r\n")) break;
+//             //     delay(100);
+//             // }
+            
+//             // uint8_t i = 0; 
+//             //  while (client.connected()) {
+//             //     String line = client.readStringUntil('\n');
+//             //     Serial.print(i++);
+//             //     Serial.print(" : ");
+//             //     Serial.print(line);
+//             //     if (line == "\r") {
+//             //         Serial.println("headers received");
+//             //             break;
+//             //         }
+//             //     }
+    
+//             yield();
+//             Serial.println("Recieved data:");
+//             while (client.available()) {
+//                 memset(buf, 0, buf_size);;
+//                 size_t length = (client.available() > buf_size)? buf_size: length;  
+//                 totalbytes += length; 
+//                 client.readBytes(buf, length);
+//                 f.write(buf, length);  
+//                 Serial.print(buf[0],length);
+//                 delay(100);
+    
+//             }
+//             Serial.println("Recieve end");
+
+//             Serial.printf("File %s %u Bytes\n", file, totalbytes);
+//             client.stop(); 
+//             f.close();
+//             return true; 
+
+//         } // is connected to remote host
+//     } // managed to open file
+
+// }
 
 bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file) {
             
@@ -457,6 +566,9 @@ bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char
         return false; 
     } else { 
         Serial.println("File Created");
+        
+        delay(100);
+        Serial.printf("HOST: %s:%u\n", remotehost, httpPort);
 
         if (!client.connect(remotehost, httpPort)) {
             Serial.println("Connection failed");
@@ -473,7 +585,7 @@ bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char
             client.print(request);
 
             // wait up to 5 seconds for server response
-            Serial.println("Waiting for server response: ")
+            Serial.println("Waiting for server response: ");
             int i = 0;
             while ((!client.available()) && (i < 500)) {
                 delay(10);
@@ -484,11 +596,13 @@ bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char
 
             // return if no connection
 
-            if (!client.available()) return false; 
+           if (!client.available()) return false; 
 
+            Serial.println("Download begun"); 
             // go though header...  change this to get content length
             while (client.available() > 50) { 
                 if (client.find("\r\n\r\n")) break;
+                delay(10);
             }
 
 
@@ -496,17 +610,18 @@ bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char
             yield();
 
             while (client.available()) {
-                memset(buf, 0, buf_size);;
-                size_t length = (client.available() > buf_size)? buf_size: length;  
+                memset(buf, 0, buf_size);;                
+                size_t length = (client.available() > buf_size)? buf_size: client.available();  
                 totalbytes += length; 
                 client.readBytes(buf, length);
                 f.write(buf, length);  
+                Serial.print("."); 
                 delay(100);
     
             }
 
 
-            Serial.printf("File %s,%u Bytes Downloaded\n", file, totalbytes);
+            Serial.printf("\nFile %s %u Bytes\n", file, totalbytes);
             client.stop(); 
             f.close();
             return true; 
@@ -520,22 +635,24 @@ bool cache Settingsmanager::FilesCheck() {
 
     //  http://raw.githubusercontent.com/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.js.gz
 
-/*
-    const char * remotehost = "http://raw.githubusercontent.com"; 
-    const char * path = "/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data";
-*/
-    const char * remotehost = "192.168.1.115"; 
-    const char * path = "";
+
+ const char * remotehost = "192.168.1.115"; 
+ const char * path = "";
+
+ // const char * remotehost_git = "raw.githubusercontent.com"; 
+ // const char * path_git = "/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data";
+ // const char * raw_github_fingerprint = "B0 74 BB EF 10 C2 DD 70 89 C8 EA 58 A2 F9 E1 41 00 D3 38 82";
+
+
 
     //const char * file = "jquery.mobile-1.4.5.min.js.gz"; 
     const char * file = htm1; 
 
         bool haserror = false; 
 
-        const char * items[5] = {jq1,jq2,jq3,jq4,htm1}; 
-        bool present[5];
+        bool present[file_no];
 
-    for (uint8_t i = 0; i < 5; i++) {
+    for (uint8_t i = 0; i < file_no; i++) {
 
         if (!SPIFFS.exists(items[i])) {
             present[i] = false; 
@@ -557,123 +674,30 @@ bool cache Settingsmanager::FilesCheck() {
 
 
 
-        WiFiClient client;
-        //client.setNoDelay(true); 
-
-        //client.
-
-        const int httpPort = 80;
-
-  for (uint8_t filequeue = 0; filequeue < 5; filequeue++) {
-  const char * current_file = items[filequeue]; 
-
-  //      SPIFFS.format();
-  // Use WiFiClient class to create TCP connections
-        if (client.connected()) client.stop(); 
+  for (uint8_t filequeue = 0; filequeue < file_no; filequeue++) {
         
-        if (!client.connect(remotehost, httpPort)) {
-            Serial.println("Connection failed");
-        } else {
-            Serial.printf("Connected to %s\n", remotehost); 
-        }
+        const char * current_file = items[filequeue]; 
 
-  // This will send the request to the server +url after GET
-  /*
-  client.print(String("GET ") + path + file + " HTTP/1.1\r\n" +
-               "Host: " + remotehost + "\r\n" +
-               "Connection: close\r\n\r\n");
-  */
+        if (DownloadtoSPIFFS(remotehost, path, current_file)) { 
+        //if (HTTPSDownloadtoSPIFFS(remotehost_git, raw_github_fingerprint, path_git, current_file)) {
+            Serial.printf("%s has been downloaded\n",current_file);
+            present[filequeue] = true;
+      } else {
+        Serial.printf("%s FAILED to download\n", current_file);
+      }
 
-
-  Serial.print("Current File: ");
-  Serial.print(current_file);
-  Serial.println(); 
-
-  File f = SPIFFS.open(current_file, "w");
-
-    if (!f) {
-        Serial.println("file open failed");
-    } else { Serial.println("File Created");
-
-    String request = "GET " + String(path) + String(current_file) + " HTTP/1.0\r\n"; 
-    request += "Host: " + String(remotehost) + "\r\n";
-    request += "Connection: close\r\n\r\n";
-
-    client.print(request);
-    Serial.println("GET request sent: "); 
-    Serial.print(request);
-    Serial.print("---------\n"); 
-
-
-  //Wait up to 5 seconds for server to respond then read response
-  int i = 0;
-  while ((!client.available()) && (i < 500)) {
-    delay(10);
-    i++;
-    yield(); 
-    if ( i % 10 == 0) Serial.print(".");
-  }
-
-  Serial.println(); 
-
-  size_t size; 
-  // Read all the lines of the reply from server and print them to Serial
-
-
-size_t totalbytes = 0;
-
- while (client.available() > 50) { 
-    if (client.find("\r\n\r\n")) break;
- }
-    
-    const size_t buf_size = 1024;
-    uint8_t buf[buf_size]; 
-    
-    yield();
-
-  while (client.available()) {
-    memset(buf, 0, buf_size);
-    uint16_t length = client.available(); 
-    //String line = client.readStringUntil('\r');  
-    //buf[i++] = client.read();
-
-    length = (length > buf_size)? buf_size: length;  
-    totalbytes += length; 
-    //Serial.printf("%u Bytes Recieved\n", length); 
-    client.readBytes(buf, length);
-
-    f.write(buf, length);  
-    //Serial.print(buf); 
-    //yield();
-    delay(100);
-    
-  }
-
-
-  Serial.printf("File %s,%u Bytes Downloaded", current_file, totalbytes);
-  Serial.println();
-    client.stop(); 
-    f.close();
-
-  // f = SPIFFS.open(current_file, "r");
-
-  // if (f) {
-  //   Serial.println("File Opened");
-
-  //   for (size_t i = 0; i < f.size(); i++) {
-  //       Serial.write(f.read()); 
-  //   }
-  //   //Serial.println(f, f.size());
-    
-  //   }
-    yield(); 
-  }
     } // file loop.. 
     
+    // check everything
+    haserror = false; 
+      for (uint8_t filequeue = 0; filequeue < file_no; filequeue++) {
+        if (present[filequeue] == false) haserror = true; 
+      }
+
 
     } else {
         
-        Serial.println("Attempted to download required files, failed no internet. Try hard coding credentials"); 
+        Serial.println(F("Attempted to download required files, failed no internet. Try hard coding credentials")); 
     } 
 
     }
@@ -719,7 +743,7 @@ bool cache Settingsmanager::Wifistart()
         Debug(".");
         if (i == 30)
         {
-            Debug(F("Auto connect failed..Trying stored credentials..."));
+            Debug(F("Auto connect failed..\nTrying stored credentials..."));
             WiFi.begin(_ssid, _pass);
             while (WiFi.status() != WL_CONNECTED)
             {
@@ -842,6 +866,7 @@ void cache Settingsmanager::HandleDataRequest()
     if (_HTTP->arg("plain") == "reboot")
     {
         Debugln(F("Rebooting..."));
+        _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
         ESP.restart();
     };
 
@@ -1430,6 +1455,21 @@ void cache Settingsmanager::HandleDataRequest()
         //SPIFFS.format(); 
         Debugln(F(" done"));
      }
+
+     if (_HTTP->arg("plain") == "upgrade" & _HTTP->method() == HTTP_POST) {
+        Debug(F("Upgrade files"));
+
+            Dir dir = SPIFFS.openDir("/");
+             while (dir.next()) {    
+                String fileName = dir.fileName();
+                    size_t fileSize = dir.fileSize();
+                    Debugf("     Deleting: %s\n", fileName.c_str());
+                    SPIFFS.remove(fileName);
+                }
+        Debugln(F(" done, rebooting"));
+        _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
+        ESP.restart(); 
+     }     
 
      if (_HTTP->arg("plain") == "deletesettings" & _HTTP->method() == HTTP_POST) {
 

@@ -49,7 +49,7 @@ bool handleFileRead(String path){
       path += ".gz";
     //if(SPIFFS.exists(pathWithjGz))
     //  path += ".jgz";
-    //HTTP.sendHeader("Cache-Control"," max-age=2592000"); 
+    HTTP.sendHeader("Cache-Control"," max-age=2592000"); 
     DBG_OUTPUT_PORT.println("handleFileRead: " + path);
     File file = SPIFFS.open(path, "r");
     HTTP.streamFile(file, contentType);
@@ -153,7 +153,10 @@ void handleUpgrade() {
             Update.printError(Serial);
         }
       } else if(upload.status == UPLOAD_FILE_WRITE){
-        if (_serial_output) Serial.printf(".");
+        if (_serial_output) {
+          Serial.printf(".");
+
+        }
         if(Update.write(upload.buf, upload.currentSize) != upload.currentSize){
           if (_serial_output) Update.printError(Serial);
 

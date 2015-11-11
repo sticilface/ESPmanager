@@ -12,6 +12,8 @@ Password management
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
+#include <WiFiClientSecure.h>
+
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
@@ -25,6 +27,8 @@ Password management
 const char * host = "Melvide-ESP";
 const char * ssid = "SKY";
 const char * pass = "wellcometrust";
+
+const char * api_github_fingerprint = "CF 05 98 89 CA FF 8E D8 5E 5C E0 C2 E4 F7 E6 C3 C7 50 DD 5C";
 
 bool settingsenabled = false; 
 
