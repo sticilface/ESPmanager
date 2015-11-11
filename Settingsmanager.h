@@ -202,7 +202,7 @@ class FS;
 class Settingsmanager  
 {
 public:
-	ArduinoOTA* ota_server = NULL;
+	//ArduinoOTA* ota_server = NULL;
 
 	Settingsmanager(ESP8266WebServer* HTTP, fs::FS* fs = &SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL); 
 	~Settingsmanager();
@@ -240,8 +240,8 @@ private:
 	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file); 
 
 	// get rid of these....  by using natives....
-    const char * C_true = "true";
-    const char * C_false = "false";
+    //const char * C_true = "true";
+    //const char * C_false = "false";
     const char * C_null = ""; 
 
 	const char * _host = NULL;
@@ -250,6 +250,11 @@ private:
 	const char * _APpass = NULL; 
 	const char * _APssid = NULL; 
 
+	String _host_; 
+	String _ssid_;
+	String _pass_;
+	String _APpass_;
+	String _APssid_;
 
 	fs::FS * _fs = NULL; 
 	ESP8266WebServer * _HTTP = NULL; 

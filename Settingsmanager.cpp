@@ -30,11 +30,11 @@ Settingsmanager::Settingsmanager(
 Settingsmanager::~Settingsmanager()
 {
 
-    if (ota_server)
-    {
-        delete ota_server;
-        ota_server = NULL;
-    };
+    // if (ota_server)
+    // {
+    //     delete ota_server;
+    //     ota_server = NULL;
+    // };
 
     if (_host)
     {
@@ -386,8 +386,11 @@ void cache Settingsmanager::SaveSettings()
 void cache Settingsmanager::handle()
 {
 
-    if (ota_server)
-        ota_server->handle();
+    // if (ota_server)
+    //     ota_server->handle();
+
+      ArduinoOTA.handle();
+
 
     if (save_flag)
     {
@@ -405,37 +408,80 @@ void cache Settingsmanager::handle()
 void cache Settingsmanager::InitialiseFeatures()
 {
 
-    if (_OTAenabled)
-    {
-        char OTAhost[strlen(_host) + 2];
+    // if (_OTAenabled)
+    // {
+    //     char OTAhost[strlen(_host) + 2];
+    //     strcpy(OTAhost, _host);
+    //     OTAhost[strlen(_host)] = '-';
+    //     OTAhost[strlen(_host) + 1] = 0;
+    //     // if (ota_server)
+    //     // {
+    //     //     delete ota_server;
+    //     //     ota_server = NULL;
+    //     // };
+    //     ArduinoOTA.begin();
+
+    //     ota_server = new ArduinoOTA(OTAhost, 8266, true);
+    //     ota_server->setup();
+    // }
+    // else
+    // {
+    //     if (ota_server)
+    //     {
+    //         delete ota_server;
+    //         ota_server = NULL;
+    //     };
+    // }
+
+        char OTAhost[33];
         strcpy(OTAhost, _host);
         OTAhost[strlen(_host)] = '-';
         OTAhost[strlen(_host) + 1] = 0;
-        if (ota_server)
-        {
-            delete ota_server;
-            ota_server = NULL;
-        };
-        ota_server = new ArduinoOTA(OTAhost, 8266, true);
-        ota_server->setup();
-    }
-    else
-    {
-        if (ota_server)
-        {
-            delete ota_server;
-            ota_server = NULL;
-        };
-    }
+        char tmp[15];
+        sprintf(tmp, "%02x", ESP.getChipId());
+        strcat(OTAhost, tmp); 
 
-    if (_mDNSenabled)
-    {
-        if (!_OTAenabled)
-        {
-            MDNS.begin(_host);
-        }
-        MDNS.addService("http", "tcp", 80);
-    }
+  // Port defaults to 8266
+  // ArduinoOTA.setPort(8266);
+
+  // Hostname defaults to esp8266-[ChipID]
+   ArduinoOTA.setHostname(OTAhost);
+
+  // No authentication by default
+  // ArduinoOTA.setPassword((const char *)"123");
+
+
+        ArduinoOTA.onStart([]() {
+            Serial.println("OTA Start");
+        });
+        ArduinoOTA.onEnd([]() {
+            Serial.println("OTA End");
+        });
+        ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+            Serial.printf("OTA Progress: %u%%\n", (progress / (total / 100)));
+        });
+        ArduinoOTA.onError([](ota_error_t error) {
+            Serial.printf("OTA Error[%u]: ", error);
+            if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+            else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+            else if (error == OTA_RECIEVE_ERROR) Serial.println("Receive Failed");
+            else if (error == OTA_END_ERROR) Serial.println("End Failed");
+        });
+        
+        ArduinoOTA.begin();
+
+
+// not sure this is needed now. 
+
+    // if (_mDNSenabled)
+    // {
+    //     if (!_OTAenabled)
+    //     {
+    //         MDNS.begin(_host);
+    //     }
+    //     MDNS.addService("http", "tcp", 80);
+    // }
 
     WiFi.hostname(_host);
 }
@@ -1211,8 +1257,7 @@ void cache Settingsmanager::HandleDataRequest()
 
         if (reinit && _HTTP->arg("enable-STA") == "on")
             Wifistart();
-
-        printdiagnositics();
+            printdiagnositics();
 
 
         /*
@@ -1373,39 +1418,40 @@ void cache Settingsmanager::HandleDataRequest()
     ------------------------------------------------------------------------------------------------------------------*/
     if (_HTTP->hasArg("otaenable"))
     {
-        save_flag = true;
+        Debugln(F("Depreciated")); 
+        // save_flag = true;
 
-        bool command = (_HTTP->arg("otaenable") == "on") ? true : false;
+        // bool command = (_HTTP->arg("otaenable") == "on") ? true : false;
 
-        if (command != _OTAenabled)
-        {
-            _OTAenabled = command;
+        // if (command != _OTAenabled)
+        // {
+        //     _OTAenabled = command;
 
 
-            if (_OTAenabled)
-            {
-                // long before = ESP.getFreeHeap();
-                Debugln(F("Enable OTA"));
+        //     if (_OTAenabled)
+        //     {
+        //         // long before = ESP.getFreeHeap();
+        //         Debugln(F("Enable OTA"));
 
-                InitialiseFeatures();
-                // String insert = F("OTA Enabled, heap used: %u \n");
-                // Debugf(insert.c_str(), before - ESP.getFreeHeap() );
-            }
-            else
-            {
+        //         InitialiseFeatures();
+        //         // String insert = F("OTA Enabled, heap used: %u \n");
+        //         // Debugf(insert.c_str(), before - ESP.getFreeHeap() );
+        //     }
+        //     else
+        //     {
 
-                // long before = ESP.getFreeHeap();
-                Debugln(F("Disable OTA"));
+        //         // long before = ESP.getFreeHeap();
+        //         Debugln(F("Disable OTA"));
 
-                if (ota_server)
-                {
-                    delete ota_server;
-                    ota_server = NULL;
-                };
+        //         if (ota_server)
+        //         {
+        //             delete ota_server;
+        //             ota_server = NULL;
+        //         };
 
-                // Debugf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
-            }
-        }
+        //         // Debugf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
+        //     }
+        // }
     } // end of OTA enable
 
     /*
