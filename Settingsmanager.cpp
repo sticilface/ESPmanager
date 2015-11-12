@@ -76,10 +76,13 @@ void cache Settingsmanager::begin()
     if (SPIFFS.begin())
     {
         Debugln(F("File System mounted sucessfully"));
-        if (!FilesCheck()) {
-            Debugln(F("Major FAIL, required files are NOT in SPIFFS, please upload required files")); 
-            return; 
-        }
+       
+        // if (!FilesCheck()) {
+        //     Debugln(F("Major FAIL, required files are NOT in SPIFFS, please upload required files")); 
+        //     return; 
+        // }
+
+        NewFileCheck();
 
         LoadSettings();
     }
@@ -125,9 +128,33 @@ void cache Settingsmanager::begin()
 
     InitialiseFeatures();
 
-    _HTTP->on("/data.esp", std::bind(&Settingsmanager::HandleDataRequest, this));
-    _HTTP->serveStatic("/config.htm", *_fs, "/config.htm");
-    _HTTP->serveStatic("/images/ajax-loader.gif", *_fs, "/ajax-loader.gif"); // temp fix
+    _HTTP->on("/espman/data.esp", std::bind(&Settingsmanager::HandleDataRequest, this));
+
+
+    _HTTP->serveStatic("/espman", *_fs, "/espman","max-age=86400"); // allows all files on SPIFFS to be served to webserver... might wish to change this
+
+  
+    // _HTTP->serveStatic("/config.htm", *_fs, "/config.htm","86400");
+    // _HTTP->serveStatic("/images/ajax-loader.gif", *_fs, "/ajax-loader.gif", "86400"); // temp fix
+
+    // _HTTP->serveStatic("/jquery-1.11.1.min.js", *_fs, "/jquery-1.11.1.min.js","86400"); 
+    // _HTTP->serveStatic("/jquery.mobile-1.4.5.min.css", *_fs, "/jquery.mobile-1.4.5.min.css","86400"); 
+    // _HTTP->serveStatic("/jquery.mobile-1.4.5.min.js", *_fs, "/jquery.mobile-1.4.5.min.js","86400");
+
+    // _HTTP->serveStatic("/configjava.js", *_fs, "/configjava.js");
+
+
+    //_HTTP->serveStatic("/index.htm", *_fs, "/index.htm");
+
+
+    // SPIFFS.rename(jq1, "/espman/jq1.11.1.js.gz" ); 
+    // SPIFFS.rename(jq2, "/espman/jqm1.4.5.css.gz" ); 
+    // SPIFFS.rename(jq3, "/espman/jqm1.4.5.js.gz" ); 
+    // SPIFFS.rename(jq4, "/espman/configjava.js" ); 
+    // SPIFFS.rename(htm1,"/espman/index.htm" ); 
+
+
+
 }
 
 void cache Settingsmanager::LoadSettings()
@@ -137,7 +164,7 @@ void cache Settingsmanager::LoadSettings()
     // PrintVariables();
 
     DynamicJsonBuffer jsonBuffer;
-    File f = SPIFFS.open("/settings.txt", "r");
+    File f = SPIFFS.open(SETTINGS_FILE, "r");
     if (!f)
     {
         Debugln(F("Settings file open failed!"));
@@ -370,7 +397,7 @@ void cache Settingsmanager::SaveSettings()
 
 
     // Debugf("IP = %s, GW = %s, SN = %s\n", IP, GW, SN);
-    File f = SPIFFS.open("/settings.txt", "w");
+    File f = SPIFFS.open(SETTINGS_FILE, "w");
     if (!f)
     {
         Debugln(F("Settings file save failed!"));
@@ -490,8 +517,8 @@ void cache Settingsmanager::InitialiseFeatures()
             
 //     const size_t buf_size = 1024;
 //     uint8_t buf[buf_size]; 
-//     WiFiClientSecure client;
 //     const int httpsPort = 443;
+//     //WiFiClientSecure SecClient;
 
 //     size_t totalbytes = 0; 
         
@@ -505,13 +532,13 @@ void cache Settingsmanager::InitialiseFeatures()
 //         delay(100);
 //         Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
 
-//         if (!client.connect(remotehost, httpsPort)) {
+//         if (!SecClient->connect(remotehost, httpsPort)) {
 //             Serial.println("Connection failed");
 //             return false;
 //         } else {
 //             Serial.printf("Connected to %s\n", remotehost); 
 
-//             if (client.verify(fingerprint, remotehost)) {
+//             if (SecClient->verify(fingerprint, remotehost)) {
 //                 Serial.println("certificate matches");
 //             } else {
 //                 Serial.println("certificate doesn't match");
@@ -524,8 +551,8 @@ void cache Settingsmanager::InitialiseFeatures()
 //             request += "User-Agent: BuildFailureDetectorESP8266\r\n"; 
 //             request += "Accept: */*\r\n"; 
 //             request += "Connection: close\r\n\r\n";
-//             client.print(request);
-//             Serial.print(request);
+//             SecClient->print(request);
+//             //Serial.print(request);
 //   // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
 //   //              "Host: " + host + "\r\n" +
 //   //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
@@ -543,7 +570,7 @@ void cache Settingsmanager::InitialiseFeatures()
 //            // wait up to 5 seconds for server response
 //             Serial.println("Waiting for server response: ");
 //             int i = 0;
-//             while ((!client.connected()) && (i < 500)) {
+//             while ((!SecClient->connected()) && (i < 500)) {
 //                 delay(100);
 //                 i++;
 //                 yield(); 
@@ -574,21 +601,23 @@ void cache Settingsmanager::InitialiseFeatures()
 //             //     }
     
 //             yield();
-//             Serial.println("Recieved data:");
-//             while (client.available()) {
+//             //Serial.println("Recieved data:");
+//             while (SecClient->available()) {
 //                 memset(buf, 0, buf_size);;
-//                 size_t length = (client.available() > buf_size)? buf_size: length;  
+//                 size_t length = SecClient->available(); 
+//                 length = (length > buf_size)? buf_size: length;  
 //                 totalbytes += length; 
-//                 client.readBytes(buf, length);
+//                 SecClient->readBytes(buf, length);
+//                 delay(20);                
 //                 f.write(buf, length);  
+//                 delay(20);
 //                 Serial.print(buf[0],length);
-//                 delay(100);
     
 //             }
-//             Serial.println("Recieve end");
+//             //Serial.println("Recieve end");
 
 //             Serial.printf("File %s %u Bytes\n", file, totalbytes);
-//             client.stop(); 
+//             SecClient->stop(); 
 //             f.close();
 //             return true; 
 
@@ -677,7 +706,7 @@ bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char
 
 }
 
-bool cache Settingsmanager::FilesCheck() {
+bool cache Settingsmanager::FilesCheck(bool startwifi) {
 
     //  http://raw.githubusercontent.com/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.js.gz
 
@@ -685,17 +714,20 @@ bool cache Settingsmanager::FilesCheck() {
  const char * remotehost = "192.168.1.115"; 
  const char * path = "";
 
- // const char * remotehost_git = "raw.githubusercontent.com"; 
- // const char * path_git = "/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data";
- // const char * raw_github_fingerprint = "B0 74 BB EF 10 C2 DD 70 89 C8 EA 58 A2 F9 E1 41 00 D3 38 82";
-
+ const char * remotehost_git = "raw.githubusercontent.com"; 
+ const char * path_git = "/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data";
+ const char * raw_github_fingerprint = "B0 74 BB EF 10 C2 DD 70 89 C8 EA 58 A2 F9 E1 41 00 D3 38 82";
 
 
     //const char * file = "jquery.mobile-1.4.5.min.js.gz"; 
-    const char * file = htm1; 
+    //const char * file = htm1; 
+
+    for (uint8_t i = 0; i < file_no; i++) {
+        SPIFFS.remove(items[i]); 
+    }
+
 
         bool haserror = false; 
-
         bool present[file_no];
 
     for (uint8_t i = 0; i < file_no; i++) {
@@ -713,14 +745,19 @@ bool cache Settingsmanager::FilesCheck() {
         // try to start wifi
         WiFi.mode(WIFI_STA); //  == WIFI_AP
 
-        if (Wifistart()) {
+        if ( (startwifi && Wifistart() ) || WiFi.status() == WL_CONNECTED) {
             Serial.print("Connected to WiFi: ");
             Serial.println(WiFi.SSID());
 
 
 
+//    SecClient = new WiFiClientSecure; 
+
 
   for (uint8_t filequeue = 0; filequeue < file_no; filequeue++) {
+    
+    //delay(1000);
+    Serial.println("===================== START ==================="); 
         
         const char * current_file = items[filequeue]; 
 
@@ -731,6 +768,7 @@ bool cache Settingsmanager::FilesCheck() {
       } else {
         Serial.printf("%s FAILED to download\n", current_file);
       }
+
 
     } // file loop.. 
     
@@ -747,7 +785,7 @@ bool cache Settingsmanager::FilesCheck() {
     } 
 
     }
-
+    
     return !haserror; 
 
 }
@@ -890,6 +928,38 @@ IPAddress cache Settingsmanager::StringtoIP(const String IP_string)
         pch = strtok(NULL, ".");
     }
     return returnIP;
+}
+
+
+void cache Settingsmanager::NewFileCheck() {
+
+    static const uint8_t file_no_2 = 5; 
+
+    static const char * _jq1 =  "/jq1.11.1.js.gz"; 
+    static const char * _jq2 =  "/jqm1.4.5.css.gz"; 
+    static const char * _jq3 =  "/jqm1.4.5.js.gz"; 
+    static const char * _jq4 =  "/configjava.js"; 
+    static const char * _htm1 = "/config.htm"; 
+
+     const char * items2[file_no_2] = {_jq1,_jq2,_jq3,_jq4,_htm1} ; // ,jq4,htm1,htm2,htm3}; 
+
+
+    for (uint8_t i = 0; i < file_no_2; i++) {
+
+
+        if (SPIFFS.exists(items2[i])) {
+            String buf = "/espman"; 
+            buf += items2[i];        
+            if (i == 4)  buf = "/espman/index.htm\n"; 
+            SPIFFS.rename(buf,items2[i]); 
+            Serial.printf("%s ==> %s\n", items2[i], buf.c_str()); 
+        } else Serial.printf("%s : Not found\n", items2[i]); 
+
+
+    }
+
+
+
 }
 
 
@@ -1503,18 +1573,19 @@ void cache Settingsmanager::HandleDataRequest()
      }
 
      if (_HTTP->arg("plain") == "upgrade" & _HTTP->method() == HTTP_POST) {
-        Debug(F("Upgrade files"));
+        // Debug(F("Upgrade files"));
 
-            Dir dir = SPIFFS.openDir("/");
-             while (dir.next()) {    
-                String fileName = dir.fileName();
-                    size_t fileSize = dir.fileSize();
-                    Debugf("     Deleting: %s\n", fileName.c_str());
-                    SPIFFS.remove(fileName);
-                }
-        Debugln(F(" done, rebooting"));
-        _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
-        ESP.restart(); 
+        //     Dir dir = SPIFFS.openDir("/");
+        //      while (dir.next()) {    
+        //         String fileName = dir.fileName();
+        //             size_t fileSize = dir.fileSize();
+        //             Debugf("     Deleting: %s\n", fileName.c_str());
+        //             SPIFFS.remove(fileName);
+        //         }
+        // Debugln(F(" done, rebooting"));
+        // _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
+        // ESP.restart(); 
+        FilesCheck(false);
      }     
 
      if (_HTTP->arg("plain") == "deletesettings" & _HTTP->method() == HTTP_POST) {

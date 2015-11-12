@@ -29,9 +29,21 @@ ToDo
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
 #include <functional>
+#include <time.h>
+#include "sntp.h"
 
 #define DEBUG_YES
+#define SETTINGS_FILE "/espman/settings.txt"
 
+
+/*
+		Very cool functions
+int	printf_P(PGM_P formatP, ...) __attribute__((format(printf, 1, 2)));
+int	sprintf_P(char *str, PGM_P formatP, ...) __attribute__((format(printf, 2, 3)));
+int	snprintf_P(char *str, size_t strSize, PGM_P formatP, ...) __attribute__((format(printf, 3, 4)));
+int	vsnprintf_P(char *str, size_t strSize, PGM_P formatP, va_list ap) __attribute__((format(printf, 3, 0)));
+
+*/
 #ifdef DEBUG_YES
 	#define Debug(x)    Serial.print(x)
 	#define Debugln(x)  Serial.println(x)
@@ -216,17 +228,21 @@ public:
 
 private:
 
-    static const uint8_t file_no = 7; 
+    static const uint8_t file_no = 3; 
+
+
+    // const char * htm2 = "/edit.htm.gz";
+    // const char * htm3 = "/index.htm";
 
     const char * jq1 =  "/jquery-1.11.1.min.js.gz"; 
     const char * jq2 =  "/jquery.mobile-1.4.5.min.css.gz"; 
     const char * jq3 =  "/jquery.mobile-1.4.5.min.js.gz"; 
     const char * jq4 =  "/configjava.js"; 
-    const char * htm1 = "/config.htm"; 
-    const char * htm2 = "/edit.htm.gz";
-    const char * htm3 = "/index.htm";
+    // const char * htm1 = "/config.htm"; 
+    // const char * htm2 = "/edit.htm.gz";
+    // const char * htm3 = "/index.htm";
 
-    const char * items[file_no] = {jq1,jq2,jq3,jq4,htm1,htm2,htm3}; 
+    const char * items[file_no] = {jq1,jq2,jq3} ; // ,jq4,htm1,htm2,htm3}; 
 
 
 	void HandleDataRequest();
@@ -235,9 +251,11 @@ private:
 	void LoadSettings();
 	void SaveSettings(); 
 	void PrintVariables();
-	bool FilesCheck(); 
+	bool FilesCheck(bool initwifi = true); 
 	bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
 	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file); 
+    //WiFiClientSecure * SecClient;
+    void NewFileCheck(); 
 
 	// get rid of these....  by using natives....
     //const char * C_true = "true";

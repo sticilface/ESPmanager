@@ -36,6 +36,10 @@ $( document ).on( "panelcreate", function( event, ui ) {
             $.post("data.esp", "reboot");
          });
 
+         $("#upgradebutton").click(function() {
+            $.post("data.esp", "upgrade"); 
+         })
+
 
 });
 
@@ -172,7 +176,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     function refreshAPlist() {
         $.getJSON("data.esp?plain=PerformWiFiScan", function(result) {
-            staticwifi = result.networks;
+            globalwifi = result.networks;
             $("#wifinetworks-data").empty();
             $("#wifinetworks-data").append("<div>");
             $.each(result.networks, function(i, object) {
@@ -220,7 +224,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     function WiFiMoreinfo() {
         radioanswer = $('.wifiradio:checked').val();
-        $.each(staticwifi, function(i, object) {
+        $.each(globalwifi, function(i, object) {
             if (object.ssid === radioanswer) {
                 $("#wifiinsert").empty();
                 $("#wifiinsert").append(

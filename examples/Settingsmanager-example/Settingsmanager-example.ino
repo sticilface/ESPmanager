@@ -28,9 +28,8 @@ const char * host = "Melvide-ESP";
 const char * ssid = "SKY";
 const char * pass = "wellcometrust";
 
-const char * api_github_fingerprint = "CF 05 98 89 CA FF 8E D8 5E 5C E0 C2 E4 F7 E6 C3 C7 50 DD 5C";
 
-bool settingsenabled = false; 
+//bool settingsenabled = false; 
 
 #define DBG_OUTPUT_PORT Serial
 
@@ -53,6 +52,8 @@ void setup() {
   Serial.begin(115200);
 
   SPIFFS.begin();
+
+  //Serial.setDebugOutput(true);
 
   
   delay(500);
@@ -141,7 +142,7 @@ void loop() {
 
  static uint32_t heap_timer = 0;
 
- if (millis() - heap_timer > 10000) {
+ if (millis() - heap_timer > 60000) {
   Serial.print("Heap = ");
   Serial.println(ESP.getFreeHeap());
   heap_timer = millis(); 
