@@ -106,7 +106,9 @@ $(document).on("pagecreate", "#otapage", function() {
 $(document).on("pagecreate", "#wifipage", function() {
 
     // Variables
-
+  var staticwifi;
+  var globalwifi; 
+  
     getWiFiVars(false);
 
     setTimeout( function() { getWiFiVars(true); }  , 1000);
@@ -134,9 +136,7 @@ $(document).on("pagecreate", "#wifipage", function() {
     $("#ssid-1-rescan").click(function() {
         getWiFiVars(true);
     });
-    $("#ssid-1-moreinfo").click(function() {
-        WiFiMoreinfo();
-    });
+
     $("#ssid-1-submit").click(function() {
         submitnewssid();
     });
@@ -224,7 +224,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     function WiFiMoreinfo() {
         radioanswer = $('.wifiradio:checked').val();
-        $.each(globalwifi, function(i, object) {
+        $.each(staticwifi, function(i, object) {
             if (object.ssid === radioanswer) {
                 $("#wifiinsert").empty();
                 $("#wifiinsert").append(
@@ -241,7 +241,11 @@ $(document).on("pagecreate", "#wifipage", function() {
             }
         });
     }
-
+    
+    $("#ssid-1-moreinfo").click(function() {
+        WiFiMoreinfo();
+    });
+    
     function stationboxes() {
 
         if ($("#flip-STA").val() == "on") {

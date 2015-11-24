@@ -223,6 +223,8 @@ public:
 	static String IPtoString(IPAddress address);
 	static IPAddress StringtoIP(const String IP_string);
  	static void printdiagnositics();
+    static String formatBytes(size_t bytes); 
+
 
  	bool Wifistart();
 
@@ -253,7 +255,7 @@ private:
 	void PrintVariables();
 	bool FilesCheck(bool initwifi = true); 
 	bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
-	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file); 
+	bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file); 
     //WiFiClientSecure * SecClient;
     void NewFileCheck(); 
 

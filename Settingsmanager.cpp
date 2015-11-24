@@ -513,118 +513,117 @@ void cache Settingsmanager::InitialiseFeatures()
     WiFi.hostname(_host);
 }
 
-// bool cache Settingsmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
+bool cache Settingsmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
             
-//     const size_t buf_size = 1024;
-//     uint8_t buf[buf_size]; 
-//     const int httpsPort = 443;
-//     //WiFiClientSecure SecClient;
+    const size_t buf_size = 1024;
+    uint8_t buf[buf_size]; 
+    const int httpsPort = 443;
+    WiFiClientSecure SecClient;
 
-//     size_t totalbytes = 0; 
+    size_t totalbytes = 0; 
         
-//     File f = SPIFFS.open(file, "w");
+    File f = SPIFFS.open(file, "w");
 
-//     if (!f) {
-//         Serial.println("file open failed");
-//         return false; 
-//     } else { 
-//         Serial.println("File Created");
-//         delay(100);
-//         Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
+    if (!f) {
+        Serial.println("file open failed");
+        return false; 
+    } else { 
+        Serial.println("File Created");
+        delay(100);
+        Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
 
-//         if (!SecClient->connect(remotehost, httpsPort)) {
-//             Serial.println("Connection failed");
-//             return false;
-//         } else {
-//             Serial.printf("Connected to %s\n", remotehost); 
+        if (!SecClient.connect(remotehost, httpsPort)) {
+            Serial.println("Connection failed");
+            return false;
+        } else {
+            Serial.printf("Connected to %s\n", remotehost); 
 
-//             if (SecClient->verify(fingerprint, remotehost)) {
-//                 Serial.println("certificate matches");
-//             } else {
-//                 Serial.println("certificate doesn't match");
-//                 return false; 
-//             }
-//             // send GET request
+            if (SecClient.verify(fingerprint, remotehost)) {
+                Serial.println("certificate matches");
+            } else {
+                Serial.println("certificate doesn't match");
+                return false; 
+            }
+            // send GET request
 
-//             String request = "GET " + String(path) + String(file) + " HTTP/1.1\r\n"; 
-//             request += "Host: " + String(remotehost) + "\r\n";
-//             request += "User-Agent: BuildFailureDetectorESP8266\r\n"; 
-//             request += "Accept: */*\r\n"; 
-//             request += "Connection: close\r\n\r\n";
-//             SecClient->print(request);
-//             //Serial.print(request);
-//   // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-//   //              "Host: " + host + "\r\n" +
-//   //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
-//   //              "Connection: close\r\n\r\n");
-// /*
+            String request = "GET " + String(path) + String(file) + " HTTP/1.1\r\n"; 
+            request += "Host: " + String(remotehost) + "\r\n";
+            request += "User-Agent: BuildFailureDetectorESP8266\r\n"; 
+            request += "Accept: */*\r\n"; 
+            request += "Connection: close\r\n\r\n";
+            SecClient.print(request);
+            //Serial.print(request);
+  // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+  //              "Host: " + host + "\r\n" +
+  //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
+  //              "Connection: close\r\n\r\n");
+/*
 
 
-// > GET /sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.css.gz HTTP/1.1
-// > Host: raw.githubusercontent.com
-// > User-Agent: curl/7.43.0
-// > Accept: 
+> GET /sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.css.gz HTTP/1.1
+> Host: raw.githubusercontent.com
+> User-Agent: curl/7.43.0
+> Accept: 
 
-// */
+*/
 
-//            // wait up to 5 seconds for server response
-//             Serial.println("Waiting for server response: ");
-//             int i = 0;
-//             while ((!SecClient->connected()) && (i < 500)) {
-//                 delay(100);
-//                 i++;
-//                 yield(); 
-//                 if ( i % 10 == 0) Serial.print(".");
-//             }
+           // wait up to 5 seconds for server response
+            Serial.println("Waiting for server response: ");
+            int i = 0;
+            while ((!SecClient.connected()) && (i < 500)) {
+                delay(100);
+                i++;
+                yield(); 
+                if ( i % 10 == 0) Serial.print(".");
+            }
 
-//            //  // return if no connection
+           //  // return if no connection
 
-//            // if (!client.available()) return false; 
+           // if (!client.available()) return false; 
 
-//            //  Serial.println("Download begun"); 
-//            //  // go though header...  change this to get content length
-//             // while (client.available()) { 
-//             //     if (client.find("\r\n\r\n")) break;
-//             //     delay(100);
-//             // }
+           //  Serial.println("Download begun"); 
+           //  // go though header...  change this to get content length
+            // while (client.available()) { 
+            //     if (client.find("\r\n\r\n")) break;
+            //     delay(100);
+            // }
             
-//             // uint8_t i = 0; 
-//             //  while (client.connected()) {
-//             //     String line = client.readStringUntil('\n');
-//             //     Serial.print(i++);
-//             //     Serial.print(" : ");
-//             //     Serial.print(line);
-//             //     if (line == "\r") {
-//             //         Serial.println("headers received");
-//             //             break;
-//             //         }
-//             //     }
+            // uint8_t i = 0; 
+            //  while (client.connected()) {
+            //     String line = client.readStringUntil('\n');
+            //     Serial.print(i++);
+            //     Serial.print(" : ");
+            //     Serial.print(line);
+            //     if (line == "\r") {
+            //         Serial.println("headers received");
+            //             break;
+            //         }
+            //     }
     
-//             yield();
-//             //Serial.println("Recieved data:");
-//             while (SecClient->available()) {
-//                 memset(buf, 0, buf_size);;
-//                 size_t length = SecClient->available(); 
-//                 length = (length > buf_size)? buf_size: length;  
-//                 totalbytes += length; 
-//                 SecClient->readBytes(buf, length);
-//                 delay(20);                
-//                 f.write(buf, length);  
-//                 delay(20);
-//                 Serial.print(buf[0],length);
+            yield();
+            //Serial.println("Recieved data:");
+            while (SecClient.available()) {
+                memset(buf, 0, buf_size);;
+                size_t length = SecClient.available(); 
+                length = (length > buf_size)? buf_size: length;  
+                totalbytes += length; 
+                SecClient.read(buf, length);
+                f.write(buf, length);  
+                delay(1);
+                //Serial.print(buf[0],length);
     
-//             }
-//             //Serial.println("Recieve end");
+            }
+            //Serial.println("Recieve end");
 
-//             Serial.printf("File %s %u Bytes\n", file, totalbytes);
-//             SecClient->stop(); 
-//             f.close();
-//             return true; 
+            Serial.printf("File %s %u Bytes\n", file, totalbytes);
+            SecClient.stop(); 
+            f.close();
+            return true; 
 
-//         } // is connected to remote host
-//     } // managed to open file
+        } // is connected to remote host
+    } // managed to open file
 
-// }
+}
 
 bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file) {
             
@@ -761,8 +760,8 @@ bool cache Settingsmanager::FilesCheck(bool startwifi) {
         
         const char * current_file = items[filequeue]; 
 
-        if (DownloadtoSPIFFS(remotehost, path, current_file)) { 
-        //if (HTTPSDownloadtoSPIFFS(remotehost_git, raw_github_fingerprint, path_git, current_file)) {
+        //if (DownloadtoSPIFFS(remotehost, path, current_file)) { 
+        if (HTTPSDownloadtoSPIFFS(remotehost_git, raw_github_fingerprint, path_git, current_file)) {
             Serial.printf("%s has been downloaded\n",current_file);
             present[filequeue] = true;
       } else {
@@ -930,6 +929,19 @@ IPAddress cache Settingsmanager::StringtoIP(const String IP_string)
     return returnIP;
 }
 
+//format bytes thanks to @me-no-dev
+
+String Settingsmanager::formatBytes(size_t bytes){
+  if (bytes < 1024){
+    return String(bytes)+"B";
+  } else if(bytes < (1024 * 1024)){
+    return String(bytes/1024.0)+"KB";
+  } else if(bytes < (1024 * 1024 * 1024)){
+    return String(bytes/1024.0/1024.0)+"MB";
+  } else {
+    return String(bytes/1024.0/1024.0/1024.0)+"GB";
+  }
+}
 
 void cache Settingsmanager::NewFileCheck() {
 
@@ -950,9 +962,13 @@ void cache Settingsmanager::NewFileCheck() {
         if (SPIFFS.exists(items2[i])) {
             String buf = "/espman"; 
             buf += items2[i];        
-            if (i == 4)  buf = "/espman/index.htm\n"; 
-            SPIFFS.rename(buf,items2[i]); 
-            Serial.printf("%s ==> %s\n", items2[i], buf.c_str()); 
+            if (i == 4)  buf = "/espman/index.htm"; 
+            
+            if (SPIFFS.rename(items2[i], buf)) { 
+                Serial.printf("Renamed %s ==> %s\n", items2[i], buf.c_str()); 
+            } else {
+                Serial.printf("Failed to rename %s ==> %s\n", items2[i], buf.c_str());
+            }
         } else Serial.printf("%s : Not found\n", items2[i]); 
 
 
@@ -1104,18 +1120,32 @@ void cache Settingsmanager::HandleDataRequest()
 
         root[F("version_var")] = version;
         root[F("compiletime_var")] = _compile_date_time;
+
+        root[F("chipid_var")] = ESP.getChipId(); 
+        root[F("cpu_var")] = ESP.getCpuFreqMHz();
         root[F("sdk_var")] = ESP.getSdkVersion();
+        root[F("bootverion_var")] =  ESP.getBootVersion();
+        root[F("bootmode_var")] =  ESP.getBootMode();        
+
         root[F("heap_var")] = ESP.getFreeHeap();
-        root[F("flashsize_var")] = ESP.getFlashChipSize();
-        root[F("chipid_var")] = ESP.getChipId();
-        root[F("flashid_var")] = ESP.getFlashChipId();
-        root[F("sketchsize_var")] = ESP.getSketchSize();
-        root[F("freespace_var")] = ESP.getFreeSketchSpace();
         root[F("millis_var")] = millis();
-        root[F("uptime_var")] = Up_time;
+        root[F("uptime_var")] = Up_time;        
+
+        root[F("flashid_var")] = ESP.getFlashChipId();
+        root[F("flashsize_var")] = formatBytes( ESP.getFlashChipSize() ); 
+        root[F("flashRealSize_var")] = formatBytes (ESP.getFlashChipRealSize() ); // not sure what the difference is here... 
+        root[F("flashchipsizebyid_var")] = formatBytes (ESP.getFlashChipSizeByChipId()); 
+        root[F("flashchipmode_var")] = ESP.getFlashChipMode();
+
+        root[F("chipid_var")] = ESP.getChipId();
+        String sketchsize = formatBytes(ESP.getSketchSize()) + " ( " + String(ESP.getSketchSize()) +  " Bytes)";
+        root[F("sketchsize_var")] = sketchsize;
+        String freesketchsize = formatBytes(ESP.getFreeSketchSpace()) + " ( " + String(ESP.getFreeSketchSpace()) +  " Bytes)";
+        root[F("freespace_var")] = freesketchsize ;
+
         root[F("vcc_var")] = ESP.getVcc();
         root[F("rssi_var")] = WiFi.RSSI();
-        root[F("cpu_var")] = ESP.getCpuFreqMHz();
+
 
         size_t jsonlength = root.measureLength() + 1;
         char buffer[jsonlength + 1];
@@ -1124,6 +1154,39 @@ void cache Settingsmanager::HandleDataRequest()
         Debugf("Min Heap: %u\n", ESP.getFreeHeap());
 
         return;
+
+
+        /*
+        uint16_t getVcc();
+        uint32_t getFreeHeap();
+
+        uint32_t getChipId();
+
+
+
+        uint8_t getCpuFreqMHz();
+
+        uint32_t getFlashChipId();
+        //gets the actual chip size based on the flash id
+        uint32_t getFlashChipRealSize();
+        //gets the size of the flash as set by the compiler
+        uint32_t getFlashChipSize();
+        uint32_t getFlashChipSpeed();
+        FlashMode_t getFlashChipMode();
+        uint32_t getFlashChipSizeByChipId();
+
+
+
+        uint32_t getSketchSize();
+        uint32_t getFreeSketchSpace();
+        bool updateSketch(Stream& in, uint32_t size, bool restartOnFail = false, bool restartOnSuccess = true);
+
+        String getResetInfo();
+        struct rst_info * getResetInfoPtr();
+
+        bool eraseConfig();
+
+        */
     }
 
     /*------------------------------------------------------------------------------------------------------------------
@@ -1477,6 +1540,7 @@ void cache Settingsmanager::HandleDataRequest()
 
     if (_HTTP->arg("plain") == "resetwifi")
     {
+        ESP.eraseConfig(); // not sure if this is needed... 
 
         WiFi.disconnect();
         ESP.restart();

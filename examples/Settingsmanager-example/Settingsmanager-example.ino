@@ -17,7 +17,7 @@ Password management
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
-
+#include <time.h>
                       
 #include <Settingsmanager.h>
 
@@ -27,7 +27,8 @@ Password management
 const char * host = "Melvide-ESP";
 const char * ssid = "SKY";
 const char * pass = "wellcometrust";
-
+time_t this_second = 0;
+time_t last_second = 0;
 
 //bool settingsenabled = false; 
 
@@ -53,7 +54,7 @@ void setup() {
 
   SPIFFS.begin();
 
-  //Serial.setDebugOutput(true);
+  Serial.setDebugOutput(true);
 
   
   delay(500);
@@ -83,7 +84,7 @@ void setup() {
 
  // if(WiFi.waitForConnectResult() == WL_CONNECTED || WiFi.getMode() == WIFI_AP_STA){
 
-
+     configTime(3600, 3600, "time.nist.gov", "time.windows.com", "de.pool.ntp.org");
 
 //SERVER INIT
   //list directory
@@ -170,6 +171,19 @@ void loop() {
 settings.handle(); 
 
 #endif
+
+// time
+
+  time(&this_second);
+     if (this_second != last_second)
+     {
+         last_second = this_second;
+         if ((this_second % 10) == 0)
+         {
+             Serial.print(ctime(&this_second));
+         }
+     }
+
 
 }
 
