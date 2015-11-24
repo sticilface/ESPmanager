@@ -7,11 +7,9 @@ extern "C" {
 
 
 Settingsmanager::Settingsmanager(
-    ESP8266WebServer* HTTP, fs::FS* fs, const char* host, const char* ssid, const char* pass)
+    ESP8266WebServer & HTTP, fs::FS & fs, const char* host, const char* ssid, const char* pass) : _HTTP(HTTP), _fs(fs)
 {
 
-    _HTTP = HTTP;
-    _fs = fs;
     // This sets the default fallback options... not in use yet
     if (host && (strlen(host) < 32))
     {
@@ -39,41 +37,51 @@ Settingsmanager::~Settingsmanager()
     if (_host)
     {
         free((void*)_host);
-        _host = NULL;
+        _host = nullptr;
     };
     if (_pass)
     {
         free((void*)_pass);
-        _pass = NULL;
+        _pass = nullptr;
     };
     if (_ssid)
     {
         free((void*)_ssid);
-        _ssid = NULL;
+        _ssid = nullptr;
     };
     if (_APpass)
     {
         free((void*)_APpass);
-        _APpass = NULL;
+        _APpass = nullptr;
     };
     if (_APssid)
     {
         free((void*)_APssid);
-        _APssid = NULL;
+        _APssid = nullptr;
     };
     if (_IPs)
     {
         delete _IPs;
-        _IPs = NULL;
+        _IPs = nullptr;
     };
+    if (_APmac) 
+    {
+        delete _APmac;
+        _APmac = nullptr; 
+    }
+    if (_STAmac) 
+    {
+        delete _STAmac;
+        _STAmac = nullptr; 
+    }
 }
 
 void cache Settingsmanager::begin()
 {
 
-    Debugln("Settings Manager V1.0");
+    Debugln("Settings Manager V" ESPMANVERSION);
 
-    if (SPIFFS.begin())
+    if (_fs.begin())
     {
         Debugln(F("File System mounted sucessfully"));
        
@@ -110,14 +118,27 @@ void cache Settingsmanager::begin()
         _APssid = strdup(wifi_station_get_hostname());
     }
 
+    
+    if (_APenabled) {
+        Debugln(F("Soft AP enabled by config"));
+        InitialiseSoftAP();
+    } else Debugln(F("Soft AP disbaled by config"));
 
-    if (!Wifistart())
+
+    if (_manageWiFi && !Wifistart())
     {
         WiFiMode(WIFI_AP_STA);
-        WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
-        Debugln(F("WiFi Failed:  Starting AP"));
-
-        //  to add timeout on AP...
+        
+        if (_APrestartmode > 1) { // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset... 
+        
+            _APtimer = millis(); 
+            Debug(F("WiFi Failed: "));
+            if (!_APenabled) {
+                InitialiseSoftAP();
+                Debug(F("Starting AP"));
+            }
+            Debugln(); 
+        }
     }
 
     if (WiFi.status() == WL_CONNECTED ) {
@@ -128,30 +149,30 @@ void cache Settingsmanager::begin()
 
     InitialiseFeatures();
 
-    _HTTP->on("/espman/data.esp", std::bind(&Settingsmanager::HandleDataRequest, this));
+    _HTTP.on("/espman/data.esp", std::bind(&Settingsmanager::HandleDataRequest, this));
 
 
-    _HTTP->serveStatic("/espman", *_fs, "/espman","max-age=86400"); // allows all files on SPIFFS to be served to webserver... might wish to change this
+    _HTTP.serveStatic("/espman", _fs, "/espman", "max-age=86400"); // allows all files on SPIFFS to be served to webserver... might wish to change this
 
   
-    // _HTTP->serveStatic("/config.htm", *_fs, "/config.htm","86400");
-    // _HTTP->serveStatic("/images/ajax-loader.gif", *_fs, "/ajax-loader.gif", "86400"); // temp fix
+    // _HTTP.serveStatic("/config.htm", *_fs, "/config.htm","86400");
+    // _HTTP.serveStatic("/images/ajax-loader.gif", *_fs, "/ajax-loader.gif", "86400"); // temp fix
 
-    // _HTTP->serveStatic("/jquery-1.11.1.min.js", *_fs, "/jquery-1.11.1.min.js","86400"); 
-    // _HTTP->serveStatic("/jquery.mobile-1.4.5.min.css", *_fs, "/jquery.mobile-1.4.5.min.css","86400"); 
-    // _HTTP->serveStatic("/jquery.mobile-1.4.5.min.js", *_fs, "/jquery.mobile-1.4.5.min.js","86400");
+    // _HTTP.serveStatic("/jquery-1.11.1.min.js", *_fs, "/jquery-1.11.1.min.js","86400"); 
+    // _HTTP.serveStatic("/jquery.mobile-1.4.5.min.css", *_fs, "/jquery.mobile-1.4.5.min.css","86400"); 
+    // _HTTP.serveStatic("/jquery.mobile-1.4.5.min.js", *_fs, "/jquery.mobile-1.4.5.min.js","86400");
 
-    // _HTTP->serveStatic("/configjava.js", *_fs, "/configjava.js");
-
-
-    //_HTTP->serveStatic("/index.htm", *_fs, "/index.htm");
+    // _HTTP.serveStatic("/configjava.js", *_fs, "/configjava.js");
 
 
-    // SPIFFS.rename(jq1, "/espman/jq1.11.1.js.gz" ); 
-    // SPIFFS.rename(jq2, "/espman/jqm1.4.5.css.gz" ); 
-    // SPIFFS.rename(jq3, "/espman/jqm1.4.5.js.gz" ); 
-    // SPIFFS.rename(jq4, "/espman/configjava.js" ); 
-    // SPIFFS.rename(htm1,"/espman/index.htm" ); 
+    //_HTTP.serveStatic("/index.htm", *_fs, "/index.htm");
+
+
+    // _fs.rename(jq1, "/espman/jq1.11.1.js.gz" ); 
+    // _fs.rename(jq2, "/espman/jqm1.4.5.css.gz" ); 
+    // _fs.rename(jq3, "/espman/jqm1.4.5.js.gz" ); 
+    // _fs.rename(jq4, "/espman/configjava.js" ); 
+    // _fs.rename(htm1,"/espman/index.htm" ); 
 
 
 
@@ -164,7 +185,7 @@ void cache Settingsmanager::LoadSettings()
     // PrintVariables();
 
     DynamicJsonBuffer jsonBuffer;
-    File f = SPIFFS.open(SETTINGS_FILE, "r");
+    File f = _fs.open(SETTINGS_FILE, "r");
     if (!f)
     {
         Debugln(F("Settings file open failed!"));
@@ -232,7 +253,7 @@ void cache Settingsmanager::LoadSettings()
         if (APpass) { _APpass = strdup(APpass); } else { _APpass = C_null; } ; 
     }
 
-    if (root.containsKey("APpass"))
+    if (root.containsKey("APssid"))
     {
         const char* APssid = root["APssid"];
         if (_APssid)
@@ -243,7 +264,7 @@ void cache Settingsmanager::LoadSettings()
         if (APssid) { _APssid = strdup(APssid); } else {_APssid = C_null; } ;
     }
 
-    if (root.containsKey("APpass"))
+    if (root.containsKey("APchannel"))
     {
         long APchannel = root["APchannel"];
         if (APchannel < 13 && APchannel > 0)
@@ -258,7 +279,13 @@ void cache Settingsmanager::LoadSettings()
 
     if (root.containsKey("APenabled"))
     {
-        _APenabled = root[F("APenabled")];
+        _APenabled = root["APenabled"];
+        //_APenabled = (strcmp(APenabled, "true") == 0) ? true : false;
+    }
+    
+    if (root.containsKey("APrestartmode"))
+    {
+        _APrestartmode = root["APrestartmode"];
         //_APenabled = (strcmp(APenabled, "true") == 0) ? true : false;
     }
 
@@ -274,17 +301,23 @@ void cache Settingsmanager::LoadSettings()
         //_OTAenabled = (strcmp(OTAenabled, "true") == 0) ? true : false;
     }
 
-    if (root.containsKey("mdnsenable"))
+    if (root.containsKey("mDNSenable"))
     {
         _mDNSenabled = root["mDNSenable"];
         //_mDNSenabled = (strcmp(mDNSenabled, "true") == 0) ? true : false;
     }
 
-    if (root.containsKey("wifimanage"))
+    if (root.containsKey("WiFimanage"))
     {
          _manageWiFi = root["WiFimanage"];
         //_manageWiFi = (strcmp(manageWiFi, "true") == 0) ? true : false;
     }
+
+    // if (root.containsKey("OTAusechipID"))
+    // {
+    //      _OTAusechipID = root["OTAusechipID"];
+    //     //_manageWiFi = (strcmp(manageWiFi, "true") == 0) ? true : false;
+    // }
 
 
     if (root.containsKey("IPaddress") && root.containsKey("Gateway") && root.containsKey("Subnet"))
@@ -306,6 +339,50 @@ void cache Settingsmanager::LoadSettings()
             _IPs->SN = StringtoIP(String(sn));
         }
     }
+
+    if (root.containsKey("STAmac"))
+    {
+        uint8_t savedmac[6] = {0};
+        uint8_t currentmac[6] = {0};
+        WiFi.macAddress(currentmac); 
+
+        for (uint8_t i = 0; i < 6; i++) {
+            savedmac[i] = root["STAmac"][i];
+        }
+        if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 )
+        {
+            Debugln("Saved STA MAC does not equal native mac"); 
+            if (_STAmac) {
+                delete _STAmac;
+                _STAmac = nullptr;
+            }
+            _STAmac = new uint8_t[6]; 
+            memcpy(_STAmac, savedmac, 6); 
+        }
+    }
+
+    if (root.containsKey("APmac"))
+    {
+        uint8_t savedmac[6] = {0};
+        uint8_t currentmac[6] = {0};
+        WiFi.softAPmacAddress(currentmac); 
+
+        for (uint8_t i = 0; i < 6; i++) {
+            savedmac[i] = root["APmac"][i];
+        }
+        if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 )
+        {
+            Debugln("Saved AP MAC does not equal native mac"); 
+            if (_APmac) {
+                delete _APmac;
+                _APmac = nullptr;
+            }
+            _APmac = new uint8_t[6]; 
+            memcpy(_APmac, savedmac, 6); 
+        }
+    }
+
+
     Debugln(F("----- Saved Variables -----"));
     PrintVariables();
     Debugln(F("---------------------------"));
@@ -339,6 +416,15 @@ void cache Settingsmanager::PrintVariables()
     }
     else
         Debugln(F("NO IPs held in memory"));
+    if (_STAmac) {
+        Debug(F("STA MAC = "));
+        Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _STAmac[0],  _STAmac[1], _STAmac[2], _STAmac[3], _STAmac[4], _STAmac[5]);
+
+    } else Debugln("STA MAC not held in memory"); 
+    if (_APmac) {
+        Debug(F("AP MAC = "));
+        Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _APmac[0],  _APmac[1], _APmac[2], _APmac[3], _APmac[4], _APmac[5]);
+    } else Debugln("AP MAC not held in memory"); 
 #endif
 }
 
@@ -371,6 +457,7 @@ void cache Settingsmanager::SaveSettings()
     root[F("host")] = (_host) ? _host : C_null;
     root[F("ssid")] = (_ssid) ? _ssid : C_null;
     root[F("pass")] = (_pass) ? _pass : C_null;
+    root[F("APrestartmode")] = _APrestartmode; 
     root[F("APpass")] = (_APpass) ? _APpass : C_null;
     root[F("APssid")] = (_APssid) ? _APssid : C_null;
     root[F("DHCP")] = (_DHCP) ? true : false;
@@ -378,6 +465,7 @@ void cache Settingsmanager::SaveSettings()
     root[F("APenabled")] = (_APenabled) ? true : false;
     root[F("APhidden")] = (_APhidden) ? true : false;
     root[F("OTAenabled")] = (_OTAenabled) ? true : false;
+    //root[F("OTAusechipID")] = (_OTAusechipID) ? true : false;
     root[F("mDNSenable")] = (_mDNSenabled) ? true : false;
     root[F("WiFimanage")] = (_manageWiFi) ? true : false;
 
@@ -395,9 +483,22 @@ void cache Settingsmanager::SaveSettings()
     root[F("Gateway")] = GW;
     root[F("Subnet")] = SN;
 
+    JsonArray& macarray = root.createNestedArray("STAmac");
+    uint8_t mac[6];
+    WiFi.macAddress(mac);
+    for (uint8_t i = 0; i < 6; i ++) { 
+    macarray.add(mac[i]);
+    }
+
+    JsonArray& macAParray = root.createNestedArray("APmac");
+    uint8_t apmac[6];
+    WiFi.softAPmacAddress(apmac);
+    for (uint8_t i = 0; i < 6; i ++) { 
+    macAParray.add(apmac[i]);
+    }
 
     // Debugf("IP = %s, GW = %s, SN = %s\n", IP, GW, SN);
-    File f = SPIFFS.open(SETTINGS_FILE, "w");
+    File f = _fs.open(SETTINGS_FILE, "w");
     if (!f)
     {
         Debugln(F("Settings file save failed!"));
@@ -416,7 +517,7 @@ void cache Settingsmanager::handle()
     // if (ota_server)
     //     ota_server->handle();
 
-      ArduinoOTA.handle();
+    ArduinoOTA.handle();
 
 
     if (save_flag)
@@ -425,11 +526,26 @@ void cache Settingsmanager::handle()
         save_flag = false;
     }
 
-    //
-    //
-    // Async handle WiFi reconnects...
-    //
-    //
+
+    if (_APtimer > 0) {
+        uint32_t timer = 0; 
+        _APtimer = 0; 
+        if (_APrestartmode == 2) timer = 5 * 60 * 1000; 
+        if (_APrestartmode == 3) timer = 10 * 60 * 1000; 
+        if (millis() - _APtimer > timer) {
+           WiFi.mode(WIFI_STA); //  == WIFI_AP
+           Debugln("AP Stopped"); 
+        }
+    }
+
+    if (WiFi.status() != WL_CONNECTED && _APrestartmode == 4) {
+        Debugln(F("WiFi Disconnected:  Starting AP")); 
+        WiFiMode(WIFI_AP_STA);
+        WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
+        Debugln(F("Done"));
+    }
+
+
 }
 
 void cache Settingsmanager::InitialiseFeatures()
@@ -460,40 +576,59 @@ void cache Settingsmanager::InitialiseFeatures()
     //     };
     // }
 
-        char OTAhost[33];
-        strcpy(OTAhost, _host);
-        OTAhost[strlen(_host)] = '-';
-        OTAhost[strlen(_host) + 1] = 0;
-        char tmp[15];
-        sprintf(tmp, "%02x", ESP.getChipId());
-        strcat(OTAhost, tmp); 
 
+
+    // if (_OTAusechipID) {
+    //     char OTAhost[33];
+    //     strcpy(OTAhost, _host);       
+    //     OTAhost[strlen(_host)] = '-';
+    //     OTAhost[strlen(_host) + 1] = 0;
+    //     char tmp[15];
+    //     sprintf(tmp, "%02x", ESP.getChipId());
+    //     strcat(OTAhost, tmp); 
+        
+    //     ArduinoOTA.setHostname(OTAhost);
+        
+    //     Debugf("OTA host = %s\n", OTAhost);
+
+    // } else {
+        ArduinoOTA.setHostname(_host);
+        Debugf("OTA host = %s\n", _host);
+
+    //}
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);
 
   // Hostname defaults to esp8266-[ChipID]
-   ArduinoOTA.setHostname(OTAhost);
+  // ArduinoOTA.setHostname(OTAhost);
 
   // No authentication by default
   // ArduinoOTA.setPassword((const char *)"123");
 
-
         ArduinoOTA.onStart([]() {
-            Serial.println("OTA Start");
+            Serial.println(F("OTA Start"));
+            Serial.print(F("[                                                  ]\n["));
+ //                       ("[--------------------------------------------------]\n ");
         });
         ArduinoOTA.onEnd([]() {
-            Serial.println("OTA End");
+            Serial.println(F("]\nOTA End"));
         });
         ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("OTA Progress: %u%%\n", (progress / (total / 100)));
+            static uint8_t done = 0; 
+            uint8_t percent = (progress / (total / 100) );
+                if ( percent % 2 == 0  && percent != done ) {
+                    Serial.print("-");
+                    done = percent; 
+                }
+            //Serial.printf("OTA Progress: %u%%\n", (progress / (total / 100)));
         });
         ArduinoOTA.onError([](ota_error_t error) {
             Serial.printf("OTA Error[%u]: ", error);
-            if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-            else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-            else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-            else if (error == OTA_RECIEVE_ERROR) Serial.println("Receive Failed");
-            else if (error == OTA_END_ERROR) Serial.println("End Failed");
+            if (error == OTA_AUTH_ERROR) Serial.println(F("Auth Failed"));
+            else if (error == OTA_BEGIN_ERROR) Serial.println(F("Begin Failed"));
+            else if (error == OTA_CONNECT_ERROR) Serial.println(F("Connect Failed"));
+            else if (error == OTA_RECIEVE_ERROR) Serial.println(F("Receive Failed"));
+            else if (error == OTA_END_ERROR) Serial.println(F("End Failed"));
         });
         
         ArduinoOTA.begin();
@@ -501,129 +636,128 @@ void cache Settingsmanager::InitialiseFeatures()
 
 // not sure this is needed now. 
 
-    // if (_mDNSenabled)
-    // {
-    //     if (!_OTAenabled)
-    //     {
-    //         MDNS.begin(_host);
-    //     }
-    //     MDNS.addService("http", "tcp", 80);
-    // }
+    if (_mDNSenabled)
+    {
+        MDNS.addService("http", "tcp", 80);
+    }
+
+
 
     WiFi.hostname(_host);
 }
 
-bool cache Settingsmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
+// bool cache Settingsmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
             
-    const size_t buf_size = 1024;
-    uint8_t buf[buf_size]; 
-    const int httpsPort = 443;
-    WiFiClientSecure SecClient;
+//     const size_t buf_size = 1024;
+//     uint8_t buf[buf_size]; 
+//     const int httpsPort = 443;
+//     WiFiClientSecure SecClient;
 
-    size_t totalbytes = 0; 
+//     size_t totalbytes = 0; 
         
-    File f = SPIFFS.open(file, "w");
+//     File f = _fs.open("/textfile", "w");
 
-    if (!f) {
-        Serial.println("file open failed");
-        return false; 
-    } else { 
-        Serial.println("File Created");
-        delay(100);
-        Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
+//     if (!f) {
+//         Serial.println("file open failed");
+//         return false; 
+//     } else { 
+//         Serial.println("File Created");
+//         delay(100);
 
-        if (!SecClient.connect(remotehost, httpsPort)) {
-            Serial.println("Connection failed");
-            return false;
-        } else {
-            Serial.printf("Connected to %s\n", remotehost); 
+//         Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
 
-            if (SecClient.verify(fingerprint, remotehost)) {
-                Serial.println("certificate matches");
-            } else {
-                Serial.println("certificate doesn't match");
-                return false; 
-            }
-            // send GET request
+//         if (!SecClient.connect(remotehost, httpsPort)) {
+//             Serial.println("Connection failed");
+//             return false;
+//         } else {
+//             Serial.printf("Connected to %s\n", remotehost); 
 
-            String request = "GET " + String(path) + String(file) + " HTTP/1.1\r\n"; 
-            request += "Host: " + String(remotehost) + "\r\n";
-            request += "User-Agent: BuildFailureDetectorESP8266\r\n"; 
-            request += "Accept: */*\r\n"; 
-            request += "Connection: close\r\n\r\n";
-            SecClient.print(request);
-            //Serial.print(request);
-  // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-  //              "Host: " + host + "\r\n" +
-  //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
-  //              "Connection: close\r\n\r\n");
-/*
+//             if (SecClient.verify(fingerprint, remotehost)) {
+//                 Serial.println("certificate matches");
+//             } else {
+//                 Serial.println("certificate doesn't match");
+//                 return false; 
+//             }
+//             // send GET request
+
+//             String request = "GET " + String(path) + String(file) + " HTTP/1.1\r\n"; 
+//             request += "Host: " + String(remotehost) + "\r\n";
+//             request += "User-Agent: BuildFailureDetectorESP8266\r\n"; 
+//             request += "Accept: */*\r\n"; 
+//             request += "Connection: close\r\n\r\n";
+//             SecClient.print(request);
+//             //Serial.print(request);
+//   // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
+//   //              "Host: " + host + "\r\n" +
+//   //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
+//   //              "Connection: close\r\n\r\n");
+// /*
 
 
-> GET /sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.css.gz HTTP/1.1
-> Host: raw.githubusercontent.com
-> User-Agent: curl/7.43.0
-> Accept: 
+// > GET /sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.css.gz HTTP/1.1
+// > Host: raw.githubusercontent.com
+// > User-Agent: curl/7.43.0
+// > Accept: 
 
-*/
+// */
 
-           // wait up to 5 seconds for server response
-            Serial.println("Waiting for server response: ");
-            int i = 0;
-            while ((!SecClient.connected()) && (i < 500)) {
-                delay(100);
-                i++;
-                yield(); 
-                if ( i % 10 == 0) Serial.print(".");
-            }
+//            // wait up to 5 seconds for server response
+//             Serial.println("Waiting for server response: ");
+//             int i = 0;
+//             while ((!SecClient.available()) && (i < 500)) {
+//                 delay(100);
+//                 i++;
+//                 yield(); 
+//                 if ( i % 10 == 0) Serial.print(".");
+//             }
 
-           //  // return if no connection
+//            //  // return if no connection
 
-           // if (!client.available()) return false; 
+//            // if (!client.available()) return false; 
 
-           //  Serial.println("Download begun"); 
-           //  // go though header...  change this to get content length
-            // while (client.available()) { 
-            //     if (client.find("\r\n\r\n")) break;
-            //     delay(100);
-            // }
+//            //  Serial.println("Download begun"); 
+//            //  // go though header...  change this to get content length
+//             // while (client.available()) { 
+//             //     if (client.find("\r\n\r\n")) break;
+//             //     delay(100);
+//             // }
             
-            // uint8_t i = 0; 
-            //  while (client.connected()) {
-            //     String line = client.readStringUntil('\n');
-            //     Serial.print(i++);
-            //     Serial.print(" : ");
-            //     Serial.print(line);
-            //     if (line == "\r") {
-            //         Serial.println("headers received");
-            //             break;
-            //         }
-            //     }
+//             // uint8_t i = 0; 
+//             //  while (client.connected()) {
+//             //     String line = client.readStringUntil('\n');
+//             //     Serial.print(i++);
+//             //     Serial.print(" : ");
+//             //     Serial.print(line);
+//             //     if (line == "\r") {
+//             //         Serial.println("headers received");
+//             //             break;
+//             //         }
+//             //     }
     
-            yield();
-            //Serial.println("Recieved data:");
-            while (SecClient.available()) {
-                memset(buf, 0, buf_size);;
-                size_t length = SecClient.available(); 
-                length = (length > buf_size)? buf_size: length;  
-                totalbytes += length; 
-                SecClient.read(buf, length);
-                f.write(buf, length);  
-                delay(1);
-                //Serial.print(buf[0],length);
+//             yield();
+//             //Serial.println("Recieved data:");
+//             while (SecClient.available()) {
+//                 memset(buf, 0, buf_size);;
+//                 size_t length = SecClient.available(); 
+//                 length = (length > buf_size)? buf_size: length;  
+//                 totalbytes += length; 
+//                 SecClient.read(buf, length);
+//                 f.write(buf, length);  
+//                 delay(1);
+//                 //Serial.print(buf[0],length);
     
-            }
-            //Serial.println("Recieve end");
+//             }
+//             //Serial.println("Recieve end");
 
-            Serial.printf("File %s %u Bytes\n", file, totalbytes);
-            SecClient.stop(); 
-            f.close();
-            return true; 
+//             Serial.printf("File %s %u Bytes\n", file, totalbytes);
+//             SecClient.stop(); 
+//             f.close();
+//             return true; 
 
-        } // is connected to remote host
-    } // managed to open file
+//         } // is connected to remote host
+//     } // managed to open file
 
-}
+// }
 
 bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file) {
             
@@ -633,7 +767,7 @@ bool cache Settingsmanager::DownloadtoSPIFFS(const char * remotehost, const char
             const int httpPort = 80;
             size_t totalbytes = 0; 
         
-  File f = SPIFFS.open(file, "w");
+  File f = _fs.open(file, "w");
 
     if (!f) {
         Serial.println("file open failed");
@@ -717,12 +851,18 @@ bool cache Settingsmanager::FilesCheck(bool startwifi) {
  const char * path_git = "/sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data";
  const char * raw_github_fingerprint = "B0 74 BB EF 10 C2 DD 70 89 C8 EA 58 A2 F9 E1 41 00 D3 38 82";
 
+const char* host = "raw.githubusercontent.com";
+const int httpsPort = 443;
+
+// Use web browser to view and copy
+// SHA1 fingerprint of the certificate
+const char* fingerprint = "B0 74 BB EF 10 C2 DD 70 89 C8 EA 58 A2 F9 E1 41 00 D3 38 82";
 
     //const char * file = "jquery.mobile-1.4.5.min.js.gz"; 
     //const char * file = htm1; 
 
     for (uint8_t i = 0; i < file_no; i++) {
-        SPIFFS.remove(items[i]); 
+        _fs.remove(items[i]); 
     }
 
 
@@ -731,7 +871,7 @@ bool cache Settingsmanager::FilesCheck(bool startwifi) {
 
     for (uint8_t i = 0; i < file_no; i++) {
 
-        if (!SPIFFS.exists(items[i])) {
+        if (!_fs.exists(items[i])) {
             present[i] = false; 
             haserror = true; 
             Debugf("ERROR %s does not exist\n", items[i]); 
@@ -760,8 +900,8 @@ bool cache Settingsmanager::FilesCheck(bool startwifi) {
         
         const char * current_file = items[filequeue]; 
 
-        //if (DownloadtoSPIFFS(remotehost, path, current_file)) { 
-        if (HTTPSDownloadtoSPIFFS(remotehost_git, raw_github_fingerprint, path_git, current_file)) {
+       if (DownloadtoSPIFFS(remotehost, path, current_file)) { 
+      //  if (HTTPSDownloadtoSPIFFS(remotehost_git, raw_github_fingerprint, path_git, current_file)) {
             Serial.printf("%s has been downloaded\n",current_file);
             present[filequeue] = true;
       } else {
@@ -791,12 +931,28 @@ bool cache Settingsmanager::FilesCheck(bool startwifi) {
 
 void cache Settingsmanager::InitialiseSoftAP()
 {
-
     WiFiMode mode = WiFi.getMode();
+
+    if (mode == WIFI_STA) {
+        WiFi.mode(WIFI_AP_STA);
+    }
+
+    if (_APmac)
+    {
+            if ( wifi_set_macaddr(0x01, _APmac)) {
+                Debugln("AP MAC applied succesfully");
+            } else {
+                Debugln("AP MAC FAILED");
+            }    
+    }
+
     if (mode == WIFI_AP_STA || mode == WIFI_AP)
     {
         WiFi.softAP(_APssid, _APpass, _APchannel, _APhidden);
     }
+
+
+
 }
 
 bool cache Settingsmanager::Wifistart()
@@ -807,7 +963,6 @@ bool cache Settingsmanager::Wifistart()
     if (WiFi.getMode() == WIFI_AP)
         return false;
 
-    WiFi.begin();
 
     if (!_DHCP && _IPs)
     {
@@ -815,6 +970,19 @@ bool cache Settingsmanager::Wifistart()
         Debugln(F("Using Stored IPs"));
         WiFi.config(_IPs->IP, _IPs->GW, _IPs->SN);
     }
+
+    if (_STAmac)
+    {
+            if (wifi_set_macaddr(0x00, _STAmac)) {
+                Debugln("STA MAC applied succesfully");
+            } else {
+                Debugln("STA MAC FAILED");
+            }    
+    }
+
+
+
+    WiFi.begin();
 
     Debug("WiFi init");
     uint8_t i = 0;
@@ -959,12 +1127,12 @@ void cache Settingsmanager::NewFileCheck() {
     for (uint8_t i = 0; i < file_no_2; i++) {
 
 
-        if (SPIFFS.exists(items2[i])) {
+        if (_fs.exists(items2[i])) {
             String buf = "/espman"; 
             buf += items2[i];        
             if (i == 4)  buf = "/espman/index.htm"; 
             
-            if (SPIFFS.rename(items2[i], buf)) { 
+            if (_fs.rename(items2[i], buf)) { 
                 Serial.printf("Renamed %s ==> %s\n", items2[i], buf.c_str()); 
             } else {
                 Serial.printf("Failed to rename %s ==> %s\n", items2[i], buf.c_str());
@@ -978,6 +1146,76 @@ void cache Settingsmanager::NewFileCheck() {
 
 }
 
+//URI Decoding function 
+//no check if dst buffer is big enough to receive string so 
+//use same size as src is a recommendation
+void cache Settingsmanager::urldecode(char *dst, const char *src)
+{
+  char a, b,c;
+  if (dst==NULL) return;
+  while (*src) {
+    if ((*src == '%') &&
+      ((a = src[1]) && (b = src[2])) &&
+      (isxdigit(a) && isxdigit(b))) {
+      if (a >= 'a')
+        a -= 'a'-'A';
+      if (a >= 'A')
+        a -= ('A' - 10);
+      else
+        a -= '0';
+      if (b >= 'a')
+        b -= 'a'-'A';
+      if (b >= 'A')
+        b -= ('A' - 10);
+      else
+        b -= '0';
+      *dst++ = 16*a+b;
+      src+=3;
+    } 
+    else {
+        c = *src++;
+        if(c=='+')c=' ';
+      *dst++ = c;
+    }
+  }
+  *dst++ = '\0';
+}
+
+bool cache Settingsmanager::StringtoMAC(uint8_t *mac, const String &input) {
+
+        char tempbuffer[input.length() + 1]; 
+        urldecode(tempbuffer, input.c_str() ); 
+        String decodedMAC = String(tempbuffer);
+        String buf;
+        uint8_t pos = 0;  
+        char tempbuf[5];
+        bool remaining = true; 
+
+    do {
+        buf = decodedMAC.substring(0, decodedMAC.indexOf(':')); 
+        remaining = (decodedMAC.indexOf(':') != -1)? true: false; 
+        decodedMAC = decodedMAC.substring(decodedMAC.indexOf(':') + 1, decodedMAC.length());
+        buf.toCharArray(tempbuf, buf.length() + 1);
+        mac[pos] = (uint8_t)strtol (tempbuf,NULL,16);
+        //Serial.printf("position %u = %s ===>%u \n", pos, tempbuf, mac[pos]);
+        pos++;
+    } while (remaining); 
+
+    if (pos == 6) return true; else return false; 
+
+}
+
+ void Settingsmanager::sendJsonObjecttoHTTP( const JsonObject & root, ESP8266WebServer & _HTTP) {
+        
+        size_t jsonlength = root.measureLength();
+        _HTTP.setContentLength(jsonlength); 
+        _HTTP.send(200, "text/json" ); 
+        BufferedPrint<1440> proxy(_HTTP);
+        root.printTo(proxy);
+        proxy.flush();
+        Debugf("Min Heap: %u\n", ESP.getFreeHeap());
+}
+
 
 void cache Settingsmanager::HandleDataRequest()
 {
@@ -986,37 +1224,40 @@ void cache Settingsmanager::HandleDataRequest()
     uint8_t _wifinetworksfound = 0;
 
     String args = F("ARG: %u, \"%s\" = \"%s\"\n");
-    for (uint8_t i = 0; i < _HTTP->args(); i++)
+    for (uint8_t i = 0; i < _HTTP.args(); i++)
     {
-        Debugf(args.c_str(), i, _HTTP->argName(i).c_str(), _HTTP->arg(i).c_str());
+        Debugf(args.c_str(), i, _HTTP.argName(i).c_str(), _HTTP.arg(i).c_str());
     }
 
     /*------------------------------------------------------------------------------------------------------------------
                                                                     Reboot command
     ------------------------------------------------------------------------------------------------------------------*/
 
-    if (_HTTP->arg("plain") == "reboot")
+    if (_HTTP.arg("plain") == "reboot")
     {
         Debugln(F("Rebooting..."));
-        _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
+        _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
         ESP.restart();
     };
 
     /*------------------------------------------------------------------------------------------------------------------
                                       WiFi Scanning and Sending of WiFi networks found at boot
     ------------------------------------------------------------------------------------------------------------------*/
-    if (_HTTP->arg("plain") == F("WiFiDetails") || _HTTP->arg("plain") == F("PerformWiFiScan"))
+    if (_HTTP.arg("plain") == F("WiFiDetails") || _HTTP.arg("plain") == F("PerformWiFiScan"))
     {
 
 
-        if (_HTTP->arg("plain") == F("PerformWiFiScan"))
+
+        if (_HTTP.arg("plain") == F("PerformWiFiScan"))
         {
             Debug(F("Performing Wifi Network Scan..."));
             _wifinetworksfound = WiFi.scanNetworks();
             Debugln(F("done"));
         }
 
-        DynamicJsonBuffer jsonBuffer;
+      const int BUFFER_SIZE = JSON_OBJECT_SIZE( _wifinetworksfound * 6) + JSON_ARRAY_SIZE(_wifinetworksfound) + JSON_OBJECT_SIZE(22);
+
+        DynamicJsonBuffer jsonBuffer(BUFFER_SIZE);
         JsonObject& root = jsonBuffer.createObject();
 
         if (_wifinetworksfound)
@@ -1061,8 +1302,14 @@ void cache Settingsmanager::HandleDataRequest()
         WiFiMode mode = WiFi.getMode();
 
         JsonObject& generalobject = root.createNestedObject("general");
+
+
         generalobject[F("deviceid")] = _host;
         generalobject[F("OTAenabled")] = (_OTAenabled) ? true : false;
+        generalobject[F("APrestartmode")] = _APrestartmode; 
+        //generalobject[F("OTAusechipID")] = _OTAusechipID; 
+        generalobject[F("mDNSenabled")] = (_mDNSenabled)? true: false; 
+        
         JsonObject& STAobject = root.createNestedObject("STA");
         
         STAobject[F("connectedssid")] = WiFi.SSID();
@@ -1073,10 +1320,13 @@ void cache Settingsmanager::HandleDataRequest()
         STAobject[F("gateway")] = IPtoString(WiFi.gatewayIP());
         STAobject[F("subnet")] = IPtoString(WiFi.subnetMask());
         STAobject[F("MAC")] = WiFi.macAddress();
+
         JsonObject& APobject = root.createNestedObject("AP");
+
         APobject[F("ssid")] = _APssid;
         APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
-        ;
+        APobject[F("APenabled")] = _APenabled;
+        
         APobject[F("IP")] = (WiFi.softAPIP()[0] == 0 && WiFi.softAPIP()[1] == 0
                                 && WiFi.softAPIP()[2] == 0 && WiFi.softAPIP()[3] == 0)
             ? F("192.168.4.1")
@@ -1087,11 +1337,14 @@ void cache Settingsmanager::HandleDataRequest()
         APobject[F("MAC")] = WiFi.softAPmacAddress();
 
 
-        size_t jsonlength = root.measureLength() + 1;
-        char buffer[jsonlength + 1];
-        root.printTo(buffer, jsonlength + 1);
-        _HTTP->send(200, "text/json", String(buffer));
-        Debugf("Min Heap: %u\n", ESP.getFreeHeap());
+        sendJsonObjecttoHTTP(root, _HTTP);
+
+
+        // size_t jsonlength = root.measureLength() + 1;
+        // char buffer[jsonlength + 1];
+        // root.printTo(buffer, jsonlength + 1);
+        // _HTTP.send(200, "text/json", String(buffer));
+        // Debugf("Min Heap: %u\n", ESP.getFreeHeap());
 
         WiFi.scanDelete();
         _wifinetworksfound = 0;
@@ -1103,8 +1356,11 @@ void cache Settingsmanager::HandleDataRequest()
     /*------------------------------------------------------------------------------------------------------------------
                                       Send about page details...
     ------------------------------------------------------------------------------------------------------------------*/
-    if (_HTTP->arg("plain") == "AboutPage")
+    if (_HTTP.arg("plain") == "AboutPage")
     {
+        
+        FSInfo info; 
+        _fs.info(info);
 
         const uint8_t bufsize = 10;
         int sec = millis() / 1000;
@@ -1115,10 +1371,12 @@ void cache Settingsmanager::HandleDataRequest()
         char Up_time[bufsize];
         snprintf(Up_time, bufsize, "%02d:%02d:%02d", hr, min % 60, sec % 60);
 
-        DynamicJsonBuffer jsonBuffer;
+        const int BUFFER_SIZE = JSON_OBJECT_SIZE(30); // + JSON_ARRAY_SIZE(temphx.items);
+        DynamicJsonBuffer jsonBuffer(BUFFER_SIZE);
+
         JsonObject& root = jsonBuffer.createObject();
 
-        root[F("version_var")] = version;
+        root[F("version_var")] = "Settings Manager V" ESPMANVERSION;
         root[F("compiletime_var")] = _compile_date_time;
 
         root[F("chipid_var")] = ESP.getChipId(); 
@@ -1138,55 +1396,47 @@ void cache Settingsmanager::HandleDataRequest()
         root[F("flashchipmode_var")] = ESP.getFlashChipMode();
 
         root[F("chipid_var")] = ESP.getChipId();
-        String sketchsize = formatBytes(ESP.getSketchSize()) + " ( " + String(ESP.getSketchSize()) +  " Bytes)";
+        String sketchsize = formatBytes(ESP.getSketchSize()) ;//+ " ( " + String(ESP.getSketchSize()) +  " Bytes)";
         root[F("sketchsize_var")] = sketchsize;
-        String freesketchsize = formatBytes(ESP.getFreeSketchSpace()) + " ( " + String(ESP.getFreeSketchSpace()) +  " Bytes)";
+        String freesketchsize = formatBytes(ESP.getFreeSketchSpace()) ;//+ " ( " + String(ESP.getFreeSketchSpace()) +  " Bytes)";
         root[F("freespace_var")] = freesketchsize ;
 
         root[F("vcc_var")] = ESP.getVcc();
         root[F("rssi_var")] = WiFi.RSSI();
 
+        JsonObject& SPIFFSobject = root.createNestedObject("SPIFFS");
+/*
 
-        size_t jsonlength = root.measureLength() + 1;
+struct FSInfo {
+    size_t totalBytes;
+    size_t usedBytes;
+    size_t blockSize;
+    size_t pageSize;
+    size_t maxOpenFiles;
+    size_t maxPathLength;
+};
+*/
+        SPIFFSobject[F("totalBytes")] = formatBytes(info.totalBytes);
+        SPIFFSobject[F("usedBytes")] = formatBytes(info.usedBytes);
+        SPIFFSobject[F("blockSize")] = formatBytes(info.blockSize);
+        SPIFFSobject[F("pageSize")] = formatBytes(info.pageSize);
+        SPIFFSobject[F("maxOpenFiles")] = info.maxOpenFiles;
+        SPIFFSobject[F("maxPathLength")] = info.maxPathLength;
+
+
+
+        sendJsonObjecttoHTTP(root, _HTTP);
+
+
+
+/*
         char buffer[jsonlength + 1];
         root.printTo(buffer, jsonlength + 1);
-        _HTTP->send(200, "text/json", String(buffer));
-        Debugf("Min Heap: %u\n", ESP.getFreeHeap());
 
-        return;
+        _HTTP.send(200, "text/json", String(buffer));
 
+    */
 
-        /*
-        uint16_t getVcc();
-        uint32_t getFreeHeap();
-
-        uint32_t getChipId();
-
-
-
-        uint8_t getCpuFreqMHz();
-
-        uint32_t getFlashChipId();
-        //gets the actual chip size based on the flash id
-        uint32_t getFlashChipRealSize();
-        //gets the size of the flash as set by the compiler
-        uint32_t getFlashChipSize();
-        uint32_t getFlashChipSpeed();
-        FlashMode_t getFlashChipMode();
-        uint32_t getFlashChipSizeByChipId();
-
-
-
-        uint32_t getSketchSize();
-        uint32_t getFreeSketchSpace();
-        bool updateSketch(Stream& in, uint32_t size, bool restartOnFail = false, bool restartOnSuccess = true);
-
-        String getResetInfo();
-        struct rst_info * getResetInfoPtr();
-
-        bool eraseConfig();
-
-        */
     }
 
     /*------------------------------------------------------------------------------------------------------------------
@@ -1195,14 +1445,14 @@ void cache Settingsmanager::HandleDataRequest()
 
     static int8_t WiFiresult = -1;
 
-    if (_HTTP->hasArg("ssid") && _HTTP->hasArg("pass"))
+    if (_HTTP.hasArg("ssid") && _HTTP.hasArg("pass"))
     {
-        if (_HTTP->arg("ssid").length() > 0)
-        { // _HTTP->arg("pass").length() > 0) {  0 length passwords should be ok.. for open
+        if (_HTTP.arg("ssid").length() > 0)
+        { // _HTTP.arg("pass").length() > 0) {  0 length passwords should be ok.. for open
           // networks.
-            if (_HTTP->arg("ssid").length() < 33 && _HTTP->arg("pass").length() < 33)
+            if (_HTTP.arg("ssid").length() < 33 && _HTTP.arg("pass").length() < 33)
             {
-                if (_HTTP->arg("ssid") != WiFi.SSID() || _HTTP->arg("pass") != WiFi.psk())
+                if (_HTTP.arg("ssid") != WiFi.SSID() || _HTTP.arg("pass") != WiFi.psk())
                 {
                     
                     if(WiFi.getMode() == WIFI_AP) { WiFi.mode(WIFI_AP_STA);  };  // if WiFi STA off, turn it on.. 
@@ -1215,7 +1465,7 @@ void cache Settingsmanager::HandleDataRequest()
                     strcpy(old_pass, (const char*)WiFi.psk().c_str());
                     strcpy(old_ssid, (const char*)WiFi.SSID().c_str());
 
-                    _HTTP->send(200, "text",
+                    _HTTP.send(200, "text",
                         "accepted"); // important as it defines entry to the wait loop on client
 
                     Debug(F("Disconnecting.."));
@@ -1224,8 +1474,8 @@ void cache Settingsmanager::HandleDataRequest()
                     Debug(F("done \nInit..."));
 
 
-                    //     _ssid = strdup((const char *)_HTTP->arg("ssid").c_str());
-                    //     _pass = strdup((const char *)_HTTP->arg("pass").c_str());
+                    //     _ssid = strdup((const char *)_HTTP.arg("ssid").c_str());
+                    //     _pass = strdup((const char *)_HTTP.arg("pass").c_str());
 
                     /*
 
@@ -1235,12 +1485,12 @@ void cache Settingsmanager::HandleDataRequest()
                     */
 
                     //  First try does not change the vars
-                    WiFi.begin((const char*)_HTTP->arg("ssid").c_str(),
-                        (const char*)_HTTP->arg("pass").c_str());
+                    WiFi.begin((const char*)_HTTP.arg("ssid").c_str(),
+                        (const char*)_HTTP.arg("pass").c_str());
 
                     uint8_t i = 0;
 
-                    while (WiFi.status() != WL_CONNECTED && _HTTP->arg("removesaftey") == "No")
+                    while (WiFi.status() != WL_CONNECTED && _HTTP.arg("removesaftey") == "No")
                     {
                         WiFiresult = 0;
                         delay(500);
@@ -1287,8 +1537,8 @@ void cache Settingsmanager::HandleDataRequest()
                             free((void*)_pass);
                             _pass = NULL;
                         };
-                        _ssid = strdup((const char*)_HTTP->arg("ssid").c_str());
-                        _pass = strdup((const char*)_HTTP->arg("pass").c_str());
+                        _ssid = strdup((const char*)_HTTP.arg("ssid").c_str());
+                        _pass = strdup((const char*)_HTTP.arg("pass").c_str());
                         Debugln(F("New SSID and PASS work:  copied to system vars"));
                     }
                     // return;
@@ -1298,9 +1548,9 @@ void cache Settingsmanager::HandleDataRequest()
     }
 
     //  This is outside the loop...  wifiresult is a static to return previous result...
-    if (_HTTP->arg("plain") == "WiFiresult")
+    if (_HTTP.arg("plain") == "WiFiresult")
     {
-        _HTTP->send(200, "text", String(WiFiresult));
+        _HTTP.send(200, "text", String(WiFiresult));
         return;
     }
     /*------------------------------------------------------------------------------------------------------------------
@@ -1308,7 +1558,7 @@ void cache Settingsmanager::HandleDataRequest()
                                      STA config
     ------------------------------------------------------------------------------------------------------------------*/
 
-    if (_HTTP->hasArg("enable-STA"))
+    if (_HTTP.hasArg("enable-STA"))
     {
         save_flag = true;
 
@@ -1316,13 +1566,13 @@ void cache Settingsmanager::HandleDataRequest()
         WiFiMode mode = WiFi.getMode();
         bool reinit = false;
 
-        if (_HTTP->arg("enable-STA") == "off" && (mode == WIFI_STA || mode == WIFI_AP_STA))
+        if (_HTTP.arg("enable-STA") == "off" && (mode == WIFI_STA || mode == WIFI_AP_STA))
         {
             WiFi.mode(WIFI_AP); // always fall back to AP mode...
             WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
             Debugln(F("STA-disabled: falling back to AP mode."));
         }
-        else if (_HTTP->arg("enable-STA") == "on" && mode == WIFI_AP)
+        else if (_HTTP.arg("enable-STA") == "on" && mode == WIFI_AP)
         {
             WiFi.mode(WIFI_AP_STA);
             Debugln(F("Enabling STA mode"));
@@ -1330,7 +1580,7 @@ void cache Settingsmanager::HandleDataRequest()
         }
 
 
-        if (_HTTP->arg("enable-dhcp") == "on")
+        if (_HTTP.arg("enable-dhcp") == "on")
         {
 
             _DHCP = true;
@@ -1342,7 +1592,7 @@ void cache Settingsmanager::HandleDataRequest()
             Debugln(dhcpresult);
             reinit = true;
         }
-        else if (_HTTP->arg("enable-dhcp") == "off")
+        else if (_HTTP.arg("enable-dhcp") == "off")
         {
 
             save_flag = true;
@@ -1354,27 +1604,27 @@ void cache Settingsmanager::HandleDataRequest()
 
             bool ok = true;
 
-            if (_HTTP->hasArg("setSTAsetip"))
+            if (_HTTP.hasArg("setSTAsetip"))
             {
-                _IPs->IP = StringtoIP(_HTTP->arg("setSTAsetip"));
+                _IPs->IP = StringtoIP(_HTTP.arg("setSTAsetip"));
                 Debug(F("IP = "));
                 Debugln(_IPs->IP);
             }
             else
                 ok = false;
 
-            if (_HTTP->hasArg("setSTAsetgw"))
+            if (_HTTP.hasArg("setSTAsetgw"))
             {
-                _IPs->GW = StringtoIP(_HTTP->arg("setSTAsetgw"));
+                _IPs->GW = StringtoIP(_HTTP.arg("setSTAsetgw"));
                 Debug(F("gateway = "));
                 Debugln(_IPs->GW);
             }
             else
                 ok = false;
 
-            if (_HTTP->hasArg("setSTAsetsn"))
+            if (_HTTP.hasArg("setSTAsetsn"))
             {
-                _IPs->SN = StringtoIP(_HTTP->arg("setSTAsetsn"));
+                _IPs->SN = StringtoIP(_HTTP.arg("setSTAsetsn"));
                 Debug(F("subnet = "));
                 Debugln(_IPs->SN);
             }
@@ -1386,9 +1636,33 @@ void cache Settingsmanager::HandleDataRequest()
                 // WiFi.config(localIP, gateway, subnet);
                 reinit = true;
             }
+
+        if (_HTTP.hasArg("setSTAsetmac") && _HTTP.arg("setSTAsetmac").length() != 0) {
+
+            uint8_t mac_addr[6];
+
+            if ( StringtoMAC(mac_addr, _HTTP.arg("setSTAsetmac")) ) {
+
+
+              Debugln("New MAC parsed sucessfully"); 
+              Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]); 
+            
+                if (!_STAmac) {
+                  _STAmac = new uint8_t[6];
+                }            
+                memcpy (_STAmac, mac_addr, 6);
+                save_flag = true;
+
+            } else {
+                Serial.println("New MAC parsed FAILED"); 
+            }
+
+
+        }
+        
         }
 
-        if (reinit && _HTTP->arg("enable-STA") == "on")
+        if (reinit && _HTTP.arg("enable-STA") == "on")
             Wifistart();
             printdiagnositics();
 
@@ -1414,7 +1688,7 @@ void cache Settingsmanager::HandleDataRequest()
                                      AP config
     ------------------------------------------------------------------------------------------------------------------*/
 
-    if (_HTTP->hasArg("enable-AP"))
+    if (_HTTP.hasArg("enable-AP"))
     {
         save_flag = true;
 
@@ -1425,7 +1699,7 @@ void cache Settingsmanager::HandleDataRequest()
         // if (mode == WIFI_AP || mode == WIFI_AP_STA ) APstate = "ENABLED"; else APstate =
         // "DISABLED";
 
-        if (_HTTP->arg("setAPsetssid").length() != 0)
+        if (_HTTP.arg("setAPsetssid").length() != 0)
         {
 
             if (_APssid)
@@ -1433,12 +1707,12 @@ void cache Settingsmanager::HandleDataRequest()
                 free((void*)_APssid);
                 _APssid = NULL;
             }
-            _APssid = strdup((const char*)_HTTP->arg("setAPsetssid").c_str());
+            _APssid = strdup((const char*)_HTTP.arg("setAPsetssid").c_str());
         };
 
-        if (_HTTP->arg("setAPsetpass").length() != 0 && _HTTP->arg("setAPsetpass").length() < 63)
+        if (_HTTP.arg("setAPsetpass").length() != 0 && _HTTP.arg("setAPsetpass").length() < 63)
         {
-            //_APpass = (const char *)_HTTP->arg("setAPsetpass").c_str();
+            //_APpass = (const char *)_HTTP.arg("setAPsetpass").c_str();
 
             if (_APpass)
             {
@@ -1446,9 +1720,9 @@ void cache Settingsmanager::HandleDataRequest()
                 _APpass = NULL;
             }; // free memory if AP pass has been allocated.
 
-            _APpass = strdup((const char*)_HTTP->arg("setAPsetpass").c_str());
+            _APpass = strdup((const char*)_HTTP.arg("setAPsetpass").c_str());
         }
-        else if (_HTTP->arg("setAPsetpass").length() == 0 && _APpass)
+        else if (_HTTP.arg("setAPsetpass").length() == 0 && _APpass)
         {
 
             if (_APpass)
@@ -1458,11 +1732,33 @@ void cache Settingsmanager::HandleDataRequest()
             }; // free memory if AP pass has been allocated.
         };
 
+    if (_HTTP.hasArg("setAPsetmac") && _HTTP.arg("setAPsetmac").length() != 0) {
 
-        if (_HTTP->arg("enable-AP") == "on")
+            uint8_t mac_addr[6];
+
+            if ( StringtoMAC(mac_addr, _HTTP.arg("setAPsetmac")) ) {
+
+
+              Debugln("New AP MAC parsed sucessfully"); 
+              Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]); 
+            
+                if (!_APmac) {
+                  _APmac = new uint8_t[6];
+                }            
+                memcpy (_APmac, mac_addr, 6);
+                save_flag = true;
+
+            } else {
+                Serial.println("New AP MAC parsed FAILED"); 
+            }
+        }
+
+
+        if (_HTTP.arg("enable-AP") == "on")
         {
 
-            uint8_t channel = _HTTP->arg("setAPsetchannel").toInt();
+            uint8_t channel = _HTTP.arg("setAPsetchannel").toInt();
+
             if (channel > 13)
                 channel = 13;
             _APchannel = channel;
@@ -1470,19 +1766,19 @@ void cache Settingsmanager::HandleDataRequest()
             Debug(F("Enable AP channel: "));
             Debugln(_APchannel);
 
-            if (mode == WIFI_STA)
-                WiFi.mode(WIFI_AP_STA);
+            _APenabled = true; 
 
             InitialiseSoftAP();
+
             printdiagnositics();
         }
-        else if (_HTTP->arg("enable-AP") == "off")
+        else if (_HTTP.arg("enable-AP") == "off")
         {
 
             Debugln(F("Disable AP"));
+            _APenabled = false; 
 
-            if (mode == WIFI_AP_STA || mode == WIFI_AP)
-                WiFi.mode(WIFI_STA);
+            if (mode == WIFI_AP_STA || mode == WIFI_AP)  WiFi.mode(WIFI_STA);
 
             // if (WiFi.status() == WL_CONNECTED ) {
             //   //WiFi.softAPdisconnect(true);
@@ -1501,11 +1797,11 @@ void cache Settingsmanager::HandleDataRequest()
                                      Device Name
     ------------------------------------------------------------------------------------------------------------------*/
 
-    if (_HTTP->hasArg("deviceid"))
+    if (_HTTP.hasArg("deviceid"))
     {
-        if (_HTTP->arg("deviceid").length() != 0 && 
-            _HTTP->arg("deviceid").length() < 32 && 
-            _HTTP->arg("deviceid") != String(_host) )
+        if (_HTTP.arg("deviceid").length() != 0 && 
+            _HTTP.arg("deviceid").length() < 32 && 
+            _HTTP.arg("deviceid") != String(_host) )
         {
             save_flag = true;
             Debugln(F("Device ID changed"));
@@ -1518,7 +1814,7 @@ void cache Settingsmanager::HandleDataRequest()
                     free((void*)_APssid);
                     _APssid = NULL;
                 }
-                _APssid = strdup((const char*)_HTTP->arg("deviceid").c_str());
+                _APssid = strdup((const char*)_HTTP.arg("deviceid").c_str());
             }
 
             if (_host)
@@ -1526,7 +1822,7 @@ void cache Settingsmanager::HandleDataRequest()
                 free((void*)_host);
                 _host = NULL;
             }
-            _host = strdup((const char*)_HTTP->arg("deviceid").c_str());
+            _host = strdup((const char*)_HTTP.arg("deviceid").c_str());
             //  might need to add in here, wifireinting...
             WiFi.hostname(_host);
             InitialiseFeatures();
@@ -1538,7 +1834,7 @@ void cache Settingsmanager::HandleDataRequest()
                                      Restart wifi
     ------------------------------------------------------------------------------------------------------------------*/
 
-    if (_HTTP->arg("plain") == "resetwifi")
+    if (_HTTP.arg("plain") == "resetwifi")
     {
         ESP.eraseConfig(); // not sure if this is needed... 
 
@@ -1548,14 +1844,21 @@ void cache Settingsmanager::HandleDataRequest()
 
     /*------------------------------------------------------------------------------------------------------------------
 
-                                     AP config
+                                     OTA config
     ------------------------------------------------------------------------------------------------------------------*/
-    if (_HTTP->hasArg("otaenable"))
+    // if (_HTTP.hasArg("OTAusechipID")) {
+
+    //     _OTAusechipID = (_HTTP.arg("OTAusechipID") == "Yes")? true : false; 
+    //     Debugln(F("OTA append ChipID to host")); 
+    //     save_flag = true; 
+    // }
+
+    if (_HTTP.hasArg("otaenable"))
     {
         Debugln(F("Depreciated")); 
         // save_flag = true;
 
-        // bool command = (_HTTP->arg("otaenable") == "on") ? true : false;
+        // bool command = (_HTTP.arg("otaenable") == "on") ? true : false;
 
         // if (command != _OTAenabled)
         // {
@@ -1594,75 +1897,81 @@ void cache Settingsmanager::HandleDataRequest()
     ARG: 2, "setAPsetmac" = "1A%3AFE%3A34%3AA4%3A4C%3A73"
     */
 
-    if (_HTTP->hasArg("mdnsenable"))
+    if (_HTTP.hasArg("mdnsenable"))
     {
         save_flag = true;
 
-        bool command = (_HTTP->arg("mdnsenable") == "on") ? true : false;
+        bool command = (_HTTP.arg("mdnsenable") == "on") ? true : false;
 
         if (command != _mDNSenabled)
         {
             _mDNSenabled = command;
-
             InitialiseFeatures();
-
-
-            if (_mDNSenabled)
-            {
-                // long before = ESP.getFreeHeap();
-                Debugln(F("Enable mDNS"));
-
-                // String insert = F("OTA Enabled, heap used: %u \n");
-                // Debugf(insert.c_str(), before - ESP.getFreeHeap() );
-            }
-            else
-            {
-
-                // long before = ESP.getFreeHeap();
-                Debugln(F("Disable mDNS"));
-
-
-                // Debugf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
-            }
         }
     } // end of OTA enable
   /*------------------------------------------------------------------------------------------------------------------
 
                                      FORMAT SPIFFS
     ------------------------------------------------------------------------------------------------------------------*/
-     if (_HTTP->arg("plain") == "formatSPIFFS" & _HTTP->method() == HTTP_POST) {
+     if (_HTTP.arg("plain") == "formatSPIFFS" & _HTTP.method() == HTTP_POST) {
         Debug(F("Format SPIFFS"));
-        //SPIFFS.format(); 
+        //_fs.format(); 
         Debugln(F(" done"));
      }
 
-     if (_HTTP->arg("plain") == "upgrade" & _HTTP->method() == HTTP_POST) {
+     if (_HTTP.arg("plain") == "upgrade" & _HTTP.method() == HTTP_POST) {
         // Debug(F("Upgrade files"));
 
-        //     Dir dir = SPIFFS.openDir("/");
+        //     Dir dir = _fs.openDir("/");
         //      while (dir.next()) {    
         //         String fileName = dir.fileName();
         //             size_t fileSize = dir.fileSize();
         //             Debugf("     Deleting: %s\n", fileName.c_str());
-        //             SPIFFS.remove(fileName);
+        //             _fs.remove(fileName);
         //         }
         // Debugln(F(" done, rebooting"));
-        // _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
+        // _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
         // ESP.restart(); 
         FilesCheck(false);
      }     
 
-     if (_HTTP->arg("plain") == "deletesettings" & _HTTP->method() == HTTP_POST) {
+     if (_HTTP.arg("plain") == "deletesettings" & _HTTP.method() == HTTP_POST) {
 
         Debug(F("Delete Settings File"));
-            if (SPIFFS.remove("/settings.txt")) {
+            if (_fs.remove("/settings.txt")) {
                 Debugln(F(" done"));
             } else {
                 Debugln(F(" failed"));
             }
     }
 
+  /*------------------------------------------------------------------------------------------------------------------
+
+                                     MAC address STA + AP
+    ------------------------------------------------------------------------------------------------------------------*/
 
 
-    _HTTP->send(200, "text", "OK"); // return ok to speed up AJAX stuff
+
+    
+
+  /*------------------------------------------------------------------------------------------------------------------
+
+                                     AP reboot behaviour
+    ------------------------------------------------------------------------------------------------------------------*/
+
+        if (_HTTP.hasArg("select-AP-behaviour") ) {
+            Debugln("Recieved AP behaviour request"); 
+            int rebootvar = _HTTP.arg("select-AP-behaviour").toInt(); 
+
+            if (rebootvar == 1 || rebootvar == 2 ||rebootvar == 3 ||rebootvar == 4 ) {
+                _APrestartmode = rebootvar; 
+                save_flag = true;
+            }
+
+        }
+  
+
+
+
+    _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
 }
