@@ -82,7 +82,7 @@ $(function() {
 <body>
    <div class='ui-helper-hidden'></div>
 
-         <div data-role="header" data-theme="a" data-position="fixed">
+         <div data-role="header" data-theme="a">
          <h1>ESP Manager</h1>
                <a href="#leftpanel"  class="ui-btn ui-btn-left ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-bars">Menu</a>
                <a href="#rightpanel"  class="ui-btn ui-btn-right ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-gear">Menu</a>
@@ -97,8 +97,8 @@ $(function() {
          <div>
                <a href="/" data-ajax="false" data-role="button" class="ui-btn">Home</a>
                <a href="#generalpage" data-role="button" class="ui-btn">General</a>
-               <a href="#wifipage" data-role="button" class="ui-btn">WiFi - STA</a>
-               <a href="#appage" data-role="button" class="ui-btn">WiFi - AP</a>
+               <a href="#wifipage" data-role="button" class="ui-btn">WiFi</a>
+               <a href="#appage" data-role="button" class="ui-btn">AP</a>
                <a href="#otapage" data-role="button" class="ui-btn">OTA</a>
                <a href="#aboutpage" data-role="button" class="ui-btn">About</a>
                <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
@@ -186,20 +186,20 @@ $(function() {
     <label for="select-AP-behav">Select AP behaviour:</label>
                 <select name="select-AP-behaviour" id="select-AP-behav">
                   <option value="1">None</option>
-                  <option value="2">No STA on boot = 5min AP</option>
-                  <option value="3">No STA on boot = 10min AP</option>
-                  <option value="4">When ever no STA</option>
+                  <option value="2">No WiFi, on boot, 5min</option>
+                  <option value="3">No WiFi, on boot, 10min</option>
+                  <option value="4">When no WiFi</option>
                 </select>
                 </div>
 
-                  <div class="ui-field-contain">
+<!--                   <div class="ui-field-contain">
                   <label for="flip-mdnsenable">Enable mDNS:</label>
                   <select id="flip-mdnsenable" name="mdnsenable" data-role="flipswitch">
                      <option>off</option>
                      <option>on</option>
                   </select>
                   </div>
-<!--                  <div class="ui-field-contain">
+                  <div class="ui-field-contain">
                   <label for="flip-wifimanage">Manage WiFi:</label>
                   <select id="flip-wifimanage" name="wifimanage" data-role="flipswitch">
                      <option>off</option>
@@ -407,23 +407,12 @@ $(function() {
                <h3>IDE Upload</h3>             
                <form>
                   <div class="ui-field-contain">
-                  <label for="flip-OTAusechipID">Append ChipID to Host:</label>
-                  <select id="flip-OTAusechipID" name="OTAusechipID" data-role="flipswitch">
-                     <option>No</option>
-                     <option>Yes</option>
-                  </select>
-                  </div>
-                  
-                  <div class="ui-field-contain">
                   <label for="flip-otaenable">Enable OTA:</label>
                   <select id="flip-otaenable" name="otaenable" data-role="flipswitch">
                      <option>off</option>
                      <option>on</option>
                   </select>
                   </div>
-                  
-                  
-                  
                </form>
                <h3>File Upload</h3>
                   <form id="updaterform" method='POST' action='http://192.168.1.207/update' enctype='multipart/form-data'>

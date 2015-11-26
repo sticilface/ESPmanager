@@ -47,24 +47,12 @@ $( document ).on( "panelcreate", function( event, ui ) {
  *                   General Page
  * 
  ****************************************************/
+$(document).on("pagecreate", "#generalpage", function() {
 
-$(document).on("pageshow", "#generalpage", function() {
-  
-
-      getGenvars();
-
+    getGenvars();
+    
     function getGenvars() {
         $.getJSON("data.esp?plain=WiFiDetails", function(result) {
-          
-            $("#select-AP-behav").val(result.general.APrestartmode).selectmenu( "refresh" );
-
-              //  $("#select-AP-behav").attr("checked",true).checkboxradio("refresh");
-            
-            $("#flip-mdnsenable").val( (result.general.mDNSenabled)? "on":"off").flipswitch('refresh');
-                
-                
-            console.log("Restart mode: " + result.general.APrestartmode ); 
-            
             //$("#device-name").val("").attr("placeholder", result.general.deviceid );
             $("#device-name").val(result.general.deviceid);
 
@@ -92,33 +80,21 @@ $(document).on("pagecreate", "#otapage", function() {
         });
 
 
-    // $.getJSON("data.esp?plain=WiFiDetails", function(result) {
+    $.getJSON("data.esp?plain=WiFiDetails", function(result) {
     
-    //     //$("#device-name").val("").attr("placeholder", result.general.deviceid).blur();
-        
-    //         if (result.general.OTAusechipID === true) {
-    //             $("#flip-OTAusechipID").val('Yes').flipswitch('refresh');
-    //         } else {
-    //             $("#flip-OTAusechipID").val('No').flipswitch('refresh');
-    //         }              
-            
-        
-    //         if (result.general.OTAenabled === true) {
-    //             $("#flip-otaenable").val('on').flipswitch('refresh');
-    //         } else {
-    //             $("#flip-otaenable").val('off').flipswitch('refresh');
-    //         }
+        //$("#device-name").val("").attr("placeholder", result.general.deviceid).blur();
+            if (result.general.OTAenabled === true) {
+                $("#flip-otaenable").val('on').flipswitch('refresh');
+            } else {
+                $("#flip-otaenable").val('off').flipswitch('refresh');
+            }
 
-    //         });
+            });
 
 
-        // $("#flip-otaenable").change( function() {
-        //     $.post("data.esp", $(this).serialize());
-        // })
-        // $("#flip-OTAusechipID").change( function() {
-        //     $.post("data.esp", $(this).serialize());
-        // })
-
+        $("#flip-otaenable").change( function() {
+            $.post("data.esp", $(this.form).serialize());
+        })
 
 
 });
@@ -211,9 +187,7 @@ $(document).on("pagecreate", "#wifipage", function() {
             });
             $("#wifinetworks-data").append("</div>");
             $("#wifinetworks-data").enhanceWithin();
-        }).success(function() { $("#status").empty().append("Connected").css("color", "green");  })
-        .error(function() {   $("#status").empty().append("Not Connected").css("color", "red");  })
-        .complete(function() {  });
+        });
     }
 
     function submitnewssid() {
@@ -256,7 +230,7 @@ $(document).on("pagecreate", "#wifipage", function() {
                 $("#wifiinsert").append(
                     "<h3 class=\"centerwrapper\">" + radioanswer + "</h3>" +
                     "<div class=\"popup\">" +
-                    "<br>Connected: " + ((object.connected)? "Yes" : "No") +
+                    "<br>Connected: " + object.connected +
                     "<br>RSSI: " + object.rssi +
                     "<br>Channel: " + object.channel +
                     "<br>Security: " + object.encyrpted +
@@ -300,8 +274,6 @@ $(document).on("pagecreate", "#wifipage", function() {
         $.getJSON(request, function(result) {
             globalwifi = result;
 
-
-            
             if ("networks" in result) {
                 staticwifi = result.networks;
                 $("#wifinetworks-data").empty();
@@ -367,9 +339,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
             $("#wifipage").enhanceWithin();
 
-        }).success(function() { $("#status").empty().append("Connected").css("color", "green");  })
-        .error(function() {   $("#status").empty().append("Not Connected").css("color", "red");  })
-        .complete(function() {  });
+        });
     }
 
 }); // end of wifipage create.. 
@@ -387,47 +357,19 @@ $(document).on("pagecreate", "#aboutpage", function() {
             $("#aboutvars").empty();
             $("#aboutvars").append("<br>Version = " + results.version_var);
             $("#aboutvars").append("<br>Compile Date = " + results.compiletime_var);
-
-            $("#aboutvars").append("<br>");
-
-            $("#aboutvars").append("<br>Heap = " + results.heap_var);
-            $("#aboutvars").append("<br>Millis = " + results.millis_var);
-            $("#aboutvars").append("<br>UpTime = " + results.uptime_var);
-            
-            $("#aboutvars").append("<br>");
-
-            $("#aboutvars").append("<br>Chip ID = " + results.chipid_var);
             $("#aboutvars").append("<br>SDK Version = " + results.sdk_var);
-            $("#aboutvars").append("<br>Boot Version = " + results.bootverion_var);
-            $("#aboutvars").append("<br>Boot Mode = " + results.bootmode_var);
-            $("#aboutvars").append("<br> CPU Speed = " + results.cpu_var + "Mhz");
-            $("#aboutvars").append("<br>");
-            
-            $("#aboutvars").append("<br>SPIFFS Size = " + results.SPIFFS.totalBytes);
-            $("#aboutvars").append("<br>SPIFFS Used = " + results.SPIFFS.usedBytes);
-            $("#aboutvars").append("<br>SPIFFS Blocksize = " + results.SPIFFS.blockSize);
-            $("#aboutvars").append("<br>SPIFFS Pagesize = " + results.SPIFFS.pageSize);
-            $("#aboutvars").append("<br>SPIFFS Max Open Files = " + results.SPIFFS.maxOpenFiles);
-            $("#aboutvars").append("<br>SPIFFS Max Path Length = " + results.SPIFFS.maxPathLength);
-            
-            $("#aboutvars").append("<br>");
-            
-            $("#aboutvars").append("<br>Flash ID = " + results.flashid_var);
+            $("#aboutvars").append("<br>Heap = " + results.heap_var);
             $("#aboutvars").append("<br>Flash Size = " + results.flashsize_var);
-            $("#aboutvars").append("<br>Flash Real Size = " + results.flashRealSize_var);
-            $("#aboutvars").append("<br>Flash Size by ID = " + results.flashchipsizebyid_var);
-            $("#aboutvars").append("<br>Flash Chip Mode = " + results.flashchipmode_var);
-            $("#aboutvars").append("<br>");
-
+            $("#aboutvars").append("<br>Chip ID = " + results.chipid_var);
+            $("#aboutvars").append("<br>Flash ID = " + results.flashid_var);
             $("#aboutvars").append("<br>Sketch Size = " + results.sketchsize_var);
             $("#aboutvars").append("<br>Free Space = " + results.freespace_var);
-            $("#aboutvars").append("<br>");
-
+            $("#aboutvars").append("<br>Millis = " + results.millis_var);
+            $("#aboutvars").append("<br>UpTime = " + results.uptime_var);
             $("#aboutvars").append("<br>VCC = " + results.vcc_var);
             $("#aboutvars").append("<br>RSSI = " + results.rssi_var);
-        }).success(function() { $("#status").empty().append("Connected").css("color", "green");  })
-        .error(function() {   $("#status").empty().append("Not Connected").css("color", "red");  })
-        .complete(function() {  });
+            $("#aboutvars").append("<br> CPU Speed = " + results.cpu_var + "Mhz");
+        });
     }
 
     //  $(document).ready(function(){
@@ -520,9 +462,7 @@ $(document).on("pagecreate", "#appage", function() {
                 $("#flip-AP-hidden").flipswitch('disable');
             }
 
-        }).success(function() { $("#status").empty().append("Connected").css("color", "green");  })
-        .error(function() {   $("#status").empty().append("Not Connected").css("color", "red");  })
-        .complete(function() {  });
+        });
 
     }
 
