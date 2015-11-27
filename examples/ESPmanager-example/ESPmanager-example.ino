@@ -26,9 +26,7 @@ Password management
 //#define MANAGE_DYNAMIC
 
 
-const char * host = "Melvide-ESP";
-const char * ssid = "SKY";
-const char * pass = "wellcometrust";
+
 
 
 ESP8266WebServer HTTP(80);
@@ -37,7 +35,7 @@ FSBrowser fsbrowser(HTTP);
 #ifdef MANAGE_DYNAMIC
   ESPmanager * settings = NULL; 
 #else
-  ESPmanager settings(HTTP, SPIFFS, host, ssid, pass);
+  ESPmanager settings(HTTP, SPIFFS);
 #endif
 
 

@@ -82,7 +82,6 @@ public:
 	void handle();
 	static String IPtoString(IPAddress address);
 	static IPAddress StringtoIP(const String IP_string);
-	static void printdiagnositics();
 	static String formatBytes(size_t bytes);
 	static bool StringtoMAC(uint8_t *mac, const String &input);
 	static void urldecode(char *dst, const char *src); // need to check it works to decode the %03... for :
@@ -105,7 +104,7 @@ private:
 	bool FilesCheck(bool initwifi = true);
 	bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
 	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file);
-	//WiFiClientSecure * SecClient;
+
 	void NewFileCheck();
 
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
@@ -114,13 +113,14 @@ private:
 
 
 	const char * C_null = "";
-	const char * _host = NULL;
-	const char * _ssid = NULL;
-	const char * _pass = NULL;
-	const char * _APpass = NULL;
-	const char * _APssid = NULL;
-	uint8_t * _STAmac = NULL;
-	uint8_t * _APmac = NULL;
+	const char * _host = nullptr;
+	const char * _ssid = nullptr;
+	const char * _pass = nullptr;
+	const char * _APpass = nullptr;
+	const char * _APssid = nullptr;
+	const char * _OTApassword = nullptr; 
+	uint8_t * _STAmac = nullptr;
+	uint8_t * _APmac = nullptr;
 
 
 	FS & _fs;
