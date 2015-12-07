@@ -41,7 +41,7 @@ To Upload
 #include <ESP8266HTTPUpdateServer.h>
 
 
-//#define DEBUG_YES
+#define DEBUG_YES
 #define SETTINGS_FILE "/espman/settings.txt"
 #define ESPMANVERSION "1.0"
 
@@ -90,6 +90,8 @@ public:
 
 	bool Wifistart();
 
+	const char * getHostname() { return _host; }; 
+
 private:
 
 
@@ -98,7 +100,7 @@ private:
 	void HandleDataRequest();
 	void InitialiseFeatures();
 	void InitialiseSoftAP();
-	void LoadSettings();
+	bool LoadSettings();
 	void SaveSettings();
 	void PrintVariables();
 	bool FilesCheck(bool initwifi = true);

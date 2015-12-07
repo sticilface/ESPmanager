@@ -5,7 +5,7 @@
 
 Uses around 2K heap 
 Takes care of OTA
-Password management
+Password management - to do.... think about security.. maybe just hardcodeit... 
 
 --------------------------------------------------------------------------------------------------------*/
 

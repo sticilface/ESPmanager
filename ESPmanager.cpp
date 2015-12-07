@@ -99,42 +99,13 @@ void cache ESPmanager::begin()
 
         NewFileCheck();
 
-        LoadSettings();
+        if (LoadSettings()) Debugln("Load settings returned true"); else Debugln("LoadSettings returned false");
     }
     else
     {
         Debugln(F("File System mount failed"));
     }
-
-
-    if (_host)
-    {
-        if (WiFi.hostname(_host))
-        {
-            Debug(F("Host Name Set: "));
-            Debugln(_host);
-        }
-    }
-    else
-    {
-        char tmp[15];
-        sprintf(tmp, "esp8266-%06x", ESP.getChipId());
-        _host = strdup(tmp);
-        Debug(F("Default Host Name: "));
-        Debugln(_host);
-    }
-
-    if (!_APssid)
-    {
-        _APssid = strdup(wifi_station_get_hostname());
-    }
-
-    if (_APenabled) {
-        Debugln(F("Soft AP enabled by config"));
-        InitialiseSoftAP();
-    } else Debugln(F("Soft AP disbaled by config"));
-
-
+    
     if (_manageWiFi && !Wifistart())
     {
         WiFiMode(WIFI_AP_STA);
@@ -158,6 +129,39 @@ void cache ESPmanager::begin()
         Serial.print(WiFi.localIP());
         Serial.println(")");
     }
+
+    if (_host)
+    {
+        if (WiFi.hostname(_host))
+        {
+            Debug(F("Host Name Set: "));
+            Debugln(_host);
+        }
+    }
+    else
+    {
+        char tmp[15];
+        sprintf(tmp, "esp8266-%06x", ESP.getChipId());
+        _host = strdup(tmp);
+        Debug(F("Default Host Name: "));
+        Debugln(_host);
+    }
+
+    if (!_APssid)
+    {
+        // if (wifi_station_get_hostname())
+        //     _APssid = strdup(wifi_station_get_hostname());
+        // else
+            _APssid = _host;
+    }
+
+    if (_APenabled) {
+        Debugln(F("Soft AP enabled by config"));
+        InitialiseSoftAP();
+    } else Debugln(F("Soft AP disbaled by config"));
+
+
+
     // printdiagnositics();
 
     InitialiseFeatures();
@@ -168,7 +172,7 @@ void cache ESPmanager::begin()
 
 }
 
-void cache ESPmanager::LoadSettings()
+bool cache ESPmanager::LoadSettings()
 {
 
     DynamicJsonBuffer jsonBuffer(1000);
@@ -176,7 +180,7 @@ void cache ESPmanager::LoadSettings()
     if (!f)
     {
         Debugln(F("Settings file open failed!"));
-        return;
+        return false;
     }
 
     f.seek(0, SeekSet);
@@ -195,7 +199,7 @@ void cache ESPmanager::LoadSettings()
     if (!root.success())
     {
         Debugln(F("Parsing settings file Failed!"));
-        return;
+        return false;
     }
 
     if (root.containsKey("host"))
@@ -381,6 +385,7 @@ void cache ESPmanager::LoadSettings()
     Debugln(F("----- Saved Variables -----"));
     PrintVariables();
     Debugln(F("---------------------------"));
+    return true;
 }
 
 
@@ -622,7 +627,7 @@ void cache ESPmanager::InitialiseFeatures()
         if (error == OTA_AUTH_ERROR) Serial.println(F("Auth Failed"));
         else if (error == OTA_BEGIN_ERROR) Serial.println(F("Begin Failed"));
         else if (error == OTA_CONNECT_ERROR) Serial.println(F("Connect Failed"));
-        else if (error == OTA_RECIEVE_ERROR) Serial.println(F("Receive Failed"));
+        else if (error == OTA_RECEIVE_ERROR) Serial.println(F("Receive Failed"));
         else if (error == OTA_END_ERROR) Serial.println(F("End Failed"));
     });
 
