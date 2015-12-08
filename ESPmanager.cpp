@@ -1157,6 +1157,7 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T& root, ESP8266WebSer
     BufferedPrint<HTTP_DOWNLOAD_UNIT_SIZE> proxy(_HTTP);
     root.printTo(proxy);
     proxy.flush();
+    proxy.stop(); 
 
 }
 
@@ -1412,7 +1413,7 @@ void cache ESPmanager::HandleDataRequest()
         SPIFFSobject[F("maxPathLength")] = info.maxPathLength;
 
         sendJsontoHTTP(root, _HTTP);
-
+        return; 
     }
 
     /*------------------------------------------------------------------------------------------------------------------

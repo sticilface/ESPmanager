@@ -186,6 +186,11 @@ public:
 		_size = 0;
 	}
 
+	void stop()
+	{
+		_client.stop();
+	}
+
 private:
 	WiFiClient _client;
 	size_t _size;
