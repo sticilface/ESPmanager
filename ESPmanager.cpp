@@ -24,6 +24,8 @@ ESPmanager::ESPmanager(
     {
         _pass = strdup(pass);
     }
+
+    _manageWiFi = true;
 }
 
 ESPmanager::~ESPmanager()
@@ -105,20 +107,27 @@ void cache ESPmanager::begin()
     {
         Debugln(F("File System mount failed"));
     }
-    
-    if (_manageWiFi && !Wifistart())
+
+    if (_manageWiFi)
     {
+        Debugln("Managing WiFi");
+
         WiFiMode(WIFI_AP_STA);
 
-        if (_APrestartmode > 1) { // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
+        delay(1000);
 
-            _APtimer = millis();
-            Debug(F("WiFi Failed: "));
-            if (!_APenabled) {
-                InitialiseSoftAP();
-                Debug(F("Starting AP"));
+        if (!Wifistart()) {
+
+            if (_APrestartmode > 1) { // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
+
+                _APtimer = millis();
+                Debug(F("WiFi Failed: "));
+                if (!_APenabled) {
+                    InitialiseSoftAP();
+                    Debug(F("Starting AP"));
+                }
+                Debugln();
             }
-            Debugln();
         }
     }
 
@@ -152,7 +161,7 @@ void cache ESPmanager::begin()
         // if (wifi_station_get_hostname())
         //     _APssid = strdup(wifi_station_get_hostname());
         // else
-            _APssid = _host;
+        _APssid = _host;
     }
 
     if (_APenabled) {
@@ -958,8 +967,7 @@ bool cache ESPmanager::Wifistart()
     // WiFiMode(WIFI_AP_STA);
     // WiFi.begin(_ssid,_pass);
 
-    if (WiFi.getMode() == WIFI_AP)
-        return false;
+    if (WiFi.getMode() == WIFI_AP) { return false;}
 
 
     if (!_DHCP && _IPs)
@@ -1011,6 +1019,8 @@ bool cache ESPmanager::Wifistart()
         if (i > 60)
             break;
     }
+
+    Debugln();
 
     if (WiFi.status() == WL_CONNECTED)
     {
@@ -1157,7 +1167,7 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T& root, ESP8266WebSer
     BufferedPrint<HTTP_DOWNLOAD_UNIT_SIZE> proxy(_HTTP);
     root.printTo(proxy);
     proxy.flush();
-    proxy.stop(); 
+    proxy.stop();
 
 }
 
@@ -1413,7 +1423,7 @@ void cache ESPmanager::HandleDataRequest()
         SPIFFSobject[F("maxPathLength")] = info.maxPathLength;
 
         sendJsontoHTTP(root, _HTTP);
-        return; 
+        return;
     }
 
     /*------------------------------------------------------------------------------------------------------------------
