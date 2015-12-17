@@ -1,9 +1,13 @@
 /*-------------------------------------------------------------------------------------------------------
 
 
-							Example config software..
+							Example ESP Manager software..
 
 BeerWare Licence, just give due credits
+
+Upload files to the ESP using this command (on mac and linux anyway, can upload using serial via SPIFFS data upload too)
+for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
+ * Thanks to me-no-dev
 
 --------------------------------------------------------------------------------------------------------*/
 #include <FS.h> //  Settings saved to SPIFFS
