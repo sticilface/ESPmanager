@@ -12,7 +12,7 @@ Instructions.
 3) Add in your WiFi details if you want (will allow you to upload the SPIFFS stuff via web)  <br>
 4) If you do NOT put in you WiFi details, you must upload the data directoy to SPIFFS. <br>
 5) If your ESP now connects to your WiFi network, put the IP in this command <br>
- `for file in ``ls -A1``; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done ` <br>
+ ``for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done `` <br>
   whilst in the data directory of the example. <br>
 6) Reboot the ESP.. it will copy the required files to a SPIFFS folder called espman <br>
 7) Now visit http://X.X.X.X/espman and it should work... <br>
