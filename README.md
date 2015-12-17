@@ -8,7 +8,7 @@ Uses Jquerymobile and AJAX to run everything, with cache control should mean fai
 
 Requirements
 1) ESP8266 & Arduino IDE <br>
-2) The following header files 
+2) The following header files, must be in your sketch.    
 ```
 #include <FS.h>
 #include <ESP8266WiFi.h>
@@ -18,6 +18,8 @@ Requirements
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h> // https://github.com/bblanchon/ArduinoJson 
+
+#include <ESPmanager.h>
 ```
 
 Features <br>
