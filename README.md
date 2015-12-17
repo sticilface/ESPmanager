@@ -6,7 +6,7 @@ Super early stuff.  Likely to be bugs.
 
 Uses Jquerymobile and AJAX to run everything, with cache control should mean fairly snappy handling. 
 
-Feature
+Features <br>
 This project uses SPIFFS, JqueryMobile, AJAX, ArduinoJson and handles lots of aspects of ESP8266 management. Including joining WiFi Networks, Setting device name, enabling mDNS, you can upload files to SPIFFS, format SPIFFS, reboot the device, enable/disable the AP, enable/disable Station mode, set AP password, channel (if not in station mode), set the MAC address of both AP and STA. There is an About page that gives loads of variables regarding WiFi, SPIFFS, uptime, etc etc... 
 
 Instructions. 
