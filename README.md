@@ -6,9 +6,9 @@ Super early stuff.  Likely to be bugs.
 
 Uses Jquerymobile and AJAX to run everything, with cache control should mean fairly snappy handling. 
 
-Requirements
+Requirements <br>
 1) ESP8266 & Arduino IDE <br>
-2) The following header files, must be in your sketch.    
+2) The following header files, must be in your sketch. <br>
 ```
 #include <FS.h>
 #include <ESP8266WiFi.h>
