@@ -39,6 +39,8 @@ To Upload
 #include <ESP8266mDNS.h>
 #include <functional>
 #include <ESP8266HTTPUpdateServer.h>
+#include <ESP8266HTTPClient.h>
+
 
 
 #define DEBUG_YES
@@ -67,9 +69,17 @@ static const char * _jq1 =  "/jq1.11.1.js.gz";
 static const char * _jq2 =  "/jqm1.4.5.css.gz";
 static const char * _jq3 =  "/jqm1.4.5.js.gz";
 static const char * _jq4 =  "/configjava.js";
-static const char * _gif1 = "/ajax-loader.gif"; 
+static const char * _gif1 = "/ajax-loader.gif";
 static const char * _htm1 = "/config.htm";
-static const char * fileslist[file_no] = {_jq1, _jq2, _jq3, _jq4, _htm1, _gif1} ; // ,jq4,htm1,htm2,htm3};
+static const char * fileslist[file_no] = {_jq1, _jq2, _jq3, _jq4, _htm1, _gif1} ;
+
+static const char * __jq1 =  "/espman/jq1.11.1.js.gz";
+static const char * __jq2 =  "/espman/jqm1.4.5.css.gz";
+static const char * __jq3 =  "/espman/jqm1.4.5.js.gz";
+static const char * __jq4 =  "/espman/configjava.js";
+static const char * __gif1 = "/espman/images/ajax-loader.gif";
+static const char * __htm1 = "/espman/index.htm";
+static const char * TRUEfileslist[file_no] = {__jq1, __jq2, __jq3, __jq4, __htm1, __gif1} ;
 
 
 class ESPmanager
@@ -90,7 +100,7 @@ public:
 
 	bool Wifistart();
 
-	const char * getHostname() { return _host; }; 
+	const char * getHostname() { return _host; };
 
 private:
 
@@ -103,12 +113,13 @@ private:
 	bool LoadSettings();
 	void SaveSettings();
 	void PrintVariables();
-	bool FilesCheck(bool initwifi = true);
+
+	bool _FilesCheck(bool initwifi = true);
 	bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
 	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file);
 
-	void NewFileCheck();
-
+	void _NewFilesCheck();
+	bool _upgrade();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
 
 
@@ -120,7 +131,7 @@ private:
 	const char * _pass = nullptr;
 	const char * _APpass = nullptr;
 	const char * _APssid = nullptr;
-	const char * _OTApassword = nullptr; 
+	const char * _OTApassword = nullptr;
 	uint8_t * _STAmac = nullptr;
 	uint8_t * _APmac = nullptr;
 
@@ -166,7 +177,8 @@ public:
 	{
 	}
 
-	~BufferedPrint() {
+	~BufferedPrint()
+	{
 		_client.stop();
 	}
 
@@ -174,8 +186,7 @@ public:
 	{
 		_buffer[_size++] = c;
 
-		if (_size + 1 == CAPACITY)
-		{
+		if (_size + 1 == CAPACITY) {
 			flush();
 		}
 	}
