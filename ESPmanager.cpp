@@ -76,28 +76,28 @@ ESPmanager::~ESPmanager()
 void cache ESPmanager::begin()
 {
 
-    Debugln("Settings Manager V" ESPMANVERSION);
+    ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
 
     wifi_set_sleep_type(NONE_SLEEP_T); // workaround no modem sleep.
     WiFi.persistent(true); // new changes to wifi mode.  assume user wants persistent...
 
     if (_fs.begin()) {
-        Debugln(F("File System mounted sucessfully"));
+        ESPMan_Debugln(F("File System mounted sucessfully"));
 
         if (!_FilesCheck(true)) {
-            Debugln(F("Major FAIL, required files are NOT in SPIFFS, please upload required files"));
+            ESPMan_Debugln(F("Major FAIL, required files are NOT in SPIFFS, please upload required files"));
         }
 
         _NewFilesCheck();
 
-        if (LoadSettings()) Debugln("Load settings returned true"); else Debugln("LoadSettings returned false");
+        if (LoadSettings()) ESPMan_Debugln("Load settings returned true"); else ESPMan_Debugln("LoadSettings returned false");
     } else {
-        Debugln(F("File System mount failed"));
+        ESPMan_Debugln(F("File System mount failed"));
     }
 
     if (_manageWiFi) {
 
-        Debugln("Managing WiFi");
+        ESPMan_Debugln("Managing WiFi");
         WiFi.mode(WIFI_STA);
 
 
@@ -106,12 +106,12 @@ void cache ESPmanager::begin()
             if (_APrestartmode > 1) { // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
 
                 _APtimer = millis();
-                Debug(F("WiFi Failed: "));
+                ESPMan_Debug(F("WiFi Failed: "));
                 if (!_APenabled) {
                     InitialiseSoftAP();
-                    Debug(F("Starting AP"));
+                    ESPMan_Debug(F("Starting AP"));
                 }
-                Debugln();
+                ESPMan_Debugln();
             }
         } else {
             Serial.print(F("\nConnected to "));
@@ -125,15 +125,15 @@ void cache ESPmanager::begin()
 
     if (_host) {
         if (WiFi.hostname(_host)) {
-            Debug(F("Host Name Set: "));
-            Debugln(_host);
+            ESPMan_Debug(F("Host Name Set: "));
+            ESPMan_Debugln(_host);
         }
     } else {
         char tmp[15];
         sprintf(tmp, "esp8266-%06x", ESP.getChipId());
         _host = strdup(tmp);
-        Debug(F("Default Host Name: "));
-        Debugln(_host);
+        ESPMan_Debug(F("Default Host Name: "));
+        ESPMan_Debugln(_host);
     }
 
     if (!_APssid) {
@@ -144,9 +144,9 @@ void cache ESPmanager::begin()
     }
 
     if (_APenabled) {
-        Debugln(F("Soft AP enabled by config"));
+        ESPMan_Debugln(F("Soft AP enabled by config"));
         InitialiseSoftAP();
-    } else Debugln(F("Soft AP disbaled by config"));
+    } else ESPMan_Debugln(F("Soft AP disbaled by config"));
 
 
 
@@ -166,7 +166,7 @@ bool cache ESPmanager::LoadSettings()
     DynamicJsonBuffer jsonBuffer(1000);
     File f = _fs.open(SETTINGS_FILE, "r");
     if (!f) {
-        Debugln(F("Settings file open failed!"));
+        ESPMan_Debugln(F("Settings file open failed!"));
         return false;
     }
 
@@ -183,7 +183,7 @@ bool cache ESPmanager::LoadSettings()
     JsonObject& root = jsonBuffer.parseObject(data);
 
     if (!root.success()) {
-        Debugln(F("Parsing settings file Failed!"));
+        ESPMan_Debugln(F("Parsing settings file Failed!"));
         return false;
     }
 
@@ -311,7 +311,7 @@ bool cache ESPmanager::LoadSettings()
             savedmac[i] = root["STAmac"][i];
         }
         if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 ) {
-            Debugln("Saved STA MAC does not equal native mac");
+            ESPMan_Debugln("Saved STA MAC does not equal native mac");
             if (_STAmac) {
                 delete _STAmac;
                 _STAmac = nullptr;
@@ -330,7 +330,7 @@ bool cache ESPmanager::LoadSettings()
             savedmac[i] = root["APmac"][i];
         }
         if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 ) {
-            Debugln("Saved AP MAC does not equal native mac");
+            ESPMan_Debugln("Saved AP MAC does not equal native mac");
             if (_APmac) {
                 delete _APmac;
                 _APmac = nullptr;
@@ -341,9 +341,9 @@ bool cache ESPmanager::LoadSettings()
     }
 
 
-    Debugln(F("----- Saved Variables -----"));
+    ESPMan_Debugln(F("----- Saved Variables -----"));
     PrintVariables();
-    Debugln(F("---------------------------"));
+    ESPMan_Debugln(F("---------------------------"));
     return true;
 }
 
@@ -352,36 +352,36 @@ void cache ESPmanager::PrintVariables()
 {
 
 #ifdef DEBUG_YES
-    Debugln(F("VARIABLE STATES: "));
-    Debugf("_host = %s\n", _host);
-    Debugf("_ssid = %s\n", _ssid);
-    Debugf("_pass = %s\n", _pass);
-    Debugf("_APpass = %s\n", _APpass);
-    Debugf("_APssid = %s\n", _APssid);
-    Debugf("_APchannel = %u\n", _APchannel);
-    (_DHCP) ? Debugln(F("_DHCP = true")) : Debugln(F("_DHCP = false"));
-    (_APenabled) ? Debugln(F("_APenabled = true")) : Debugln(F("_APenabled = false"));
-    (_APhidden) ? Debugln(F("_APhidden = true")) : Debugln(F("_APhidden = false"));
-    (_OTAenabled) ? Debugln(F("_OTAenabled = true")) : Debugln(F("_OTAenabled = false"));
+    ESPMan_Debugln(F("VARIABLE STATES: "));
+    ESPMan_Debugf("_host = %s\n", _host);
+    ESPMan_Debugf("_ssid = %s\n", _ssid);
+    ESPMan_Debugf("_pass = %s\n", _pass);
+    ESPMan_Debugf("_APpass = %s\n", _APpass);
+    ESPMan_Debugf("_APssid = %s\n", _APssid);
+    ESPMan_Debugf("_APchannel = %u\n", _APchannel);
+    (_DHCP) ? ESPMan_Debugln(F("_DHCP = true")) : ESPMan_Debugln(F("_DHCP = false"));
+    (_APenabled) ? ESPMan_Debugln(F("_APenabled = true")) : ESPMan_Debugln(F("_APenabled = false"));
+    (_APhidden) ? ESPMan_Debugln(F("_APhidden = true")) : ESPMan_Debugln(F("_APhidden = false"));
+    (_OTAenabled) ? ESPMan_Debugln(F("_OTAenabled = true")) : ESPMan_Debugln(F("_OTAenabled = false"));
 
     if (_IPs) {
-        Debug(F("IPs->IP = "));
-        Debugln(IPtoString(_IPs->IP));
-        Debug(F("IPs->GW = "));
-        Debugln(IPtoString(_IPs->GW));
-        Debug(F("IPs->SN = "));
-        Debugln(IPtoString(_IPs->SN));
+        ESPMan_Debug(F("IPs->IP = "));
+        ESPMan_Debugln(IPtoString(_IPs->IP));
+        ESPMan_Debug(F("IPs->GW = "));
+        ESPMan_Debugln(IPtoString(_IPs->GW));
+        ESPMan_Debug(F("IPs->SN = "));
+        ESPMan_Debugln(IPtoString(_IPs->SN));
     } else
-        Debugln(F("NO IPs held in memory"));
+        ESPMan_Debugln(F("NO IPs held in memory"));
     if (_STAmac) {
-        Debug(F("STA MAC = "));
-        Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _STAmac[0],  _STAmac[1], _STAmac[2], _STAmac[3], _STAmac[4], _STAmac[5]);
+        ESPMan_Debug(F("STA MAC = "));
+        ESPMan_Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _STAmac[0],  _STAmac[1], _STAmac[2], _STAmac[3], _STAmac[4], _STAmac[5]);
 
-    } else Debugln("STA MAC not held in memory");
+    } else ESPMan_Debugln("STA MAC not held in memory");
     if (_APmac) {
-        Debug(F("AP MAC = "));
-        Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _APmac[0],  _APmac[1], _APmac[2], _APmac[3], _APmac[4], _APmac[5]);
-    } else Debugln("AP MAC not held in memory");
+        ESPMan_Debug(F("AP MAC = "));
+        ESPMan_Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _APmac[0],  _APmac[1], _APmac[2], _APmac[3], _APmac[4], _APmac[5]);
+    } else ESPMan_Debugln("AP MAC not held in memory");
 #endif
 }
 
@@ -456,10 +456,10 @@ void cache ESPmanager::SaveSettings()
         macAParray.add(apmac[i]);
     }
 
-    // Debugf("IP = %s, GW = %s, SN = %s\n", IP, GW, SN);
+    // ESPMan_Debugf("IP = %s, GW = %s, SN = %s\n", IP, GW, SN);
     File f = _fs.open(SETTINGS_FILE, "w");
     if (!f) {
-        Debugln(F("Settings file save failed!"));
+        ESPMan_Debugln(F("Settings file save failed!"));
         return;
     }
 
@@ -490,15 +490,15 @@ void cache ESPmanager::handle()
         if (_APrestartmode == 3) timer = 10 * 60 * 1000;
         if (millis() - _APtimer > timer) {
             WiFi.mode(WIFI_STA); //  == WIFI_AP
-            Debugln("AP Stopped");
+            ESPMan_Debugln("AP Stopped");
         }
     }
 
     if (WiFi.status() != WL_CONNECTED && _APrestartmode == 4) {
-        Debugln(F("WiFi Disconnected:  Starting AP"));
+        ESPMan_Debugln(F("WiFi Disconnected:  Starting AP"));
         WiFi.mode(WIFI_AP_STA);
         WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
-        Debugln(F("Done"));
+        ESPMan_Debugln(F("Done"));
     }
 
 
@@ -545,12 +545,12 @@ void cache ESPmanager::InitialiseFeatures()
 
     //     ArduinoOTA.setHostname(OTAhost);
 
-    //     Debugf("OTA host = %s\n", OTAhost);
+    //     ESPMan_Debugf("OTA host = %s\n", OTAhost);
 
     // } else {
     if (_host) {
         ArduinoOTA.setHostname(_host);
-        Debugf("OTA host = %s\n", _host);
+        ESPMan_Debugf("OTA host = %s\n", _host);
     };
     //}
     // Port defaults to 8266
@@ -794,15 +794,15 @@ void cache ESPmanager::InitialiseFeatures()
 
 bool cache ESPmanager::_upgrade()
 {
-    static const char * remotehost = "http://sticilface.github.io";
-    static const char * path = "/ESPmanager";
+    //static const char * remotehost = "http://sticilface.github.io";
+    //static const char * path = "/ESPmanager";
     static const uint16_t httpPort = 80;
     static const size_t bufsize = 1024;
 //  get files list into json
 
     HTTPClient http;
-
-    http.begin( "http://sticilface.github.io/ESPmanager/index.html"  ); //HTTP
+    String path = String(__updateserver) + String(__updatepath);
+    http.begin(path); //HTTP
 
     int httpCode = http.GET();
 
@@ -811,7 +811,7 @@ bool cache ESPmanager::_upgrade()
 
             size_t len = http.getSize();
             if (len > bufsize) {
-                Debugln("Receive update length too big.  Increase buffer");
+                ESPMan_Debugln("Receive update length too big.  Increase buffer");
                 return false;
             }
             uint8_t buff[bufsize] = { 0 }; // max size of input buffer. Don't use String, as arduinoJSON doesn't like it!
@@ -835,59 +835,58 @@ bool cache ESPmanager::_upgrade()
             }
             http.end();
 
-            //        Debugln("RAW BUFFER");
-            //        Debugln( (char*)buff);
-            //        Debugln("----------");
+            //        ESPMan_Debugln("RAW BUFFER");
+            //        ESPMan_Debugln( (char*)buff);
+            //        ESPMan_Debugln("----------");
 
             DynamicJsonBuffer jsonBuffer;
             JsonArray& root = jsonBuffer.parseArray( (char*)buff );
 
             if (!root.success()) {
-                Debugln("Parse JSON failed");
+                ESPMan_Debugln("Parse JSON failed");
                 return false;
             } else {
                 uint8_t count = 0;
                 for (JsonArray::iterator it = root.begin(); it != root.end(); ++it) {
 
                     const char* value = *it;
-                    String fullpathtodownload = String(remotehost) + String(path) + String(value);
+                    String fullpathtodownload = String(__updateserver) + String(value);
                     String filename = fullpathtodownload.substring( fullpathtodownload.lastIndexOf("/"), fullpathtodownload.length() );
-                    Debugf("[%u] %s -> %s\n", count++, filename.c_str(), fullpathtodownload.c_str());
+                    ESPMan_Debugf("[%u] %s -> %s\n", count++, filename.c_str(), fullpathtodownload.c_str());
 
                     File f = _fs.open("/tempfile", "w");
 
                     if (!f) {
-                        Serial.println("file open failed");
+                        ESPMan_Debugln("file open failed");
                         return false;
                     } else {
-                        Serial.println("File Created");
                         http.begin(fullpathtodownload);
                         int httpCode = http.GET();
                         if (httpCode) {
                             if (httpCode == HTTP_CODE_OK) {
                                 size_t len = http.getSize();
                                 size_t byteswritten = http.writeToStream(&f);
-                                Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;
+                                ESPMan_Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;
                                 if (f.size() == len) {
                                     f.close();
-                                    Debugln("Download Successful");
+                                    ESPMan_Debugln("Download Successful");
                                     _fs.rename("/tempfile", filename);
                                 } else {
-                                    Debugln("Download FAILED");
+                                    ESPMan_Debugln("Download FAILED");
                                     _fs.remove("/tempfile");
                                 }
-                            } else { Debugf("HTTP code not correct [%d]\n", httpCode); f.close(); return false; }
-                        } else { Debugf("HTTP code ERROR [%d]\n", httpCode); f.close(); return false; }
+                            } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); f.close(); return false; }
+                        } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); f.close(); return false; }
                         yield();
                     }
                 }
             }
         } else {
-            Debugf("HTTP CODE [%d]", httpCode);
+            ESPMan_Debugf("HTTP CODE [%d]", httpCode);
             http.end();
         }
     } else {
-        Debugln("GET request Failed");
+        ESPMan_Debugln("GET request Failed");
         http.end();
         return false;
     }
@@ -912,7 +911,7 @@ bool cache ESPmanager::_FilesCheck(bool startwifi)
         if (!_fs.exists(TRUEfileslist[i])) {
             present[i] = false;
             haserror = true;
-            Debugf("ERROR %s does not exist\n", TRUEfileslist[i]);
+            ESPMan_Debugf("ERROR %s does not exist\n", TRUEfileslist[i]);
         } else {present[i] = true; };
     }
 
@@ -939,7 +938,7 @@ bool cache ESPmanager::_FilesCheck(bool startwifi)
 
         } else {
 
-            Debugln(F("Attempted to download required files, failed no internet. Try hard coding credentials"));
+            ESPMan_Debugln(F("Attempted to download required files, failed no internet. Try hard coding credentials"));
         }
 
     }
@@ -958,9 +957,9 @@ void cache ESPmanager::InitialiseSoftAP()
 
     if (_APmac) {
         if ( wifi_set_macaddr(0x01, _APmac)) {
-            Debugln("AP MAC applied succesfully");
+            ESPMan_Debugln("AP MAC applied succesfully");
         } else {
-            Debugln("AP MAC FAILED");
+            ESPMan_Debugln("AP MAC FAILED");
         }
     }
 
@@ -979,28 +978,28 @@ bool cache ESPmanager::Wifistart()
     // WiFi.begin(_ssid,_pass);
 
     if (WiFi.getMode() == WIFI_AP) {
-        Debugln("WiFi MODE in AP: NOT STARTING");
+        ESPMan_Debugln("WiFi MODE in AP: NOT STARTING");
         return false;
     }
 
-    Debugf("WiFi Mode = %u\n", WiFi.getMode());
+    ESPMan_Debugf("WiFi Mode = %u\n", WiFi.getMode());
 
     wl_status_t status = WiFi.status();
 
-    Debugf("Pre WiFiStatus = %u \n", status);
+    ESPMan_Debugf("Pre WiFiStatus = %u \n", status);
 
 
     if (!_DHCP && _IPs) {
         //     void config(IPAddress local_ip, IPAddress gateway, IPAddress subnet);
-        Debugln(F("Using Stored IPs"));
+        ESPMan_Debugln(F("Using Stored IPs"));
         WiFi.config(_IPs->IP, _IPs->GW, _IPs->SN);
     }
 
     if (_STAmac) {
         if (wifi_set_macaddr(0x00, _STAmac)) {
-            Debugln("STA MAC applied succesfully");
+            ESPMan_Debugln("STA MAC applied succesfully");
         } else {
-            Debugln("STA MAC FAILED");
+            ESPMan_Debugln("STA MAC FAILED");
         }
     }
 
@@ -1008,7 +1007,7 @@ bool cache ESPmanager::Wifistart()
 
 //    WiFi.begin(); // This screws EVERYTHING up.  just leave it out!
 
-    Debugln("WiFi init");
+    ESPMan_Debugln("WiFi init");
     uint8_t i = 0;
     uint32_t timeout = millis();
     // wait for connection or fail
@@ -1016,17 +1015,17 @@ bool cache ESPmanager::Wifistart()
         delay(10);
         status = WiFi.status();
         if (millis() - timeout > 30000)  {
-            Debugln("TIMEOUT");
+            ESPMan_Debugln("TIMEOUT");
             break;
         }
     }
 
     status = WiFi.status();
-    Debugf("Autoconnect WiFiStatus = %u \n", status);
+    ESPMan_Debugf("Autoconnect WiFiStatus = %u \n", status);
 
     if (status != WL_CONNECTED) {
 
-        Debug(F("Auto connect failed..\nTrying stored credentials...\n"));
+        ESPMan_Debug(F("Auto connect failed..\nTrying stored credentials...\n"));
         WiFi.begin(_ssid, _pass);
         timeout = millis();
 
@@ -1034,7 +1033,7 @@ bool cache ESPmanager::Wifistart()
             delay(10);
             status = WiFi.status();
             if (millis() - timeout > 30000)  {
-                Debugln("TIMEOUT");
+                ESPMan_Debugln("TIMEOUT");
                 break;
             }
         }
@@ -1042,39 +1041,8 @@ bool cache ESPmanager::Wifistart()
     }
 
     status = WiFi.status();
-    Debugf("Stored Credentials WiFiStatus = %u \n", status);
+    ESPMan_Debugf("Stored Credentials WiFiStatus = %u \n", status);
 
-    if (status != WL_CONNECTED) {
-        Debug(F("Failed... setting up AP"));
-        WiFi.mode(WIFI_AP_STA);
-        WiFi.softAP(_APssid, _APpass);
-    }
-
-
-    // while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-
-    //     delay(500);
-    //     i++;
-    //     Debug(".");
-    //     if (i == 30) {
-    //         Debug(F("Auto connect failed..\nTrying stored credentials..."));
-
-    //         while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    //             delay(500);
-    //             i++;
-    //             Debug(".");
-    //             if (i == 60) {
-    //                 Debug(F("Failed... setting up AP"));
-    //                 WiFi.mode(WIFI_AP_STA);
-    //                 WiFi.softAP(_APssid, _APpass);
-    //                 break;
-    //             }
-    //         }
-    //     };
-
-
-
-    Debugln();
     status = WiFi.status();
 
     if (status == WL_CONNECTED) {
@@ -1144,11 +1112,11 @@ void cache ESPmanager::_NewFilesCheck()
             if (fileslist[i] == "/ajax-loader.gif") buf = "/espman/images/ajax-loader.gif";
             if (_fs.exists(buf)) {_fs.remove(buf); };
             if (_fs.rename(fileslist[i], buf)) {
-                Debugf("Found %s Renamed to %s\n", fileslist[i], buf.c_str());
+                ESPMan_Debugf("Found %s Renamed to %s\n", fileslist[i], buf.c_str());
             } else {
-                Debugf("Failed to rename %s ==> %s\n", fileslist[i], buf.c_str());
+                ESPMan_Debugf("Failed to rename %s ==> %s\n", fileslist[i], buf.c_str());
             }
-        }; //  else Debugf("%s : Not found\n", fileslist[i]);
+        }; //  else ESPMan_Debugf("%s : Not found\n", fileslist[i]);
     }
 }
 
@@ -1240,8 +1208,8 @@ void ESPmanager::handleFileUpload()
         String filename = upload.filename;
         filename.trim();
         if (!filename.startsWith("/")) filename = "/" + filename;
-        // Debug("handleFileUpload Name: "); Debugln(filename);
-        Debugf("Upload Name: %s\n", filename.c_str() );
+        // ESPMan_Debug("handleFileUpload Name: "); ESPMan_Debugln(filename);
+        ESPMan_Debugf("Upload Name: %s\n", filename.c_str() );
         if (_fs.exists(filename)) _fs.remove(filename);
 
         *fsUploadFile = _fs.open(filename, "w+");
@@ -1250,17 +1218,17 @@ void ESPmanager::handleFileUpload()
     } else if (upload.status == UPLOAD_FILE_WRITE) {
         if (*fsUploadFile) {
             fsUploadFile->write(upload.buf, upload.currentSize);
-            Debug(".");
+            ESPMan_Debug(".");
         };
     } else if (upload.status == UPLOAD_FILE_END) {
         fsUploadFile->close();
         if (fsUploadFile) {
             delete fsUploadFile;
             fsUploadFile = nullptr;
-            Debugf("\nDone Size: %u\n", upload.totalSize);
-        } else { Debug("ERROR"); };
+            ESPMan_Debugf("\nDone Size: %u\n", upload.totalSize);
+        } else { ESPMan_Debug("ERROR"); };
     } else if (upload.status == UPLOAD_FILE_ABORTED) {
-        Debug("\nAborted");
+        ESPMan_Debug("\nAborted");
         String filename = String(fsUploadFile->name());
         fsUploadFile->close();
         if (fsUploadFile) {
@@ -1282,7 +1250,7 @@ void cache ESPmanager::HandleDataRequest()
 
     String args = F("ARG: %u, \"%s\" = \"%s\"\n");
     for (uint8_t i = 0; i < _HTTP.args(); i++) {
-        Debugf(args.c_str(), i, _HTTP.argName(i).c_str(), _HTTP.arg(i).c_str());
+        ESPMan_Debugf(args.c_str(), i, _HTTP.argName(i).c_str(), _HTTP.arg(i).c_str());
     }
 
     /*------------------------------------------------------------------------------------------------------------------
@@ -1290,7 +1258,7 @@ void cache ESPmanager::HandleDataRequest()
     ------------------------------------------------------------------------------------------------------------------*/
 
     if (_HTTP.arg("plain") == "reboot") {
-        Debugln(F("Rebooting..."));
+        ESPMan_Debugln(F("Rebooting..."));
         _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
         ESP.restart();
     };
@@ -1303,9 +1271,9 @@ void cache ESPmanager::HandleDataRequest()
 
 
         if (_HTTP.arg("plain") == F("PerformWiFiScan")) {
-            Debug(F("Performing Wifi Network Scan..."));
+            ESPMan_Debug(F("Performing Wifi Network Scan..."));
             _wifinetworksfound = WiFi.scanNetworks();
-            Debugln(F("done"));
+            ESPMan_Debugln(F("done"));
         }
 
         const int BUFFER_SIZE = JSON_OBJECT_SIZE( _wifinetworksfound * 6) + JSON_ARRAY_SIZE(_wifinetworksfound) + JSON_OBJECT_SIZE(22);
@@ -1496,10 +1464,10 @@ void cache ESPmanager::HandleDataRequest()
                     _HTTP.send(200, "text",
                                "accepted"); // important as it defines entry to the wait loop on client
 
-                    Debug(F("Disconnecting.."));
+                    ESPMan_Debug(F("Disconnecting.."));
 
                     WiFi.disconnect();
-                    Debug(F("done \nInit..."));
+                    ESPMan_Debug(F("done \nInit..."));
 
 
                     //     _ssid = strdup((const char *)_HTTP.arg("ssid").c_str());
@@ -1522,10 +1490,10 @@ void cache ESPmanager::HandleDataRequest()
                         WiFiresult = 0;
                         delay(500);
                         i++;
-                        Debug(".");
+                        ESPMan_Debug(".");
                         if (i == 30) {
 
-                            Debug(F("Unable to join network...restore old settings"));
+                            ESPMan_Debug(F("Unable to join network...restore old settings"));
                             save_flag = false;
                             WiFiresult = 2;
 
@@ -1537,16 +1505,16 @@ void cache ESPmanager::HandleDataRequest()
 
                             while (WiFi.status() != WL_CONNECTED) {
                                 delay(500);
-                                Debug(".");
+                                ESPMan_Debug(".");
                             };
-                            Debug(F("done"));
+                            ESPMan_Debug(F("done"));
                             break;
                         }
                     }
 
-                    Debugf("\nconnected: SSID = %s, pass = %s\n", WiFi.SSID().c_str(),
+                    ESPMan_Debugf("\nconnected: SSID = %s, pass = %s\n", WiFi.SSID().c_str(),
 
-                           WiFi.psk().c_str());
+                                  WiFi.psk().c_str());
                     if (WiFiresult == 0)
                         WiFiresult = 1; // not sure why i did this.. think it is the client end.
                     if (WiFiresult) {
@@ -1561,7 +1529,7 @@ void cache ESPmanager::HandleDataRequest()
                         };
                         _ssid = strdup((const char*)_HTTP.arg("ssid").c_str());
                         _pass = strdup((const char*)_HTTP.arg("pass").c_str());
-                        Debugln(F("New SSID and PASS work:  copied to system vars"));
+                        ESPMan_Debugln(F("New SSID and PASS work:  copied to system vars"));
                     }
                     // return;
                 }
@@ -1589,10 +1557,10 @@ void cache ESPmanager::HandleDataRequest()
         if (_HTTP.arg("enable-STA") == "off" && (mode == WIFI_STA || mode == WIFI_AP_STA)) {
             WiFi.mode(WIFI_AP); // always fall back to AP mode...
             WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
-            Debugln(F("STA-disabled: falling back to AP mode."));
+            ESPMan_Debugln(F("STA-disabled: falling back to AP mode."));
         } else if (_HTTP.arg("enable-STA") == "on" && mode == WIFI_AP) {
             WiFi.mode(WIFI_AP_STA);
-            Debugln(F("Enabling STA mode"));
+            ESPMan_Debugln(F("Enabling STA mode"));
             reinit = true;
         }
 
@@ -1603,9 +1571,9 @@ void cache ESPmanager::HandleDataRequest()
             save_flag = true;
             bool dhcpresult = wifi_station_dhcpc_start(); // requires userinterface...
 
-            Debugln(F("------- RESARTING--------"));
-            Debug(F("DHCP result: "));
-            Debugln(dhcpresult);
+            ESPMan_Debugln(F("------- RESARTING--------"));
+            ESPMan_Debug(F("DHCP result: "));
+            ESPMan_Debugln(dhcpresult);
             reinit = true;
         } else if (_HTTP.arg("enable-dhcp") == "off") {
 
@@ -1620,22 +1588,22 @@ void cache ESPmanager::HandleDataRequest()
 
             if (_HTTP.hasArg("setSTAsetip")) {
                 _IPs->IP = StringtoIP(_HTTP.arg("setSTAsetip"));
-                Debug(F("IP = "));
-                Debugln(_IPs->IP);
+                ESPMan_Debug(F("IP = "));
+                ESPMan_Debugln(_IPs->IP);
             } else
                 ok = false;
 
             if (_HTTP.hasArg("setSTAsetgw")) {
                 _IPs->GW = StringtoIP(_HTTP.arg("setSTAsetgw"));
-                Debug(F("gateway = "));
-                Debugln(_IPs->GW);
+                ESPMan_Debug(F("gateway = "));
+                ESPMan_Debugln(_IPs->GW);
             } else
                 ok = false;
 
             if (_HTTP.hasArg("setSTAsetsn")) {
                 _IPs->SN = StringtoIP(_HTTP.arg("setSTAsetsn"));
-                Debug(F("subnet = "));
-                Debugln(_IPs->SN);
+                ESPMan_Debug(F("subnet = "));
+                ESPMan_Debugln(_IPs->SN);
             } else
                 ok = false;
 
@@ -1651,8 +1619,8 @@ void cache ESPmanager::HandleDataRequest()
                 if ( StringtoMAC(mac_addr, _HTTP.arg("setSTAsetmac")) ) {
 
 
-                    Debugln("New MAC parsed sucessfully");
-                    Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+                    ESPMan_Debugln("New MAC parsed sucessfully");
+                    ESPMan_Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 
                     if (!_STAmac) {
                         _STAmac = new uint8_t[6];
@@ -1738,8 +1706,8 @@ void cache ESPmanager::HandleDataRequest()
             if ( StringtoMAC(mac_addr, _HTTP.arg("setAPsetmac")) ) {
 
 
-                Debugln("New AP MAC parsed sucessfully");
-                Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+                ESPMan_Debugln("New AP MAC parsed sucessfully");
+                ESPMan_Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
 
                 if (!_APmac) {
                     _APmac = new uint8_t[6];
@@ -1761,8 +1729,8 @@ void cache ESPmanager::HandleDataRequest()
                 channel = 13;
             _APchannel = channel;
 
-            Debug(F("Enable AP channel: "));
-            Debugln(_APchannel);
+            ESPMan_Debug(F("Enable AP channel: "));
+            ESPMan_Debugln(_APchannel);
 
             _APenabled = true;
 
@@ -1771,7 +1739,7 @@ void cache ESPmanager::HandleDataRequest()
             //printdiagnositics();
         } else if (_HTTP.arg("enable-AP") == "off") {
 
-            Debugln(F("Disable AP"));
+            ESPMan_Debugln(F("Disable AP"));
             _APenabled = false;
 
             if (mode == WIFI_AP_STA || mode == WIFI_AP)  WiFi.mode(WIFI_STA);
@@ -1798,7 +1766,7 @@ void cache ESPmanager::HandleDataRequest()
                 _HTTP.arg("deviceid").length() < 32 &&
                 _HTTP.arg("deviceid") != String(_host) ) {
             save_flag = true;
-            Debugln(F("Device ID changed"));
+            ESPMan_Debugln(F("Device ID changed"));
             //      if (_host) free( (void*)_host);
 
             if (strcmp(_host, _APssid) == 0) {
@@ -1839,12 +1807,12 @@ void cache ESPmanager::HandleDataRequest()
     // if (_HTTP.hasArg("OTAusechipID")) {
 
     //     _OTAusechipID = (_HTTP.arg("OTAusechipID") == "Yes")? true : false;
-    //     Debugln(F("OTA append ChipID to host"));
+    //     ESPMan_Debugln(F("OTA append ChipID to host"));
     //     save_flag = true;
     // }
 
     if (_HTTP.hasArg("otaenable")) {
-        Debugln(F("Depreciated"));
+        ESPMan_Debugln(F("Depreciated"));
         // save_flag = true;
 
         // bool command = (_HTTP.arg("otaenable") == "on") ? true : false;
@@ -1857,17 +1825,17 @@ void cache ESPmanager::HandleDataRequest()
         //     if (_OTAenabled)
         //     {
         //         // long before = ESP.getFreeHeap();
-        //         Debugln(F("Enable OTA"));
+        //         ESPMan_Debugln(F("Enable OTA"));
 
         //         InitialiseFeatures();
         //         // String insert = F("OTA Enabled, heap used: %u \n");
-        //         // Debugf(insert.c_str(), before - ESP.getFreeHeap() );
+        //         // ESPMan_Debugf(insert.c_str(), before - ESP.getFreeHeap() );
         //     }
         //     else
         //     {
 
         //         // long before = ESP.getFreeHeap();
-        //         Debugln(F("Disable OTA"));
+        //         ESPMan_Debugln(F("Disable OTA"));
 
         //         if (ota_server)
         //         {
@@ -1875,7 +1843,7 @@ void cache ESPmanager::HandleDataRequest()
         //             ota_server = NULL;
         //         };
 
-        //         // Debugf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
+        //         // ESPMan_Debugf( "OTA deactivated, heap reclaimed: %u \n", ESP.getFreeHeap() - before );
         //     }
         // }
     } // end of OTA enable
@@ -1901,36 +1869,37 @@ void cache ESPmanager::HandleDataRequest()
                                        FORMAT SPIFFS
       ------------------------------------------------------------------------------------------------------------------*/
     if (_HTTP.arg("plain") == "formatSPIFFS" & _HTTP.method() == HTTP_POST) {
-        Debug(F("Format SPIFFS"));
+        ESPMan_Debug(F("Format SPIFFS"));
         _fs.format();
-        Debugln(F(" done"));
+        ESPMan_Debugln(F(" done"));
     }
 
     if (_HTTP.arg("plain") == "upgrade" & _HTTP.method() == HTTP_POST) {
         static uint32_t timeout = 0;
-        if (millis() - timeout < 60000) {
+
+        if (millis() - timeout > 60000 || timeout == 0 ) {
             if (_upgrade()) {
                 _HTTP.send(200, "SUCCESS");
-                Debugln("Download Finished.  Files Updated");
+                ESPMan_Debugln("Download Finished.  Files Updated");
                 _NewFilesCheck();
             } else {
                 _HTTP.send(200, "FAILED");
-                Debugln("Error.  Try Again");
+                ESPMan_Debugln("Error.  Try Again");
             }
             timeout = millis();
             return;
 
         }
-        // Debug(F("Upgrade files"));
+        // ESPMan_Debug(F("Upgrade files"));
 
         //     Dir dir = _fs.openDir("/");
         //      while (dir.next()) {
         //         String fileName = dir.fileName();
         //             size_t fileSize = dir.fileSize();
-        //             Debugf("     Deleting: %s\n", fileName.c_str());
+        //             ESPMan_Debugf("     Deleting: %s\n", fileName.c_str());
         //             _fs.remove(fileName);
         //         }
-        // Debugln(F(" done, rebooting"));
+        // ESPMan_Debugln(F(" done, rebooting"));
         // _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
         // ESP.restart();
         //FilesCheck(false);
@@ -1938,11 +1907,11 @@ void cache ESPmanager::HandleDataRequest()
 
     if (_HTTP.arg("plain") == "deletesettings" & _HTTP.method() == HTTP_POST) {
 
-        Debug(F("Delete Settings File"));
+        ESPMan_Debug(F("Delete Settings File"));
         if (_fs.remove("/settings.txt")) {
-            Debugln(F(" done"));
+            ESPMan_Debugln(F(" done"));
         } else {
-            Debugln(F(" failed"));
+            ESPMan_Debugln(F(" failed"));
         }
     }
 
@@ -1961,7 +1930,7 @@ void cache ESPmanager::HandleDataRequest()
       ------------------------------------------------------------------------------------------------------------------*/
 
     if (_HTTP.hasArg("select-AP-behaviour") ) {
-        Debugln("Recieved AP behaviour request");
+        ESPMan_Debugln("Recieved AP behaviour request");
         int rebootvar = _HTTP.arg("select-AP-behaviour").toInt();
 
         if (rebootvar == 1 || rebootvar == 2 || rebootvar == 3 || rebootvar == 4 ) {

@@ -43,18 +43,19 @@ To Upload
 
 
 
-#define DEBUG_YES
-#define SETTINGS_FILE "/espman/settings.txt"
-#define ESPMANVERSION "1.0"
+#define Debug_ESPManager
 
-#ifdef DEBUG_YES
-#define Debug(x)    Serial.print(x)
-#define Debugln(x)  Serial.println(x)
-#define Debugf(...) Serial.printf(__VA_ARGS__)
+#define SETTINGS_FILE "/espman/settings.txt"
+#define ESPMANVERSION "1.1"
+
+#ifdef Debug_ESPManager
+#define ESPMan_Debug(x)    Serial.print(x)
+#define ESPMan_Debugln(x)  Serial.println(x)
+#define ESPMan_Debugf(...) Serial.printf(__VA_ARGS__)
 #else
-#define Debug(x)    {}
-#define Debugln(x)  {}
-#define Debugf(...) {}
+#define ESPMan_Debug(x)    {}
+#define ESPMan_Debugln(x)  {}
+#define ESPMan_Debugf(...) {}
 #endif
 
 
@@ -81,7 +82,11 @@ static const char * __gif1 = "/espman/images/ajax-loader.gif";
 static const char * __htm1 = "/espman/index.htm";
 static const char * TRUEfileslist[file_no] = {__jq1, __jq2, __jq3, __jq4, __htm1, __gif1} ;
 
+static const char * __updateserver = "http://sticilface.github.io";
+static const char * __updatepath = "/espmanupdate.json";
 
+
+// http://sticilface.github.io/espmanupdate.json
 class ESPmanager
 {
 public:

@@ -36,12 +36,16 @@ $( document ).on( "panelcreate", function( event, ui ) {
             $.post("data.esp", "reboot");
          });
 
-         $("#upgradebutton").click(function() {
-            $.post("data.esp", "upgrade"); 
-         })
+         // $("#upgradebutton").click(function() {
+         //    $.post("data.esp", "upgrade"); 
+         // })
 
 
 });
+
+$(document).off('click', '#upgradebutton').on('click', '#upgradebutton',function(e) {
+    $.post("data.esp", "upgrade"); 
+    }); 
 
 /****************************************************
  *                   General Page
