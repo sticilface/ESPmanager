@@ -90,16 +90,20 @@ void cache ESPmanager::begin()
 
         _NewFilesCheck();
 
-        if (LoadSettings()) ESPMan_Debugln("Load settings returned true"); else ESPMan_Debugln("LoadSettings returned false");
+        if ( LoadSettings() ) {
+            ESPMan_Debugln("Load settings returned true");
+        } else {
+            ESPMan_Debugln("Load Settings returned false");
+        }
+
     } else {
         ESPMan_Debugln(F("File System mount failed"));
     }
 
     if (_manageWiFi) {
 
-        ESPMan_Debugln("Managing WiFi");
+        Serial.print("Connecting to WiFi...");
         WiFi.mode(WIFI_STA);
-
 
         if (!Wifistart()) {
 
@@ -114,7 +118,7 @@ void cache ESPmanager::begin()
                 ESPMan_Debugln();
             }
         } else {
-            Serial.print(F("\nConnected to "));
+            Serial.print(F("Success\nConnected to "));
             Serial.print(WiFi.SSID());
             Serial.print(" (");
             Serial.print(WiFi.localIP());
@@ -794,8 +798,6 @@ void cache ESPmanager::InitialiseFeatures()
 
 bool cache ESPmanager::_upgrade()
 {
-    //static const char * remotehost = "http://sticilface.github.io";
-    //static const char * path = "/ESPmanager";
     static const uint16_t httpPort = 80;
     static const size_t bufsize = 1024;
 //  get files list into json
@@ -835,10 +837,6 @@ bool cache ESPmanager::_upgrade()
             }
             http.end();
 
-            //        ESPMan_Debugln("RAW BUFFER");
-            //        ESPMan_Debugln( (char*)buff);
-            //        ESPMan_Debugln("----------");
-
             DynamicJsonBuffer jsonBuffer;
             JsonArray& root = jsonBuffer.parseArray( (char*)buff );
 
@@ -854,31 +852,34 @@ bool cache ESPmanager::_upgrade()
                     String filename = fullpathtodownload.substring( fullpathtodownload.lastIndexOf("/"), fullpathtodownload.length() );
                     ESPMan_Debugf("[%u] %s -> %s\n", count++, filename.c_str(), fullpathtodownload.c_str());
 
-                    File f = _fs.open("/tempfile", "w");
+                    _DownloadToSPIFFS(fullpathtodownload.c_str() , filename.c_str() );
 
-                    if (!f) {
-                        ESPMan_Debugln("file open failed");
-                        return false;
-                    } else {
-                        http.begin(fullpathtodownload);
-                        int httpCode = http.GET();
-                        if (httpCode) {
-                            if (httpCode == HTTP_CODE_OK) {
-                                size_t len = http.getSize();
-                                size_t byteswritten = http.writeToStream(&f);
-                                ESPMan_Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;
-                                if (f.size() == len) {
-                                    f.close();
-                                    ESPMan_Debugln("Download Successful");
-                                    _fs.rename("/tempfile", filename);
-                                } else {
-                                    ESPMan_Debugln("Download FAILED");
-                                    _fs.remove("/tempfile");
-                                }
-                            } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); f.close(); return false; }
-                        } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); f.close(); return false; }
-                        yield();
-                    }
+
+                    // File f = _fs.open("/tempfile", "w");
+
+                    // if (!f) {
+                    //     ESPMan_Debugln("file open failed");
+                    //     return false;
+                    // } else {
+                    //     http.begin(fullpathtodownload);
+                    //     int httpCode = http.GET();
+                    //     if (httpCode) {
+                    //         if (httpCode == HTTP_CODE_OK) {
+                    //             size_t len = http.getSize();
+                    //             size_t byteswritten = http.writeToStream(&f);
+                    //             ESPMan_Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;
+                    //             if (f.size() == len) {
+                    //                 f.close();
+                    //                 ESPMan_Debugln("Download Successful");
+                    //                 _fs.rename("/tempfile", filename);
+                    //             } else {
+                    //                 ESPMan_Debugln("Download FAILED");
+                    //                 _fs.remove("/tempfile");
+                    //             }
+                    //         } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); f.close(); return false; }
+                    //     } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); f.close(); return false; }
+                    //     yield();
+                    // }
                 }
             }
         } else {
@@ -891,6 +892,42 @@ bool cache ESPmanager::_upgrade()
         return false;
     }
     return true;
+}
+
+bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename )
+{
+    HTTPClient http;
+
+    File f = _fs.open("/tempfile", "w");
+
+    if (!f) {
+        ESPMan_Debugln("file open failed");
+        return false;
+    } else {
+        http.begin(url);
+        int httpCode = http.GET();
+        if (httpCode) {
+            if (httpCode == HTTP_CODE_OK) {
+                size_t len = http.getSize();
+                size_t byteswritten = http.writeToStream(&f);
+                ESPMan_Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;
+                if (f.size() == len) {
+                    f.close();
+                    ESPMan_Debugln("Download Successful");
+                    _fs.rename("/tempfile", filename);
+                    return true;
+                } else {
+                    ESPMan_Debugln("Download FAILED");
+                    _fs.remove("/tempfile");
+                }
+            } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); }
+        } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); }
+        yield();
+    }
+
+    http.end();
+    f.close();
+    return false;
 }
 
 bool cache ESPmanager::_FilesCheck(bool startwifi)
@@ -1010,13 +1047,16 @@ bool cache ESPmanager::Wifistart()
     ESPMan_Debugln("WiFi init");
     uint8_t i = 0;
     uint32_t timeout = millis();
-    // wait for connection or fail
-    while (status != WL_CONNECTED) {// && status != WL_NO_SSID_AVAIL && status != WL_CONNECT_FAILED) {
-        delay(10);
-        status = WiFi.status();
-        if (millis() - timeout > 30000)  {
-            ESPMan_Debugln("TIMEOUT");
-            break;
+
+    if (WiFi.SSID().length() > 0 && WiFi.psk().length() > 0 ) {
+        ESPMan_Debugln("Length of ssid & psk > 0");
+        while (status != WL_CONNECTED) {// && status != WL_NO_SSID_AVAIL && status != WL_CONNECT_FAILED) {
+            delay(10);
+            status = WiFi.status();
+            if (millis() - timeout > 30000)  {
+                ESPMan_Debugln("TIMEOUT");
+                break;
+            }
         }
     }
 
@@ -1209,7 +1249,7 @@ void ESPmanager::handleFileUpload()
         filename.trim();
         if (!filename.startsWith("/")) filename = "/" + filename;
         // ESPMan_Debug("handleFileUpload Name: "); ESPMan_Debugln(filename);
-        ESPMan_Debugf("Upload Name: %s\n", filename.c_str() );
+        Serial.printf("Upload Name: %s\n", filename.c_str() );
         if (_fs.exists(filename)) _fs.remove(filename);
 
         *fsUploadFile = _fs.open(filename, "w+");
@@ -1225,10 +1265,10 @@ void ESPmanager::handleFileUpload()
         if (fsUploadFile) {
             delete fsUploadFile;
             fsUploadFile = nullptr;
-            ESPMan_Debugf("\nDone Size: %u\n", upload.totalSize);
+            Serial.printf("\nDone Size: %u\n", upload.totalSize);
         } else { ESPMan_Debug("ERROR"); };
     } else if (upload.status == UPLOAD_FILE_ABORTED) {
-        ESPMan_Debug("\nAborted");
+        Serial.printf("\nAborted");
         String filename = String(fsUploadFile->name());
         fsUploadFile->close();
         if (fsUploadFile) {
@@ -1629,7 +1669,7 @@ void cache ESPmanager::HandleDataRequest()
                     save_flag = true;
 
                 } else {
-                    Serial.println("New MAC parsed FAILED");
+                    ESPMan_Debugln("New MAC parsed FAILED");
                 }
 
 
@@ -1716,7 +1756,7 @@ void cache ESPmanager::HandleDataRequest()
                 save_flag = true;
 
             } else {
-                Serial.println("New AP MAC parsed FAILED");
+                ESPMan_Debugln("New AP MAC parsed FAILED");
             }
         }
 
@@ -1877,14 +1917,15 @@ void cache ESPmanager::HandleDataRequest()
     if (_HTTP.arg("plain") == "upgrade" & _HTTP.method() == HTTP_POST) {
         static uint32_t timeout = 0;
 
-        if (millis() - timeout > 60000 || timeout == 0 ) {
+        if (millis() - timeout > 30000 || timeout == 0 ) {
+            Serial.print("Upgrade Started..");
             if (_upgrade()) {
                 _HTTP.send(200, "SUCCESS");
-                ESPMan_Debugln("Download Finished.  Files Updated");
+                Serial.println("Download Finished.  Files Updated");
                 _NewFilesCheck();
             } else {
                 _HTTP.send(200, "FAILED");
-                ESPMan_Debugln("Error.  Try Again");
+                Serial.println("Error.  Try Again");
             }
             timeout = millis();
             return;

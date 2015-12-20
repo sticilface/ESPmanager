@@ -43,7 +43,7 @@ To Upload
 
 
 
-#define Debug_ESPManager
+//#define Debug_ESPManager
 
 #define SETTINGS_FILE "/espman/settings.txt"
 #define ESPMANVERSION "1.1"
@@ -120,8 +120,10 @@ private:
 	void PrintVariables();
 
 	bool _FilesCheck(bool initwifi = true);
-	bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
+	//bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
 	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file);
+	bool  _DownloadToSPIFFS(const char * url , const char * path );
+
 
 	void _NewFilesCheck();
 	bool _upgrade();
