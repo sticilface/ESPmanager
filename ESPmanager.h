@@ -43,7 +43,7 @@ To Upload
 
 
 
-//#define Debug_ESPManager
+#define Debug_ESPManager
 
 #define SETTINGS_FILE "/espman/settings.txt"
 #define ESPMANVERSION "1.1"
@@ -136,6 +136,10 @@ private:
 	const char * _host = nullptr;
 	const char * _ssid = nullptr;
 	const char * _pass = nullptr;
+
+	const char * _ssid_hardcoded = nullptr;
+	const char * _pass_hardcoded = nullptr;
+
 	const char * _APpass = nullptr;
 	const char * _APssid = nullptr;
 	const char * _OTApassword = nullptr;

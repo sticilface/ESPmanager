@@ -11,15 +11,16 @@ ESPmanager::ESPmanager(
 {
     httpUpdater.setup(&_HTTP);
 
+
     // This sets the default fallback options... not in use yet
     if (host && (strlen(host) < 32)) {
         _host = strdup(host);
     }
     if (ssid && (strlen(ssid) < 32)) {
-        _ssid = strdup(ssid);
+        _ssid_hardcoded = ssid;
     }
     if (pass && (strlen(pass) < 63)) {
-        _pass = strdup(pass);
+        _pass_hardcoded = pass;
     }
 
     _manageWiFi = true;
@@ -1014,6 +1015,8 @@ bool cache ESPmanager::Wifistart()
     // WiFi.mode(WIFI_AP_STA);
     // WiFi.begin(_ssid,_pass);
 
+    WiFi.disconnect();
+
     if (WiFi.getMode() == WIFI_AP) {
         ESPMan_Debugln("WiFi MODE in AP: NOT STARTING");
         return false;
@@ -1023,7 +1026,7 @@ bool cache ESPmanager::Wifistart()
 
     wl_status_t status = WiFi.status();
 
-    ESPMan_Debugf("Pre WiFiStatus = %u \n", status);
+    ESPMan_Debugf("Pre init - WiFiStatus = %u, ssid %s, psk %s \n", status, WiFi.SSID().c_str(), WiFi.psk().c_str());
 
 
     if (!_DHCP && _IPs) {
@@ -1042,12 +1045,14 @@ bool cache ESPmanager::Wifistart()
 
 
 
-//    WiFi.begin(); // This screws EVERYTHING up.  just leave it out!
+    WiFi.begin(); // This screws EVERYTHING up.  just leave it out!
 
     ESPMan_Debugln("WiFi init");
     uint8_t i = 0;
     uint32_t timeout = millis();
 
+
+//  Try SDK connect first
     if (WiFi.SSID().length() > 0 && WiFi.psk().length() > 0 ) {
         ESPMan_Debugln("Length of ssid & psk > 0");
         while (status != WL_CONNECTED) {// && status != WL_NO_SSID_AVAIL && status != WL_CONNECT_FAILED) {
@@ -1062,10 +1067,37 @@ bool cache ESPmanager::Wifistart()
 
     status = WiFi.status();
     ESPMan_Debugf("Autoconnect WiFiStatus = %u \n", status);
+// Try Hard coded if present
 
+
+    if (status != WL_CONNECTED && _ssid_hardcoded && _pass_hardcoded) {
+
+        ESPMan_Debug(F("Auto connect failed..\nTrying HARD CODED credentials...\n"));
+        ESPMan_Debugf("Using ssid %s, psk %s \n", _ssid_hardcoded, _pass_hardcoded );
+
+        WiFi.begin(_ssid_hardcoded, _pass_hardcoded);
+        timeout = millis();
+
+        while (status != WL_CONNECTED) { //} && status != WL_NO_SSID_AVAIL && status != WL_CONNECT_FAILED) {
+            delay(10);
+            status = WiFi.status();
+            if (millis() - timeout > 30000)  {
+                ESPMan_Debugln("TIMEOUT");
+                break;
+            }
+        }
+    }
+
+
+
+
+
+//  Try Config_file Next
     if (status != WL_CONNECTED) {
 
         ESPMan_Debug(F("Auto connect failed..\nTrying stored credentials...\n"));
+        ESPMan_Debugf("Using ssid %s, psk %s \n", _ssid, _pass );
+
         WiFi.begin(_ssid, _pass);
         timeout = millis();
 
@@ -1077,7 +1109,6 @@ bool cache ESPmanager::Wifistart()
                 break;
             }
         }
-
     }
 
     status = WiFi.status();
