@@ -810,7 +810,7 @@ bool cache ESPmanager::_upgrade()
     int httpCode = http.GET();
 
     if (httpCode) {
-        if (httpCode == HTTP_CODE_OK) {
+        if (httpCode == 200) {
 
             size_t len = http.getSize();
             if (len > bufsize) {
@@ -908,7 +908,7 @@ bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filenam
         http.begin(url);
         int httpCode = http.GET();
         if (httpCode) {
-            if (httpCode == HTTP_CODE_OK) {
+            if (httpCode == 200) {
                 size_t len = http.getSize();
                 size_t byteswritten = http.writeToStream(&f);
                 ESPMan_Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;

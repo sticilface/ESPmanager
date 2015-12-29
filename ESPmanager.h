@@ -23,6 +23,7 @@ To Upload
   or you can upload the contents of a folder if you CD in that folder and run the following command:
   for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 
+
 --------------------------------------------------------------------*/
 
 
@@ -30,12 +31,12 @@ To Upload
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
-#include <WiFiClientSecure.h>
 #include <FS.h>
 #include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
+
 #include <ESP8266mDNS.h>
 #include <functional>
 #include <ESP8266HTTPUpdateServer.h>
@@ -74,6 +75,7 @@ static const char * _gif1 = "/ajax-loader.gif";
 static const char * _htm1 = "/config.htm";
 static const char * fileslist[file_no] = {_jq1, _jq2, _jq3, _jq4, _htm1, _gif1} ;
 
+// These are used to search for the presence of the required files
 static const char * __jq1 =  "/espman/jq1.11.1.js.gz";
 static const char * __jq2 =  "/espman/jqm1.4.5.css.gz";
 static const char * __jq3 =  "/espman/jqm1.4.5.js.gz";
@@ -82,6 +84,7 @@ static const char * __gif1 = "/espman/images/ajax-loader.gif";
 static const char * __htm1 = "/espman/index.htm";
 static const char * TRUEfileslist[file_no] = {__jq1, __jq2, __jq3, __jq4, __htm1, __gif1} ;
 
+// update path
 static const char * __updateserver = "http://sticilface.github.io";
 static const char * __updatepath = "/espmanupdate.json";
 
