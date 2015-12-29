@@ -14,7 +14,7 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
-
+#include <ESP8266HTTPClient.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
