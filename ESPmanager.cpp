@@ -604,15 +604,6 @@ void cache ESPmanager::InitialiseFeatures()
     }
 
 
-    WiFi.onEvent( [](WiFiEvent_t event) {
-        Serial.println("WiFi Event: Dissconnected");
-        uint8_t result = WiFi.reconnect();
-        Serial.printf("Reconnect result = %u\n", result);
-    }, WIFI_EVENT_STAMODE_DISCONNECTED );
-
-    WiFi.onEvent( [](WiFiEvent_t event) {
-        Serial.println("WiFi Event: Connected");
-    }, WIFI_EVENT_STAMODE_CONNECTED );
 
 }
 
