@@ -864,35 +864,8 @@ bool cache ESPmanager::_upgrade()
                     String fullpathtodownload = String(__updateserver) + String(value);
                     String filename = fullpathtodownload.substring( fullpathtodownload.lastIndexOf("/"), fullpathtodownload.length() );
                     ESPMan_Debugf("[%u] %s -> %s\n", count++, filename.c_str(), fullpathtodownload.c_str());
-
                     _DownloadToSPIFFS(fullpathtodownload.c_str() , filename.c_str() );
-                    yeild();
-
-                    // File f = _fs.open("/tempfile", "w");
-
-                    // if (!f) {
-                    //     ESPMan_Debugln("file open failed");
-                    //     return false;
-                    // } else {
-                    //     http.begin(fullpathtodownload);
-                    //     int httpCode = http.GET();
-                    //     if (httpCode) {
-                    //         if (httpCode == HTTP_CODE_OK) {
-                    //             size_t len = http.getSize();
-                    //             size_t byteswritten = http.writeToStream(&f);
-                    //             ESPMan_Debugf("%s downloaded\n", formatBytes(byteswritten).c_str() ) ;
-                    //             if (f.size() == len) {
-                    //                 f.close();
-                    //                 ESPMan_Debugln("Download Successful");
-                    //                 _fs.rename("/tempfile", filename);
-                    //             } else {
-                    //                 ESPMan_Debugln("Download FAILED");
-                    //                 _fs.remove("/tempfile");
-                    //             }
-                    //         } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); f.close(); return false; }
-                    //     } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); f.close(); return false; }
-                    //     yield();
-                    // }
+                    delay(1);
                 }
             }
         } else {

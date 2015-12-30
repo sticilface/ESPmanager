@@ -112,9 +112,6 @@ public:
 
 private:
 
-
-
-
 	void HandleDataRequest();
 	void InitialiseFeatures();
 	void InitialiseSoftAP();

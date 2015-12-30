@@ -29,7 +29,7 @@ ESP8266WebServer HTTP(80);
 
 ESPmanager settings(HTTP, SPIFFS);
 
-//  Or specify devicename, SSID, PASS
+//  // Or specify devicename, SSID, PASS
 // ESPmanager settings(HTTP, SPIFFS, "ESPManager", "SSID", "PASS");
 
 void setup()
