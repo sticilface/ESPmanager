@@ -12,7 +12,7 @@ ESPmanager::ESPmanager(
     httpUpdater.setup(&_HTTP);
 
 
-    // This sets the default fallback options... not in use yet
+    // This sets the default fallback options...
     if (host && (strlen(host) < 32)) {
         _host = strdup(host);
     }
@@ -80,7 +80,6 @@ void cache ESPmanager::begin()
     ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
 
     wifi_set_sleep_type(NONE_SLEEP_T); // workaround no modem sleep.
-    WiFi.persistent(true); // new changes to wifi mode.  assume user wants persistent...
 
     if (_fs.begin()) {
         ESPMan_Debugln(F("File System mounted sucessfully"));
@@ -99,6 +98,20 @@ void cache ESPmanager::begin()
 
     } else {
         ESPMan_Debugln(F("File System mount failed"));
+    }
+
+    // needs to be set before WiFi.Begin() and DHCP request
+    if (_host) {
+        if (WiFi.hostname(_host)) {
+            ESPMan_Debug(F("Host Name Set: "));
+            ESPMan_Debugln(_host);
+        }
+    } else {
+        char tmp[15];
+        sprintf(tmp, "esp8266-%06x", ESP.getChipId());
+        _host = strdup(tmp);
+        ESPMan_Debug(F("Default Host Name: "));
+        ESPMan_Debugln(_host);
     }
 
     if (_manageWiFi) {
@@ -128,18 +141,7 @@ void cache ESPmanager::begin()
     }
 
 
-    if (_host) {
-        if (WiFi.hostname(_host)) {
-            ESPMan_Debug(F("Host Name Set: "));
-            ESPMan_Debugln(_host);
-        }
-    } else {
-        char tmp[15];
-        sprintf(tmp, "esp8266-%06x", ESP.getChipId());
-        _host = strdup(tmp);
-        ESPMan_Debug(F("Default Host Name: "));
-        ESPMan_Debugln(_host);
-    }
+
 
     if (!_APssid) {
         // if (wifi_station_get_hostname())
@@ -152,10 +154,6 @@ void cache ESPmanager::begin()
         ESPMan_Debugln(F("Soft AP enabled by config"));
         InitialiseSoftAP();
     } else ESPMan_Debugln(F("Soft AP disbaled by config"));
-
-
-
-    // printdiagnositics();
 
     InitialiseFeatures();
 
@@ -499,11 +497,16 @@ void cache ESPmanager::handle()
         }
     }
 
-    if (WiFi.status() != WL_CONNECTED && _APrestartmode == 4) {
+
+//  need to work on this...
+
+    if (WiFi.status() != WL_CONNECTED && _APrestartmode > 1) {
+        static uint32_t _wait = 0;
         ESPMan_Debugln(F("WiFi Disconnected:  Starting AP"));
         WiFi.mode(WIFI_AP_STA);
         WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
         ESPMan_Debugln(F("Done"));
+        _APtimer = millis();
     }
 
 
@@ -601,8 +604,16 @@ void cache ESPmanager::InitialiseFeatures()
     }
 
 
+    WiFi.onEvent( [](WiFiEvent_t event) {
+        Serial.println("WiFi Event: Dissconnected");
+        uint8_t result = WiFi.reconnect();
+        Serial.printf("Reconnect result = %u\n", result);
+    }, WIFI_EVENT_STAMODE_DISCONNECTED );
 
-    WiFi.hostname(_host);
+    WiFi.onEvent( [](WiFiEvent_t event) {
+        Serial.println("WiFi Event: Connected");
+    }, WIFI_EVENT_STAMODE_CONNECTED );
+
 }
 
 // bool cache ESPmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
@@ -837,6 +848,7 @@ bool cache ESPmanager::_upgrade()
                 delay(1);
             }
             http.end();
+            yield();
 
             DynamicJsonBuffer jsonBuffer;
             JsonArray& root = jsonBuffer.parseArray( (char*)buff );
@@ -854,7 +866,7 @@ bool cache ESPmanager::_upgrade()
                     ESPMan_Debugf("[%u] %s -> %s\n", count++, filename.c_str(), fullpathtodownload.c_str());
 
                     _DownloadToSPIFFS(fullpathtodownload.c_str() , filename.c_str() );
-
+                    yeild();
 
                     // File f = _fs.open("/tempfile", "w");
 
@@ -989,7 +1001,7 @@ void cache ESPmanager::InitialiseSoftAP()
 {
     WiFiMode mode = WiFi.getMode();
 
-    if (mode == WIFI_STA) {
+    if (!WiFi.enableAP(true)) {
         WiFi.mode(WIFI_AP_STA);
     }
 
@@ -1007,6 +1019,8 @@ void cache ESPmanager::InitialiseSoftAP()
 
 
 
+
+
 }
 
 
@@ -1017,7 +1031,7 @@ bool cache ESPmanager::Wifistart()
 
     WiFi.disconnect();
 
-    if (WiFi.getMode() == WIFI_AP) {
+    if (!WiFi.enableSTA(true)) {
         ESPMan_Debugln("WiFi MODE in AP: NOT STARTING");
         return false;
     }
