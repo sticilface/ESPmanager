@@ -31,17 +31,13 @@ To Upload
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
-#include <FS.h>
-#include <WiFiUdp.h>
 #include <ESP8266WebServer.h>
-#include <ArduinoOTA.h>
-#include <ArduinoJson.h>
-
-#include <ESP8266mDNS.h>
-#include <functional>
 #include <ESP8266HTTPUpdateServer.h>
-#include <ESP8266HTTPClient.h>
 
+#include <FS.h>
+
+
+#include <functional>
 
 
 #define Debug_ESPManager
@@ -109,6 +105,7 @@ public:
 	bool Wifistart();
 
 	const char * getHostname() { return _host; };
+	static String _file_md5 (File& f);
 
 private:
 
@@ -122,7 +119,7 @@ private:
 	bool _FilesCheck(bool initwifi = true);
 	//bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
 	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file);
-	bool  _DownloadToSPIFFS(const char * url , const char * path );
+	bool  _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
 
 
 	void _NewFilesCheck();

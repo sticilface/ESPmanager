@@ -13,7 +13,7 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 #include <FS.h> //  Settings saved to SPIFFS
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
+//#include <WiFiUdp.h>
 #include <ESP8266HTTPClient.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <ESP8266WebServer.h>
@@ -27,10 +27,15 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 
 ESP8266WebServer HTTP(80);
 
-ESPmanager settings(HTTP, SPIFFS);
+//ESPmanager settings(HTTP, SPIFFS);
 
 //  // Or specify devicename, SSID, PASS
-// ESPmanager settings(HTTP, SPIFFS, "ESPManager", "SSID", "PASS");
+//ESPmanager settings(HTTP, SPIFFS, "ESPManager", "VodafoneMobileWiFi-CDD1C0", "WCZ8J89175");
+
+ESPmanager settings(HTTP, SPIFFS, "ESPManager", "MobileWiFi-743e", "wellcometrust");
+
+
+
 
 void setup()
 {
@@ -50,6 +55,7 @@ void setup()
 
 	Serial.print(F("Free Heap: "));
 	Serial.println(ESP.getFreeHeap());
+
 
 }
 
