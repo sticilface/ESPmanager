@@ -48,6 +48,7 @@ $(function() {
   
 
 
+<style>body{visibility:hidden}</style>
 
 
 
@@ -485,6 +486,7 @@ loadcss("/espman/jqm1.4.5.css", function() {
         });
         loadjs("/espman/configjava.js", function() {
           getGenvars();
+          $("body").css("visibility","visible");
         }); 
         
       });
