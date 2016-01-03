@@ -483,6 +483,7 @@ void cache ESPmanager::SaveSettings()
 
 void cache ESPmanager::handle()
 {
+    static bool triggered = false; 
 
     // if (ota_server)
     //     ota_server->handle();
@@ -510,8 +511,14 @@ void cache ESPmanager::handle()
 
 
 //  need to work on this...
+    // reset trigger if wifi is reconnected... 
+    if (WiFi.status() == WL_CONNECTED && _APrestartmode > 1 && triggered) {
+          triggered = false; 
+    }
 
-    if (WiFi.status() != WL_CONNECTED && _APrestartmode > 1) {
+
+    if (WiFi.status() != WL_CONNECTED && _APrestartmode > 1 && !triggered) {
+        triggered = true; 
         static uint32_t _wait = 0;
         ESPMan_Debugln(F("WiFi Disconnected:  Starting AP"));
         WiFi.mode(WIFI_AP_STA);
@@ -617,198 +624,6 @@ void cache ESPmanager::InitialiseFeatures()
 
 
 }
-
-// bool cache ESPmanager::HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file) {
-
-//     const size_t buf_size = 1024;
-//     uint8_t buf[buf_size];
-//     const int httpsPort = 443;
-//     WiFiClientSecure SecClient;
-
-//     size_t totalbytes = 0;
-
-//     File f = _fs.open("/textfile", "w");
-
-//     if (!f) {
-//         Serial.println("file open failed");
-//         return false;
-//     } else {
-//         Serial.println("File Created");
-//         delay(100);
-
-//         Serial.printf("HOST: %s:%u\n", remotehost, httpsPort);
-
-//         if (!SecClient.connect(remotehost, httpsPort)) {
-//             Serial.println("Connection failed");
-//             return false;
-//         } else {
-//             Serial.printf("Connected to %s\n", remotehost);
-
-//             if (SecClient.verify(fingerprint, remotehost)) {
-//                 Serial.println("certificate matches");
-//             } else {
-//                 Serial.println("certificate doesn't match");
-//                 return false;
-//             }
-//             // send GET request
-
-//             String request = "GET " + String(path) + String(file) + " HTTP/1.1\r\n";
-//             request += "Host: " + String(remotehost) + "\r\n";
-//             request += "User-Agent: BuildFailureDetectorESP8266\r\n";
-//             request += "Accept: */*\r\n";
-//             request += "Connection: close\r\n\r\n";
-//             SecClient.print(request);
-//             //Serial.print(request);
-//   // client.print(String("GET ") + url + " HTTP/1.1\r\n" +
-//   //              "Host: " + host + "\r\n" +
-//   //              "User-Agent: BuildFailureDetectorESP8266\r\n" +
-//   //              "Connection: close\r\n\r\n");
-// /*
-
-
-// > GET /sticilface/ESPmanager/fixcrashing/examples/Settingsmanager-example/data/jquery.mobile-1.4.5.min.css.gz HTTP/1.1
-// > Host: raw.githubusercontent.com
-// > User-Agent: curl/7.43.0
-// > Accept:
-
-// */
-
-//            // wait up to 5 seconds for server response
-//             Serial.println("Waiting for server response: ");
-//             int i = 0;
-//             while ((!SecClient.available()) && (i < 500)) {
-//                 delay(100);
-//                 i++;
-//                 yield();
-//                 if ( i % 10 == 0) Serial.print(".");
-//             }
-
-//            //  // return if no connection
-
-//            // if (!client.available()) return false;
-
-//            //  Serial.println("Download begun");
-//            //  // go though header...  change this to get content length
-//             // while (client.available()) {
-//             //     if (client.find("\r\n\r\n")) break;
-//             //     delay(100);
-//             // }
-
-//             // uint8_t i = 0;
-//             //  while (client.connected()) {
-//             //     String line = client.readStringUntil('\n');
-//             //     Serial.print(i++);
-//             //     Serial.print(" : ");
-//             //     Serial.print(line);
-//             //     if (line == "\r") {
-//             //         Serial.println("headers received");
-//             //             break;
-//             //         }
-//             //     }
-
-//             yield();
-//             //Serial.println("Recieved data:");
-//             while (SecClient.available()) {
-//                 memset(buf, 0, buf_size);;
-//                 size_t length = SecClient.available();
-//                 length = (length > buf_size)? buf_size: length;
-//                 totalbytes += length;
-//                 SecClient.read(buf, length);
-//                 f.write(buf, length);
-//                 delay(1);
-//                 //Serial.print(buf[0],length);
-
-//             }
-//             //Serial.println("Recieve end");
-
-//             Serial.printf("File %s %u Bytes\n", file, totalbytes);
-//             SecClient.stop();
-//             f.close();
-//             return true;
-
-//         } // is connected to remote host
-//     } // managed to open file
-
-// }
-
-// bool cache ESPmanager::DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file)
-// {
-
-//     const size_t buf_size = 1024;
-//     uint8_t buf[buf_size];
-//     WiFiClient client;
-//     const int httpPort = 80;
-//     size_t totalbytes = 0;
-
-//     File f = _fs.open(file, "w");
-
-//     if (!f) {
-//         Serial.println("file open failed");
-//         return false;
-//     } else {
-//         Serial.println("File Created");
-
-//         delay(100);
-//         Serial.printf("HOST: %s:%u\n", remotehost, httpPort);
-
-//         if (!client.connect(remotehost, httpPort)) {
-//             Serial.println("Connection failed");
-//             return false;
-//         } else {
-//             Serial.printf("Connected to %s\n", remotehost);
-
-
-//             // send GET request
-
-//             String request = "GET " + String(path) + String(file) + " HTTP/1.0\r\n";
-//             request += "Host: " + String(remotehost) + "\r\n";
-//             request += "Connection: close\r\n\r\n";
-//             client.print(request);
-
-//             // wait up to 5 seconds for server response
-//             Serial.println("Waiting for server response: ");
-//             int i = 0;
-//             while ((!client.available()) && (i < 500)) {
-//                 delay(10);
-//                 i++;
-//                 yield();
-//                 //if ( i % 10 == 0) Serial.print(".");
-//             }
-
-//             // return if no connection
-
-//             if (!client.available()) return false;
-
-//             Serial.println("Download begun");
-//             // go though header...  change this to get content length
-//             while (client.available() > 50) {
-//                 if (client.find("\r\n\r\n")) break;
-//                 delay(10);
-//             }
-
-//             yield();
-
-//             while (client.available()) {
-//                 memset(buf, 0, buf_size);;
-//                 size_t length = (client.available() > buf_size) ? buf_size : client.available();
-//                 totalbytes += length;
-//                 client.readBytes(buf, length);
-//                 f.write(buf, length);
-//                 Serial.print(".");
-//                 delay(100);
-
-//             }
-
-
-//             Serial.printf("\nFile %s %u Bytes\n", file, totalbytes);
-//             client.stop();
-//             f.close();
-//             return true;
-
-//         } // is connected to remote host
-//     } // managed to open file
-
-// }
 
 bool cache ESPmanager::_upgrade()
 {

@@ -117,17 +117,12 @@ private:
 	void PrintVariables();
 
 	bool _FilesCheck(bool initwifi = true);
-	//bool DownloadtoSPIFFS(const char * remotehost, const char * path, const char * file);
-	//bool HTTPSDownloadtoSPIFFS(const char * remotehost, const char * fingerprint, const char * path, const char * file);
 	bool  _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
 
 
 	void _NewFilesCheck();
 	bool _upgrade();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
-
-
-
 
 	const char * C_null = "";
 	const char * _host = nullptr;
