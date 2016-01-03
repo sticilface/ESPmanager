@@ -9,9 +9,9 @@
   <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
   <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 -->
-  <link rel="stylesheet" href="/espman/jqm1.4.5.css">
-  <script src="/espman/jq1.11.1.js"></script>
-  <script src="/espman/jqm1.4.5.js"></script>
+  <!--<link rel="stylesheet" href="/espman/jqm1.4.5.css">-->
+  <!--<script src="/espman/jq1.11.1.js"></script>-->
+  <!--<script src="/espman/jqm1.4.5.js"></script>-->
 
 <!--
 <script>
@@ -47,35 +47,9 @@ $(function() {
     </STYLE>
   
 
-    <script id="panel-init">
-
-    $( function() {
-
-    
-        $( "[data-role='header']").toolbar();
-        $( "body>[data-role='panel']" ).panel();
-            
-        $( "#popupDialogSPIFFS" ).enhanceWithin().popup();
-        $( "#popupDialogDeleteSettings" ).enhanceWithin().popup();
-        $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
-
-         $("#clearwifibutton").click(function() {
-            $.post("data.esp", "resetwifi");
-         });
-         
-         $("#formatspiffsbutton").click(function() {
-            $.post("data.esp", "formatSPIFFS");
-         });
-         $("#deletesettingsbutton").click(function() {
-             $.post("data.esp", "deletesettings");
-         });
 
 
 
-    });
-
-
-    </script>
 
 
 </head> 
@@ -458,7 +432,66 @@ $(function() {
    <!--  PAGE BOUNDARY -->
 
    <!-- /page -->
-  <script src="configjava.js"></script>
+  <script>
+    
+ 
+function loadcss(url, callback) {
+    var link= document.createElement("link");
+    link.setAttribute("rel", "stylesheet");
+ link.setAttribute("href", url);
+    link.addEventListener('load', function() {
+        var script = document.createElement("script");
+        script.textContent = "(" + callback.toString()  + ")();";
+        document.body.appendChild(script);
+    }, false);
+    document.body.appendChild(link);
+}
+
+  function loadjs(url, callback) {
+    var script = document.createElement("script");
+    script.setAttribute("src", url);
+    script.addEventListener('load', function() {
+        var script = document.createElement("script");
+        script.textContent = "(" + callback.toString()  + ")();";
+        document.body.appendChild(script);
+    }, false);
+    document.body.appendChild(script);
+}
+
+loadcss("/espman/jqm1.4.5.css", function() { 
+  loadjs("/espman/jq1.11.1.js", function() {
+    loadjs("/espman/jqm1.4.5.js", function() {
+      
+                $(function() {
+
+        $( "[data-role='header']").toolbar();
+        $( "body>[data-role='panel']" ).panel();
+            
+        $( "#popupDialogSPIFFS" ).enhanceWithin().popup();
+        $( "#popupDialogDeleteSettings" ).enhanceWithin().popup();
+        $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
+
+         $("#clearwifibutton").click(function() {
+            $.post("data.esp", "resetwifi");
+         });
+         
+         $("#formatspiffsbutton").click(function() {
+            $.post("data.esp", "formatSPIFFS");
+         });
+         $("#deletesettingsbutton").click(function() {
+             $.post("data.esp", "deletesettings");
+         });
+
+        });
+        loadjs("/espman/configjava.js", function() {
+          getGenvars();
+        }); 
+        
+      });
+    });
+  });
+
+  </script>
 
 </body>
 

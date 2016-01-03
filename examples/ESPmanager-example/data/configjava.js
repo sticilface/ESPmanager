@@ -23,9 +23,34 @@ $( "popup" ).on( "popupcreate", function( event, ui ) {
 
 } );
 
+/****************************************************
+ *                   Global funtions
+ * 
+ ****************************************************/
+ 
+    function getGenvars() {
+        $.getJSON("data.esp?plain=WiFiDetails", function(result) {
+          
+            $("#select-AP-behav").val(result.general.APrestartmode).selectmenu( "refresh" );
 
+              //  $("#select-AP-behav").attr("checked",true).checkboxradio("refresh");
+            
+            $("#flip-mdnsenable").val( (result.general.mDNSenabled)? "on":"off").flipswitch('refresh');
+                
+                
+            console.log("Restart mode: " + result.general.APrestartmode ); 
+            
+            //$("#device-name").val("").attr("placeholder", result.general.deviceid );
+            $("#device-name").val(result.general.deviceid);
 
-// }
+            if (result.STA.state) {
+                $("#gen-page-status").empty().append(" <p> Connected to " + result.STA.connectedssid + " (" + result.STA.IP + ")</p>");
+            }
+
+        }); 
+    } // end of getgenvars func
+    
+
 /****************************************************
  *                    Panel Create 
  * 
@@ -57,28 +82,6 @@ $(document).on("pageshow", "#generalpage", function() {
 
       getGenvars();
 
-    function getGenvars() {
-        $.getJSON("data.esp?plain=WiFiDetails", function(result) {
-          
-            $("#select-AP-behav").val(result.general.APrestartmode).selectmenu( "refresh" );
-
-              //  $("#select-AP-behav").attr("checked",true).checkboxradio("refresh");
-            
-            $("#flip-mdnsenable").val( (result.general.mDNSenabled)? "on":"off").flipswitch('refresh');
-                
-                
-            console.log("Restart mode: " + result.general.APrestartmode ); 
-            
-            //$("#device-name").val("").attr("placeholder", result.general.deviceid );
-            $("#device-name").val(result.general.deviceid);
-
-            if (result.STA.state) {
-                $("#gen-page-status").empty().append(" <p> Connected to " + result.STA.connectedssid + " (" + result.STA.IP + ")</p>");
-            }
-
-        }); 
-    } // end of getgenvars func
-    
     $("#general-1-submit").click(function() { 
         $.post("data.esp", $(this.form).serialize());
     });
