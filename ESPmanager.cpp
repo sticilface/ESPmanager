@@ -490,8 +490,6 @@ void cache ESPmanager::handle()
 
     ArduinoOTA.handle();
 
-
-
     if (save_flag) {
         SaveSettings();
         save_flag = false;
@@ -512,12 +510,12 @@ void cache ESPmanager::handle()
 
 //  need to work on this...
     // reset trigger if wifi is reconnected... 
-    if (WiFi.status() == WL_CONNECTED && _APrestartmode > 1 && triggered) {
+    if (WiFi.status() == WL_CONNECTED && _APrestartmode == 4 && triggered) {
           triggered = false; 
     }
 
-
-    if (WiFi.status() != WL_CONNECTED && _APrestartmode > 1 && !triggered) {
+    // AP should only be activated for option 4
+    if (WiFi.status() != WL_CONNECTED && _APrestartmode == 4 && !triggered) {
         triggered = true; 
         static uint32_t _wait = 0;
         ESPMan_Debugln(F("WiFi Disconnected:  Starting AP"));
