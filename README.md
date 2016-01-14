@@ -37,10 +37,6 @@ Instructions.
 6) Reboot the ESP.. it will copy the required files to a SPIFFS folder called espman <br>
 7) Now visit http://X.X.X.X/espman and it should work... <br>
 
-There is ONE bug i've not fixed, not sure if it is ESP or JS related.  
-The first time you open the page, when it must download everything, it seems to bork and fail. 
-If you hit refresh it then works fine.. this only happens on an empty cache.  
-If someone knows how to fix this... i suspect it is the browser putting out too many file requests... 
-but im not sure... 
+
 
 Feedback welcome... 
