@@ -184,180 +184,219 @@ bool cache ESPmanager::LoadSettings()
         return false;
     }
 
-    f.seek(0, SeekSet);
+//    f.seek(0, SeekSet);
 
-    char data[f.size()];
+    /*
+        char data[f.size()];
 
-    for (int i = 0; i < f.size(); i++) {
-        data[i] = f.read();
-    }
+        for (int i = 0; i < f.size(); i++) {
+            data[i] = f.read();
+        }
+    */
 
-    f.close();
+    char * data = new char[f.size()];
+    // prevent nullptr exception if can't allocate
+    if (data) {
 
-    JsonObject& root = jsonBuffer.parseObject(data);
+        //  This method give a massive improvement in file reading speed for SPIFFS files..
+        // 2K file down to 1-2ms from 60ms
 
-    if (!root.success()) {
-        ESPMan_Debugln(F("Parsing settings file Failed!"));
-        return false;
-    }
+        int bytesleft = f.size();
+        int position = 0;
+        while ((f.available() > -1) && (bytesleft > 0)) {
 
-    if (root.containsKey("host")) {
-        const char* host = root[F("host")];
-        if (_host) {
-            free((void*)_host);
-            _host = nullptr;
-        };
-        if (host) { _host = strdup(host); } else { _host = nullptr ; } ;
-    }
+            // get available data size
+            int sizeAvailable = f.available();
+            if (sizeAvailable) {
+                int readBytes = sizeAvailable;
 
-    if (root.containsKey("ssid")) {
-        const char* ssid = root["ssid"];
-        if (_ssid) {
-            free((void*)_ssid);
-            _ssid = nullptr;
-        };
-        if (ssid) { _ssid = strdup(ssid); } else { _ssid = nullptr ; } ;
-    }
+                // read only the asked bytes
+                if (readBytes > bytesleft) {
+                    readBytes = bytesleft ;
+                }
 
-    if (root.containsKey("pass")) {
-        const char* pass = root["pass"];
-        if (_pass) {
-            free((void*)_pass);
-            _pass = nullptr;
-        };
-        if (pass) { _pass = strdup(pass); } else { _pass = nullptr; } ;
-    }
+                // get new position in buffer
+                char * buf = &data[position];
+                // read data
+                int bytesread = f.readBytes(buf, readBytes);
+                bytesleft -= bytesread;
+                position += bytesread;
 
-    if (root.containsKey("APpass")) {
-        const char* APpass = root["APpass"];
-        if (_APpass) {
-            free((void*)_APpass);
-            _APpass = nullptr;
-        };
-        if (APpass) { _APpass = strdup(APpass); } else { _APpass = nullptr; } ;
-    }
+            }
+            // time for network streams
+            delay(0);
+        }
+        //////
 
-    if (root.containsKey("APssid")) {
-        const char* APssid = root["APssid"];
-        if (_APssid) {
-            free((void*)_APssid);
-            _APssid = nullptr;
-        };
-        if (APssid) { _APssid = strdup(APssid); } else {_APssid = nullptr; } ;
-    }
+        f.close();
 
-    if (root.containsKey("APchannel")) {
-        long APchannel = root["APchannel"];
-        if (APchannel < 13 && APchannel > 0)
-            _APchannel = (uint8_t)APchannel;
-    }
+        JsonObject& root = jsonBuffer.parseObject(data);
 
-    if (root.containsKey("DHCP")) {
-        _DHCP = root["DHCP"];
-    }
+        if (!root.success()) {
+            ESPMan_Debugln(F("Parsing settings file Failed!"));
+            return false;
+        }
 
-    if (root.containsKey("APenabled")) {
-        _APenabled = root["APenabled"];
-    }
-
-    if (root.containsKey("APrestartmode")) {
-        _APrestartmode = root["APrestartmode"];
-    }
-
-    if (root.containsKey("APhidden")) {
-        _APhidden = root["APhidden"];
-    }
-
-    if (root.containsKey("OTAenabled")) {
-        _OTAenabled = root["OTAenabled"];
-    }
-
-    if (root.containsKey("OTApassword")) {
-        const char* OTApassword = root["OTApassword"];
-        if (_OTApassword) {
-            free((void*)_OTApassword);
-            _OTApassword = nullptr;
-        };
-        if (OTApassword) { _OTApassword = strdup(OTApassword); } else {_OTApassword = nullptr; } ;
-    }
-
-
-
-    if (root.containsKey("mDNSenable")) {
-        _mDNSenabled = root["mDNSenable"];
-    }
-
-    if (root.containsKey("WiFimanage")) {
-        _manageWiFi = root["WiFimanage"];
-    }
-
-    // if (root.containsKey("OTAusechipID"))
-    // {
-    //      _OTAusechipID = root["OTAusechipID"];
-    //     //_manageWiFi = (strcmp(manageWiFi, "true") == 0) ? true : false;
-    // }
-
-
-    if (root.containsKey("IPaddress") && root.containsKey("Gateway") && root.containsKey("Subnet")) {
-        const char* ip = root[F("IPaddress")];
-        const char* gw = root[F("Gateway")];
-        const char* sn = root[F("Subnet")];
-
-        if (!_DHCP) {
-            // only bother to allocate memory if dhcp is NOT being used.
-            if (_IPs) {
-                delete _IPs;
-                _IPs = NULL;
+        if (root.containsKey("host")) {
+            const char* host = root[F("host")];
+            if (_host) {
+                free((void*)_host);
+                _host = nullptr;
             };
-            _IPs = new IPconfigs_t;
-            _IPs->IP = StringtoIP(String(ip));
-            _IPs->GW = StringtoIP(String(gw));
-            _IPs->SN = StringtoIP(String(sn));
+            if (host) { _host = strdup(host); } else { _host = nullptr ; } ;
         }
-    }
 
-    if (root.containsKey("STAmac")) {
-        uint8_t savedmac[6] = {0};
-        uint8_t currentmac[6] = {0};
-        WiFi.macAddress(currentmac);
-
-        for (uint8_t i = 0; i < 6; i++) {
-            savedmac[i] = root["STAmac"][i];
+        if (root.containsKey("ssid")) {
+            const char* ssid = root["ssid"];
+            if (_ssid) {
+                free((void*)_ssid);
+                _ssid = nullptr;
+            };
+            if (ssid) { _ssid = strdup(ssid); } else { _ssid = nullptr ; } ;
         }
-        if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 ) {
-            ESPMan_Debugln("Saved STA MAC does not equal native mac");
-            if (_STAmac) {
-                delete _STAmac;
-                _STAmac = nullptr;
+
+        if (root.containsKey("pass")) {
+            const char* pass = root["pass"];
+            if (_pass) {
+                free((void*)_pass);
+                _pass = nullptr;
+            };
+            if (pass) { _pass = strdup(pass); } else { _pass = nullptr; } ;
+        }
+
+        if (root.containsKey("APpass")) {
+            const char* APpass = root["APpass"];
+            if (_APpass) {
+                free((void*)_APpass);
+                _APpass = nullptr;
+            };
+            if (APpass) { _APpass = strdup(APpass); } else { _APpass = nullptr; } ;
+        }
+
+        if (root.containsKey("APssid")) {
+            const char* APssid = root["APssid"];
+            if (_APssid) {
+                free((void*)_APssid);
+                _APssid = nullptr;
+            };
+            if (APssid) { _APssid = strdup(APssid); } else {_APssid = nullptr; } ;
+        }
+
+        if (root.containsKey("APchannel")) {
+            long APchannel = root["APchannel"];
+            if (APchannel < 13 && APchannel > 0)
+                _APchannel = (uint8_t)APchannel;
+        }
+
+        if (root.containsKey("DHCP")) {
+            _DHCP = root["DHCP"];
+        }
+
+        if (root.containsKey("APenabled")) {
+            _APenabled = root["APenabled"];
+        }
+
+        if (root.containsKey("APrestartmode")) {
+            _APrestartmode = root["APrestartmode"];
+        }
+
+        if (root.containsKey("APhidden")) {
+            _APhidden = root["APhidden"];
+        }
+
+        if (root.containsKey("OTAenabled")) {
+            _OTAenabled = root["OTAenabled"];
+        }
+
+        if (root.containsKey("OTApassword")) {
+            const char* OTApassword = root["OTApassword"];
+            if (_OTApassword) {
+                free((void*)_OTApassword);
+                _OTApassword = nullptr;
+            };
+            if (OTApassword) { _OTApassword = strdup(OTApassword); } else {_OTApassword = nullptr; } ;
+        }
+
+
+
+        if (root.containsKey("mDNSenable")) {
+            _mDNSenabled = root["mDNSenable"];
+        }
+
+        if (root.containsKey("WiFimanage")) {
+            _manageWiFi = root["WiFimanage"];
+        }
+
+        // if (root.containsKey("OTAusechipID"))
+        // {
+        //      _OTAusechipID = root["OTAusechipID"];
+        //     //_manageWiFi = (strcmp(manageWiFi, "true") == 0) ? true : false;
+        // }
+
+
+        if (root.containsKey("IPaddress") && root.containsKey("Gateway") && root.containsKey("Subnet")) {
+            const char* ip = root[F("IPaddress")];
+            const char* gw = root[F("Gateway")];
+            const char* sn = root[F("Subnet")];
+
+            if (!_DHCP) {
+                // only bother to allocate memory if dhcp is NOT being used.
+                if (_IPs) {
+                    delete _IPs;
+                    _IPs = NULL;
+                };
+                _IPs = new IPconfigs_t;
+                _IPs->IP = StringtoIP(String(ip));
+                _IPs->GW = StringtoIP(String(gw));
+                _IPs->SN = StringtoIP(String(sn));
             }
-            _STAmac = new uint8_t[6];
-            memcpy(_STAmac, savedmac, 6);
         }
-    }
 
-    if (root.containsKey("APmac")) {
-        uint8_t savedmac[6] = {0};
-        uint8_t currentmac[6] = {0};
-        WiFi.softAPmacAddress(currentmac);
+        if (root.containsKey("STAmac")) {
+            uint8_t savedmac[6] = {0};
+            uint8_t currentmac[6] = {0};
+            WiFi.macAddress(currentmac);
 
-        for (uint8_t i = 0; i < 6; i++) {
-            savedmac[i] = root["APmac"][i];
-        }
-        if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 ) {
-            ESPMan_Debugln("Saved AP MAC does not equal native mac");
-            if (_APmac) {
-                delete _APmac;
-                _APmac = nullptr;
+            for (uint8_t i = 0; i < 6; i++) {
+                savedmac[i] = root["STAmac"][i];
             }
-            _APmac = new uint8_t[6];
-            memcpy(_APmac, savedmac, 6);
+            if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 ) {
+                ESPMan_Debugln("Saved STA MAC does not equal native mac");
+                if (_STAmac) {
+                    delete _STAmac;
+                    _STAmac = nullptr;
+                }
+                _STAmac = new uint8_t[6];
+                memcpy(_STAmac, savedmac, 6);
+            }
         }
-    }
+
+        if (root.containsKey("APmac")) {
+            uint8_t savedmac[6] = {0};
+            uint8_t currentmac[6] = {0};
+            WiFi.softAPmacAddress(currentmac);
+
+            for (uint8_t i = 0; i < 6; i++) {
+                savedmac[i] = root["APmac"][i];
+            }
+            if (memcmp( (const void *)savedmac, (const void *) currentmac, 6 ) != 0 ) {
+                ESPMan_Debugln("Saved AP MAC does not equal native mac");
+                if (_APmac) {
+                    delete _APmac;
+                    _APmac = nullptr;
+                }
+                _APmac = new uint8_t[6];
+                memcpy(_APmac, savedmac, 6);
+            }
+        }
 
 
-    ESPMan_Debugln(F("----- Saved Variables -----"));
-    PrintVariables();
-    ESPMan_Debugln(F("---------------------------"));
+        ESPMan_Debugln(F("----- Saved Variables -----"));
+        PrintVariables();
+        ESPMan_Debugln(F("---------------------------"));
+
+        delete[] data; //  OK to delete as it is wrapped in if (data)
+    } //  end of if data...
     return true;
 }
 
@@ -483,7 +522,7 @@ void cache ESPmanager::SaveSettings()
 
 void cache ESPmanager::handle()
 {
-    static bool triggered = false; 
+    static bool triggered = false;
 
     // if (ota_server)
     //     ota_server->handle();
@@ -509,14 +548,14 @@ void cache ESPmanager::handle()
 
 
 //  need to work on this...
-    // reset trigger if wifi is reconnected... 
+    // reset trigger if wifi is reconnected...
     if (WiFi.status() == WL_CONNECTED && _APrestartmode == 4 && triggered) {
-          triggered = false; 
+        triggered = false;
     }
 
     // AP should only be activated for option 4
     if (WiFi.status() != WL_CONNECTED && _APrestartmode == 4 && !triggered) {
-        triggered = true; 
+        triggered = true;
         static uint32_t _wait = 0;
         ESPMan_Debugln(F("WiFi Disconnected:  Starting AP"));
         WiFi.mode(WIFI_AP_STA);
@@ -656,7 +695,6 @@ bool cache ESPmanager::_upgrade()
                 size_t size = stream->available();
 
                 if (size) {
-                    // read up to 128 byte
                     int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
                     if (len > 0) {
                         len -= c;
@@ -680,7 +718,7 @@ bool cache ESPmanager::_upgrade()
                     JsonObject& item = *it;
                     const char* value = item["file"];
                     const char* md5 = item["md5"];
-                    ESPMan_Debugf("[%u] ",files_expected);
+                    ESPMan_Debugf("[%u] ", files_expected);
                     String fullpathtodownload = String(__updateserver) + String(value);
                     String filename = fullpathtodownload.substring( fullpathtodownload.lastIndexOf("/"), fullpathtodownload.length() );
                     bool downloaded = _DownloadToSPIFFS(fullpathtodownload.c_str() , filename.c_str(), md5 );
@@ -774,7 +812,7 @@ bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filenam
     return false;
 }
 
-String cache ESPmanager::_file_md5 (File& f)
+String cache ESPmanager::_file_md5 (File & f)
 {
     // Md5 check
 
@@ -784,7 +822,7 @@ String cache ESPmanager::_file_md5 (File& f)
         md5.begin();
 
         md5.addStream(f, f.size());
-        
+
         // const int buf_size = 1024;
         // size_t len = f.size();
         // size_t running_total = 0;
@@ -1906,7 +1944,7 @@ void cache ESPmanager::HandleDataRequest()
 
 
 
-
+    _HTTP.setContentLength(2);
     _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
 }
 
