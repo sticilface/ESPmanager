@@ -184,15 +184,6 @@ bool cache ESPmanager::LoadSettings()
         return false;
     }
 
-//    f.seek(0, SeekSet);
-
-    /*
-        char data[f.size()];
-
-        for (int i = 0; i < f.size(); i++) {
-            data[i] = f.read();
-        }
-    */
 
     char * data = new char[f.size()];
     // prevent nullptr exception if can't allocate
