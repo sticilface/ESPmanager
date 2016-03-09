@@ -33,17 +33,16 @@ To Upload
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
-
 #include <FS.h>
-
-
 #include <functional>
 
 
-#define Debug_ESPManager
 
 #define SETTINGS_FILE "/espman/settings.txt"
 #define ESPMANVERSION "1.1"
+
+#define Debug_ESPManager
+
 
 #ifdef Debug_ESPManager
 #define ESPMan_Debug(x)    Serial.print(x)
@@ -117,7 +116,7 @@ private:
 	void PrintVariables();
 
 	bool _FilesCheck(bool initwifi = true);
-	bool  _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
+	bool _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
 
 
 	void _NewFilesCheck();
@@ -168,19 +167,19 @@ private:
 
 
 template<size_t CAPACITY>
-class BufferedPrint : public Print
+class BufferedPrint_internal : public Print
 {
 public:
-	BufferedPrint(ESP8266WebServer & HTTP) : _size(0)
+	BufferedPrint_internal(ESP8266WebServer & HTTP) : _size(0)
 	{
 		_client = HTTP.client();
 	}
 
-	BufferedPrint(WiFiClient & client) : _client(client), _size(0)
+	BufferedPrint_internal(WiFiClient & client) : _client(client), _size(0)
 	{
 	}
 
-	~BufferedPrint()
+	~BufferedPrint_internal()
 	{
 		_client.stop();
 	}
