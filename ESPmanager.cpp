@@ -158,7 +158,7 @@ void cache ESPmanager::begin()
         // if (wifi_station_get_hostname())
         //     _APssid = strdup(wifi_station_get_hostname());
         // else
-        _APssid = _host;
+        _APssid = strdup(_host);
     }
 
     if (_APenabled) {
@@ -938,7 +938,7 @@ bool cache ESPmanager::Wifistart()
     // WiFi.mode(WIFI_AP_STA);
     // WiFi.begin(_ssid,_pass);
 
- //   WiFi.disconnect();
+//   WiFi.disconnect();
 
     if (!WiFi.enableSTA(true)) {
         ESPMan_Debugln("[ESPmanager::Wifistart] WiFi MODE in AP: NOT STARTING");
@@ -1799,12 +1799,15 @@ void cache ESPmanager::HandleDataRequest()
             ESPMan_Debugln(F("Device ID changed"));
             //      if (_host) free( (void*)_host);
 
-            if (strcmp(_host, _APssid) == 0) {
-                if (_APssid) {
-                    free((void*)_APssid);
-                    _APssid = NULL;
+            if (_host && _APssid) {
+                if (strcmp(_host, _APssid) == 0) {
+
+                    if (_APssid) {
+                        free((void*)_APssid);
+                        _APssid = NULL;
+                    }
+                    _APssid = strdup((const char*)_HTTP.arg("deviceid").c_str());
                 }
-                _APssid = strdup((const char*)_HTTP.arg("deviceid").c_str());
             }
 
             if (_host) {
@@ -1813,8 +1816,11 @@ void cache ESPmanager::HandleDataRequest()
             }
             _host = strdup((const char*)_HTTP.arg("deviceid").c_str());
             //  might need to add in here, wifireinting...
+            ESPMan_Debugln("1");            
             WiFi.hostname(_host);
+            ESPMan_Debugln("2");
             InitialiseFeatures();
+            ESPMan_Debugln("3");
             InitialiseSoftAP();
         }
     }

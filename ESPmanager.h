@@ -41,7 +41,7 @@ To Upload
 #define SETTINGS_FILE "/espman/settings.txt"
 #define ESPMANVERSION "1.1"
 
-#define Debug_ESPManager
+//#define Debug_ESPManager
 
 
 #ifdef Debug_ESPManager
