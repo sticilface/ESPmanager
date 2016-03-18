@@ -93,6 +93,8 @@ public:
 	~ESPmanager();
 	void begin();
 	void handle();
+
+	const char * deviceName() { return _host; }
 	static String IPtoString(IPAddress address);
 	static IPAddress StringtoIP(const String IP_string);
 	static String formatBytes(size_t bytes);
