@@ -791,12 +791,6 @@ bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filenam
                     _fs.remove("/tempfile");
                 }
 
-
-
-
-
-
-
             } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); }
         } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); }
         yield();
@@ -1120,11 +1114,12 @@ String ESPmanager::formatBytes(size_t bytes)
 
 void cache ESPmanager::_NewFilesCheck()
 {
-
+    bool found = false; 
 
     for (uint8_t i = 0; i < file_no; i++) {
 
         if (_fs.exists(fileslist[i])) {
+            found = true; 
             String buf = "/espman";
             buf += fileslist[i];
             if (fileslist[i] == "/config.htm") { buf = "/espman/index.htm"; }
@@ -1137,6 +1132,13 @@ void cache ESPmanager::_NewFilesCheck()
             }
         }; //  else ESPMan_Debugf("%s : Not found\n", fileslist[i]);
     }
+
+    if (found) 
+    {
+        ESPMan_Debugf("[ESPmanager::_NewFilesCheck] Files Renames: Rebooting\n");
+        ESP.restart(); 
+    }
+
 }
 
 //URI Decoding function
@@ -1427,7 +1429,7 @@ void cache ESPmanager::HandleDataRequest()
         root[F("flashsize_var")] = formatBytes( ESP.getFlashChipSize() );
         root[F("flashRealSize_var")] = formatBytes (ESP.getFlashChipRealSize() ); // not sure what the difference is here...
         root[F("flashchipsizebyid_var")] = formatBytes (ESP.getFlashChipSizeByChipId());
-        root[F("flashchipmode_var")] = ESP.getFlashChipMode();
+        root[F("flashchipmode_var")] = (uint32_t)ESP.getFlashChipMode();
 
         root[F("chipid_var")] = ESP.getChipId();
         String sketchsize = formatBytes(ESP.getSketchSize()) ;//+ " ( " + String(ESP.getSketchSize()) +  " Bytes)";
@@ -1904,7 +1906,7 @@ void cache ESPmanager::HandleDataRequest()
 
                                        FORMAT SPIFFS
       ------------------------------------------------------------------------------------------------------------------*/
-    if (_HTTP.arg("plain") == "formatSPIFFS" & _HTTP.method() == HTTP_POST) {
+    if (_HTTP.arg("plain") == "formatSPIFFS" && _HTTP.method() == HTTP_POST) {
         ESPMan_Debug(F("Format SPIFFS"));
         _HTTP.send(200, "text", "OK");
         _fs.format();
@@ -1912,7 +1914,7 @@ void cache ESPmanager::HandleDataRequest()
         return;
     }
 
-    if (_HTTP.arg("plain") == "upgrade" & _HTTP.method() == HTTP_POST) {
+    if (_HTTP.arg("plain") == "upgrade" && _HTTP.method() == HTTP_POST) {
         static uint32_t timeout = 0;
 
         if (millis() - timeout > 30000 || timeout == 0 ) {
@@ -1944,7 +1946,7 @@ void cache ESPmanager::HandleDataRequest()
         //FilesCheck(false);
     }
 
-    if (_HTTP.arg("plain") == "deletesettings" & _HTTP.method() == HTTP_POST) {
+    if (_HTTP.arg("plain") == "deletesettings" && _HTTP.method() == HTTP_POST) {
 
         ESPMan_Debug(F("Delete Settings File"));
         if (_fs.remove("/settings.txt")) {
