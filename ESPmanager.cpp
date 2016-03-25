@@ -161,7 +161,7 @@ void cache ESPmanager::begin()
         _APssid = strdup(_host);
     }
 
-    if (_APenabled) {
+    if (_APrestartmode) {
         ESPMan_Debugln(F("Soft AP enabled by config"));
         InitialiseSoftAP();
     } else { ESPMan_Debugln(F("Soft AP disbaled by config")); }
