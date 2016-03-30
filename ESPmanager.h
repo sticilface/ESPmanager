@@ -35,7 +35,7 @@ To Upload
 #include <ESP8266HTTPUpdateServer.h>
 #include <FS.h>
 #include <functional>
-
+#include <ArduinoJson.h>
 
 
 #define SETTINGS_FILE "/espman/settings.txt"
@@ -95,8 +95,8 @@ public:
 	void handle();
 
 	const char * deviceName() { return _host; }
-	static String IPtoString(IPAddress address);
-	static IPAddress StringtoIP(const String IP_string);
+//	static String IPtoString(IPAddress address);
+//	static IPAddress StringtoIP(const String IP_string);
 	static String formatBytes(size_t bytes);
 	static bool StringtoMAC(uint8_t *mac, const String &input);
 	static void urldecode(char *dst, const char *src); // need to check it works to decode the %03... for :
@@ -120,22 +120,24 @@ private:
 	bool _FilesCheck(bool initwifi = true);
 	bool _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
 
+	void _extractkey(JsonObject & root, const char * name, char * ptr ); 
 
 	void _NewFilesCheck();
 	bool _upgrade();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
 
 	const char * C_null = "";
-	const char * _host = nullptr;
-	const char * _ssid = nullptr;
-	const char * _pass = nullptr;
+	 char * _host = nullptr;
+	 char * _ssid = nullptr;
+	 char * _pass = nullptr;
 
 	const char * _ssid_hardcoded = nullptr;
 	const char * _pass_hardcoded = nullptr;
 
-	const char * _APpass = nullptr;
-	const char * _APssid = nullptr;
-	const char * _OTApassword = nullptr;
+	char * _APpass = nullptr;
+	char * _APssid = nullptr;
+	char * _OTApassword = nullptr;
+	
 	uint8_t * _STAmac = nullptr;
 	uint8_t * _APmac = nullptr;
 
@@ -145,16 +147,16 @@ private:
 	ESP8266HTTPUpdateServer httpUpdater;
 
 
-	uint8_t _APchannel = 1;
-	bool _APhidden = false;
-	bool _APenabled = false;
-	bool _OTAenabled = true;
-	bool save_flag = false;
-	bool _DHCP = true;
-	bool _manageWiFi = true;
-	bool _mDNSenabled = true;
-	uint8_t _APrestartmode = 1;
-	uint32_t _APtimer = 0;
+	uint8_t _APchannel{1};
+	bool _APhidden{false};
+	bool _APenabled{false};
+	bool _OTAenabled{true};
+	bool save_flag{false};
+	bool _DHCP{true};
+	bool _manageWiFi{true};
+	bool _mDNSenabled{true};
+	uint8_t _APrestartmode{2};   // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
+	uint32_t _APtimer{0};
 
 	struct IPconfigs_t {
 		IPAddress IP;
@@ -164,6 +166,11 @@ private:
 
 	IPconfigs_t * _IPs = NULL; // will hold IPs if they are set by the user..
 	//File * fsUploadFile;
+
+
+//  Strings.... 
+	const char * _pdeviceid = "deviceid"; 
+
 
 };
 
