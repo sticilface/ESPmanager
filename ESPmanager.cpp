@@ -5,7 +5,6 @@
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
-#include <ESP8266HTTPClient.h>
 #include "MD5Builder.h"
 
 
@@ -84,6 +83,7 @@ ESPmanager::~ESPmanager()
 
 void cache ESPmanager::begin()
 {
+//   HTTPClient http;
 
     ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
 
@@ -181,7 +181,7 @@ void cache ESPmanager::begin()
 // }
 
 
-void ESPmanager::_extractkey(JsonObject& root, const char * name, char * ptr )
+void ESPmanager::_extractkey(JsonObject& root, const char * name, char *& ptr )
 {
 
     if (root.containsKey(name)) {
@@ -192,7 +192,7 @@ void ESPmanager::_extractkey(JsonObject& root, const char * name, char * ptr )
             ptr = nullptr;
         };
 
-        if (ptr) {
+        if (temp) {
             ptr = strdup(temp);
         } else {
             ptr = nullptr ;
@@ -256,10 +256,10 @@ bool cache ESPmanager::LoadSettings()
         }
 
         _extractkey(root, "host", _host);
-        _extractkey(root, "ssid", _ssid); 
-        _extractkey(root, "pass", _pass); 
+        _extractkey(root, "ssid", _ssid);
+        _extractkey(root, "pass", _pass);
         _extractkey(root, "APpass", _APpass);
-        _extractkey(root, "APssid", _APssid); 
+        _extractkey(root, "APssid", _APssid);
 
         // if (root.containsKey("host")) {
         //     const char* host = root[F("host")];
@@ -333,7 +333,7 @@ bool cache ESPmanager::LoadSettings()
             _OTAenabled = root["OTAenabled"];
         }
 
-        _extractkey(root, "OTApassword", _OTApassword); 
+        _extractkey(root, "OTApassword", _OTApassword);
 
         // if (root.containsKey("OTApassword")) {
         //     const char* OTApassword = root["OTApassword"];
@@ -687,12 +687,36 @@ void cache ESPmanager::InitialiseFeatures()
     if (_mDNSenabled) {
         MDNS.addService("http", "tcp", 80);
     }
+}
 
+#ifdef USE_WEB_UPDATER
 
+bool ESPmanager::_upgrade()
+{
+    uint8_t * buff = nullptr; 
+
+    bool success = false;
+    if (!httpclient) {
+        httpclient = new HTTPClient;
+    }
+
+    if (httpclient) {
+        success = _upgradewrapper(buff);
+        delete httpclient;
+        httpclient = nullptr;
+    }
+
+    if (buff) {
+        delete[] buff;
+        buff = nullptr; 
+    }
+
+    return success;
 
 }
 
-bool cache ESPmanager::_upgrade()
+
+bool cache ESPmanager::_upgradewrapper(uint8_t * buff)
 {
     static const uint16_t httpPort = 80;
     static const size_t bufsize = 1024;
@@ -700,141 +724,165 @@ bool cache ESPmanager::_upgrade()
     uint8_t files_recieved = 0;
     uint8_t files_expected = 0;
 
-    HTTPClient http;
-    String path = String(__updateserver) + String(__updatepath);
-    http.begin(path); //HTTP
 
-    int httpCode = http.GET();
+    if (httpclient) {
+        String path = String(__updateserver) + String(__updatepath);
+        httpclient->begin(path); //HTTP
 
-    if (httpCode) {
-        if (httpCode == 200) {
+        int httpCode = httpclient->GET();
 
-            size_t len = http.getSize();
-            if (len > bufsize) {
-                ESPMan_Debugln("Receive update length too big.  Increase buffer");
-                return false;
-            }
-            uint8_t buff[bufsize] = { 0 }; // max size of input buffer. Don't use String, as arduinoJSON doesn't like it!
+        if (httpCode) {
 
-            // get tcp stream
-            WiFiClient * stream = http.getStreamPtr();
+            if (httpCode == 200) {
 
-            // read all data from server
-            while (http.connected() && (len > 0 || len == -1)) {
-                // get available data size
-                size_t size = stream->available();
-
-                if (size) {
-                    int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
-                    if (len > 0) {
-                        len -= c;
-                    }
+                size_t len = httpclient->getSize();
+                if (len > bufsize) {
+                    ESPMan_Debugln("Receive update length too big.  Increase buffer");
+                    return false;
                 }
-                delay(1);
-            }
-            http.end();
-            yield();
 
-            DynamicJsonBuffer jsonBuffer;
-            JsonArray& root = jsonBuffer.parseArray( (char*)buff );
+                buff = new uint8_t(bufsize);
 
-            if (!root.success()) {
-                ESPMan_Debugln("Parse JSON failed");
-                return false;
-            } else {
-                uint8_t count = 0;
-                for (JsonArray::iterator it = root.begin(); it != root.end(); ++it) {
-                    files_expected++;
-                    JsonObject& item = *it;
-                    const char* value = item["file"];
-                    const char* md5 = item["md5"];
-                    ESPMan_Debugf("[%u] ", files_expected);
-                    String fullpathtodownload = String(__updateserver) + String(value);
-                    String filename = fullpathtodownload.substring( fullpathtodownload.lastIndexOf("/"), fullpathtodownload.length() );
-                    bool downloaded = _DownloadToSPIFFS(fullpathtodownload.c_str() , filename.c_str(), md5 );
-                    if (downloaded) {
-                        ESPMan_Debugf("Download SUCCESS (%s)\n", fullpathtodownload.c_str()  );
-                        files_recieved++;
+                if (buff) {
+
+                    memset(buff, 0, bufsize);
+
+                    //uint8_t buff[bufsize] = { 0 }; // max size of input buffer. Don't use String, as arduinoJSON doesn't like it!
+
+                    // get tcp stream
+                    WiFiClient * stream = httpclient->getStreamPtr();
+
+                    // read all data from server
+                    while (httpclient->connected() && (len > 0 || len == -1)) {
+                        // get available data size
+                        size_t size = stream->available();
+
+                        if (size) {
+                            int c = stream->readBytes(buff, ((size > sizeof(buff)) ? sizeof(buff) : size));
+                            if (len > 0) {
+                                len -= c;
+                            }
+                        }
+                        delay(1);
+                    }
+                    httpclient->end(); // end current connection..
+
+                    yield();
+
+                    DynamicJsonBuffer jsonBuffer;
+                    JsonArray& root = jsonBuffer.parseArray( (char*)buff );
+
+                    if (!root.success()) {
+                        ESPMan_Debugln("Parse JSON failed");
+                        return false;
                     } else {
-                        ESPMan_Debugf("Download FAILED (%s)\n", fullpathtodownload.c_str() );
+                        uint8_t count = 0;
+                        for (JsonArray::iterator it = root.begin(); it != root.end(); ++it) {
+                            files_expected++;
+                            JsonObject& item = *it;
+                            const char* value = item["file"];
+                            const char* md5 = item["md5"];
+                            ESPMan_Debugf("[%u] ", files_expected);
+                            String fullpathtodownload = String(__updateserver) + String(value);
+                            String filename = fullpathtodownload.substring( fullpathtodownload.lastIndexOf("/"), fullpathtodownload.length() );
+                            bool downloaded = _DownloadToSPIFFS(fullpathtodownload.c_str() , filename.c_str(), md5 );
+                            if (downloaded) {
+                                ESPMan_Debugf("Download SUCCESS (%s)\n", fullpathtodownload.c_str()  );
+                                files_recieved++;
+                            } else {
+                                ESPMan_Debugf("Download FAILED (%s)\n", fullpathtodownload.c_str() );
+                            }
+                            delay(1);
+                        }
                     }
-                    delay(1);
+                } else {
+                    ESPMan_Debugf("Failed to allocated buffer\n");
+                    return false; 
                 }
+            } else {
+                ESPMan_Debugf("HTTP CODE [%d]", httpCode);
+                httpclient->end();
             }
         } else {
-            ESPMan_Debugf("HTTP CODE [%d]", httpCode);
-            http.end();
+            ESPMan_Debugln("GET request Failed");
+            httpclient->end();
+            return false;
         }
-    } else {
-        ESPMan_Debugln("GET request Failed");
-        http.end();
-        return false;
+
+
+
+        if (files_recieved == files_expected) {
+            ESPMan_Debugf("Update Successful [%u/%u] downloaded\n", files_recieved, files_expected);
+            return true;
+        } else {
+            ESPMan_Debugf("Update Error [%u/%u] downloaded succesfully\n", files_recieved, files_expected);
+            return false;
+        }
+
     }
 
-    if (files_recieved == files_expected) {
-        ESPMan_Debugf("Update Successful [%u/%u] downloaded\n", files_recieved, files_expected);
-        return true;
-    } else {
-        ESPMan_Debugf("Update Error [%u/%u] downloaded succesfully\n", files_recieved, files_expected);
-        return false;
-    }
+    return false;
+
 }
 
 bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename, const char * md5_true )
 {
-    HTTPClient http;
 
-    File f = _fs.open("/tempfile", "w+"); //  w+ is to allow read operations on file.... otherwise crc gets 255!!!!!
+    if (httpclient) {
+        File f = _fs.open("/tempfile", "w+"); //  w+ is to allow read operations on file.... otherwise crc gets 255!!!!!
 
-    if (!f) {
-        ESPMan_Debugln("file open failed");
-        return false;
-    } else {
-        http.begin(url);
-        int httpCode = http.GET();
-        if (httpCode > 0) {
-            if (httpCode == 200) {
-                int len = http.getSize();
-                size_t byteswritten = http.writeToStream(&f);
-//                ESPMan_Debugf("%s downloaded, expected (%s) \n", formatBytes(byteswritten).c_str(), formatBytes(len).c_str() ) ;
-                bool success = false;
+        if (!f) {
+            ESPMan_Debugln("file open failed");
+            return false;
+        } else {
+            httpclient->begin(url);
+            int httpCode = httpclient->GET();
+            if (httpCode > 0) {
+                if (httpCode == 200) {
+                    int len = httpclient->getSize();
+                    size_t byteswritten = httpclient->writeToStream(&f);
+                    bool success = false;
 
-                if (f.size() == len || len == -1 ) {
+                    if (f.size() == len || len == -1 ) {
 
-                    if (md5_true) {
-                        String crc = _file_md5(f);
-                        if (crc = String(md5_true)) {
-                            success = true;
-//                            ESPMan_Debugln("CRC MATCH");
+                        if (md5_true) {
+                            String crc = _file_md5(f);
+                            if (crc = String(md5_true)) {
+                                success = true;
+                            }
+
+                        } else {
+                            success = true; // set to true if no CRC provided...
                         }
 
+                        f.close();
+                        if (success) {
+                            //ESPMan_Debugln("Download Successful");
+                            _fs.rename("/tempfile", filename);
+                            return true;
+                        } else {
+                            ESPMan_Debug("Download FAILED: CRC mismatch");
+                            _fs.remove("/tempfile");
+                        }
                     } else {
-                        success = true; // set to true if no CRC provided...
-                    }
-
-                    f.close();
-                    if (success) {
-                        //ESPMan_Debugln("Download Successful");
-                        _fs.rename("/tempfile", filename);
-                        return true;
-                    } else {
-                        ESPMan_Debug("Download FAILED: CRC mismatch");
+                        ESPMan_Debugf("Download FAILED %s downloaded (%s required)\n", formatBytes(byteswritten).c_str(), formatBytes(httpclient->getSize()).c_str() );
                         _fs.remove("/tempfile");
                     }
-                } else {
-                    ESPMan_Debugf("Download FAILED %s downloaded (%s required)\n", formatBytes(byteswritten).c_str(), formatBytes(http.getSize()).c_str() );
-                    _fs.remove("/tempfile");
-                }
 
-            } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); }
-        } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); }
-        yield();
+                } else { ESPMan_Debugf("HTTP code not correct [%d]\n", httpCode); }
+            } else { ESPMan_Debugf("HTTP code ERROR [%d]\n", httpCode); }
+            yield();
+        }
+
+        httpclient->end();
+        f.close();
+
     }
-
-    http.end();
-    f.close();
     return false;
 }
+
+
+#endif
 
 String cache ESPmanager::_file_md5 (File & f)
 {
@@ -844,33 +892,7 @@ String cache ESPmanager::_file_md5 (File & f)
 
         MD5Builder md5;
         md5.begin();
-
         md5.addStream(f, f.size());
-
-        // const int buf_size = 1024;
-        // size_t len = f.size();
-        // size_t running_total = 0;
-
-        // while (len > 0) {
-        //     uint8_t buf[buf_size] = {0};
-        //     size_t i = 0;
-        //     //ESPMan_Debug("[md5] |");
-        //     while (i < buf_size && len > 0) {
-        //         char byte = f.read();
-        //         buf[i++] = byte;
-        //         //ESPMan_Debug(byte);
-        //         len--;
-        //     }
-
-        //     md5.add(buf, i);
-        //     running_total += i;
-        //     //ESPMan_Debugf("%u|", i);
-        //     //ESPMan_Debug(".");
-
-        // }
-
-        //ESPMan_Debugf("\n[md5] [%s]file size %u, md5 size %u", f.name() , f.size(), running_total);
-
         md5.calculate();
         return md5.toString();
     } else {
@@ -880,14 +902,6 @@ String cache ESPmanager::_file_md5 (File & f)
 
 bool cache ESPmanager::_FilesCheck(bool startwifi)
 {
-
-
-// must remove.. deletes the required files..
-
-    // for (uint8_t i = 0; i < file_no; i++) {
-    //     _fs.remove(fileslist[i]);
-    // }
-
 
     bool haserror = false;
     bool present[file_no];
@@ -914,16 +928,9 @@ bool cache ESPmanager::_FilesCheck(bool startwifi)
 
 
 // need this.. taken out tempararily
-
+#ifdef USE_WEB_UPDATER
             return _upgrade();
-
-            // check everything
-            // haserror = false;
-            // for (uint8_t filequeue = 0; filequeue < file_no; filequeue++) {
-            //     if (present[filequeue] == false) haserror = true;
-            // }
-
-
+#endif
         } else {
 
             ESPMan_Debugln(F("Attempted to download required files, failed no internet. Try hard coding credentials"));
@@ -1082,38 +1089,6 @@ bool cache ESPmanager::Wifistart()
     }
 };
 
-
-// String cache ESPmanager::IPtoString(IPAddress address)
-// {
-
-//     String IP = "";
-//     for (int i = 0; i < 4; i++) {
-//         IP += String(address[i]);
-//         if (i < 3) {
-//             IP += ".";
-//         }
-//     }
-
-//     return IP;
-// }
-
-// IPAddress cache ESPmanager::StringtoIP(const String IP_string)
-// {
-
-//     char inputbuffer[IP_string.length() + 1];
-//     strcpy(inputbuffer, IP_string.c_str());
-//     char* IP = &inputbuffer[0];
-//     char* pch;
-//     pch = strtok(IP, ".");
-//     uint8_t position = 0;
-//     IPAddress returnIP;
-
-//     while (pch != NULL && position < 4) {
-//         returnIP[position++] = atoi(pch);
-//         pch = strtok(NULL, ".");
-//     }
-//     return returnIP;
-// }
 
 //format bytes thanks to @me-no-dev
 
@@ -1377,9 +1352,9 @@ void cache ESPmanager::HandleDataRequest()
 
         STAobject[F("dhcp")] = (_DHCP) ? true : false;
         STAobject[F("state")] = (mode == WIFI_STA || mode == WIFI_AP_STA) ? true : false;
-        //String ip; 
+        //String ip;
 
-        STAobject[F("IP")] = WiFi.localIP().toString(); 
+        STAobject[F("IP")] = WiFi.localIP().toString();
 
         STAobject[F("gateway")] = WiFi.gatewayIP().toString() ;
         STAobject[F("subnet")] = WiFi.subnetMask().toString() ;
@@ -1934,6 +1909,8 @@ void cache ESPmanager::HandleDataRequest()
         return;
     }
 
+#ifdef USE_WEB_UPDATER
+
     if (_HTTP.arg("plain") == "upgrade" && _HTTP.method() == HTTP_POST) {
         static uint32_t timeout = 0;
 
@@ -1949,22 +1926,10 @@ void cache ESPmanager::HandleDataRequest()
             }
             timeout = millis();
             return;
-
         }
-        // ESPMan_Debug(F("Upgrade files"));
-
-        //     Dir dir = _fs.openDir("/");
-        //      while (dir.next()) {
-        //         String fileName = dir.fileName();
-        //             size_t fileSize = dir.fileSize();
-        //             ESPMan_Debugf("     Deleting: %s\n", fileName.c_str());
-        //             _fs.remove(fileName);
-        //         }
-        // ESPMan_Debugln(F(" done, rebooting"));
-        // _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff
-        // ESP.restart();
-        //FilesCheck(false);
     }
+
+#endif
 
     if (_HTTP.arg("plain") == "deletesettings" && _HTTP.method() == HTTP_POST) {
 
@@ -2000,8 +1965,6 @@ void cache ESPmanager::HandleDataRequest()
         }
 
     }
-
-
 
     _HTTP.setContentLength(2);
     _HTTP.send(200, "text", "OK"); // return ok to speed up AJAX stuff

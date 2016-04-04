@@ -33,6 +33,7 @@ To Upload
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266HTTPUpdateServer.h>
+#include <ESP8266HTTPClient.h>
 #include <FS.h>
 #include <functional>
 #include <ArduinoJson.h>
@@ -40,6 +41,10 @@ To Upload
 
 #define SETTINGS_FILE "/espman/settings.txt"
 #define ESPMANVERSION "1.1"
+
+
+//#define USE_WEB_UPDATER 
+
 
 //#define Debug_ESPManager
 
@@ -55,7 +60,7 @@ To Upload
 #endif
 
 
-#define cache  ICACHE_FLASH_ATTR
+#define cache  //ICACHE_FLASH_ATTR
 
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
@@ -79,28 +84,25 @@ static const char * __gif1 = "/espman/images/ajax-loader.gif";
 static const char * __htm1 = "/espman/index.htm";
 static const char * TRUEfileslist[file_no] = {__jq1, __jq2, __jq3, __jq4, __htm1, __gif1} ;
 
+#ifdef USE_WEB_UPDATER
 // update path
 static const char * __updateserver = "http://sticilface.github.io";
 static const char * __updatepath = "/espmanupdate.json";
+#endif
 
 
-// http://sticilface.github.io/espmanupdate.json
 class ESPmanager
 {
 public:
-	//ArduinoOTA* ota_server = NULL;
 	ESPmanager(ESP8266WebServer & HTTP, FS & fs = SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL);
 	~ESPmanager();
 	void begin();
 	void handle();
 
 	const char * deviceName() { return _host; }
-//	static String IPtoString(IPAddress address);
-//	static IPAddress StringtoIP(const String IP_string);
 	static String formatBytes(size_t bytes);
 	static bool StringtoMAC(uint8_t *mac, const String &input);
 	static void urldecode(char *dst, const char *src); // need to check it works to decode the %03... for :
-	//static void sendJsonObjecttoHTTP( const JsonObject & root, ESP8266WebServer & _HTTP);
 	template <class T> static void sendJsontoHTTP( const T& root, ESP8266WebServer & _HTTP) ;
 
 	bool Wifistart();
@@ -118,18 +120,22 @@ private:
 	void PrintVariables();
 
 	bool _FilesCheck(bool initwifi = true);
+
+#ifdef USE_WEB_UPDATER
 	bool _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
-
-	void _extractkey(JsonObject & root, const char * name, char * ptr ); 
-
-	void _NewFilesCheck();
 	bool _upgrade();
+	bool _upgradewrapper(uint8_t * buff); 
+#endif
+
+	void _extractkey(JsonObject & root, const char * name, char *& ptr ); 
+	void _NewFilesCheck();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
 
 	const char * C_null = "";
-	 char * _host = nullptr;
-	 char * _ssid = nullptr;
-	 char * _pass = nullptr;
+
+	char * _host = nullptr;
+	char * _ssid = nullptr;
+	char * _pass = nullptr;
 
 	const char * _ssid_hardcoded = nullptr;
 	const char * _pass_hardcoded = nullptr;
@@ -145,7 +151,7 @@ private:
 	FS & _fs;
 	ESP8266WebServer & _HTTP;
 	ESP8266HTTPUpdateServer httpUpdater;
-
+	HTTPClient* httpclient{nullptr}; 
 
 	uint8_t _APchannel{1};
 	bool _APhidden{false};
@@ -165,8 +171,6 @@ private:
 	};
 
 	IPconfigs_t * _IPs = NULL; // will hold IPs if they are set by the user..
-	//File * fsUploadFile;
-
 
 //  Strings.... 
 	const char * _pdeviceid = "deviceid"; 
