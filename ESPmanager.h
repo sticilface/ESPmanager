@@ -43,10 +43,10 @@ To Upload
 #define ESPMANVERSION "1.1"
 
 
-//#define USE_WEB_UPDATER 
+#define USE_WEB_UPDATER 
 
 
-//#define Debug_ESPManager
+#define Debug_ESPManager
 
 
 #ifdef Debug_ESPManager
@@ -124,7 +124,7 @@ private:
 #ifdef USE_WEB_UPDATER
 	bool _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
 	bool _upgrade();
-	bool _upgradewrapper(uint8_t * buff); 
+	//bool _upgradewrapper(uint8_t * buff); 
 #endif
 
 	void _extractkey(JsonObject & root, const char * name, char *& ptr ); 
