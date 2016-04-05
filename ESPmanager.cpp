@@ -81,7 +81,7 @@ ESPmanager::~ESPmanager()
     }
 }
 
-void cache ESPmanager::begin()
+void  ESPmanager::begin()
 {
 //   HTTPClient http;
 
@@ -201,7 +201,7 @@ void ESPmanager::_extractkey(JsonObject& root, const char * name, char *& ptr )
 }
 
 
-bool cache ESPmanager::LoadSettings()
+bool  ESPmanager::LoadSettings()
 {
 
     DynamicJsonBuffer jsonBuffer(1000);
@@ -428,7 +428,7 @@ bool cache ESPmanager::LoadSettings()
 }
 
 
-void cache ESPmanager::PrintVariables()
+void  ESPmanager::PrintVariables()
 {
 
 #ifdef DEBUG_YES
@@ -466,7 +466,7 @@ void cache ESPmanager::PrintVariables()
 #endif
 }
 
-void cache ESPmanager::SaveSettings()
+void  ESPmanager::SaveSettings()
 {
     /*
         Settings to save
@@ -550,7 +550,7 @@ void cache ESPmanager::SaveSettings()
     f.close();
 }
 
-void cache ESPmanager::handle()
+void  ESPmanager::handle()
 {
     static bool triggered = false;
 
@@ -597,7 +597,7 @@ void cache ESPmanager::handle()
 
 }
 
-void cache ESPmanager::InitialiseFeatures()
+void  ESPmanager::InitialiseFeatures()
 {
 
     // if (_OTAenabled)
@@ -692,7 +692,7 @@ void cache ESPmanager::InitialiseFeatures()
 #ifdef USE_WEB_UPDATER
 
 
-bool cache ESPmanager::_upgrade()
+bool  ESPmanager::_upgrade()
 {
     static const uint16_t httpPort = 80;
     static const size_t bufsize = 1024;
@@ -781,7 +781,7 @@ bool cache ESPmanager::_upgrade()
     }
 }
 
-bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename, const char * md5_true )
+bool  ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename, const char * md5_true )
 {
     HTTPClient http;
 
@@ -840,7 +840,7 @@ bool cache ESPmanager::_DownloadToSPIFFS(const char * url , const char * filenam
 
 #endif
 
-String cache ESPmanager::_file_md5 (File & f)
+String  ESPmanager::_file_md5 (File & f)
 {
     // Md5 check
 
@@ -856,7 +856,7 @@ String cache ESPmanager::_file_md5 (File & f)
     }
 }
 
-bool cache ESPmanager::_FilesCheck(bool startwifi)
+bool  ESPmanager::_FilesCheck(bool startwifi)
 {
 
     bool haserror = false;
@@ -898,7 +898,7 @@ bool cache ESPmanager::_FilesCheck(bool startwifi)
 
 }
 
-void cache ESPmanager::InitialiseSoftAP()
+void  ESPmanager::InitialiseSoftAP()
 {
     WiFiMode mode = WiFi.getMode();
 
@@ -922,7 +922,7 @@ void cache ESPmanager::InitialiseSoftAP()
 }
 
 
-bool cache ESPmanager::Wifistart()
+bool  ESPmanager::Wifistart()
 {
 
     if (!WiFi.enableSTA(true)) {
@@ -1061,7 +1061,7 @@ String ESPmanager::formatBytes(size_t bytes)
     }
 }
 
-void cache ESPmanager::_NewFilesCheck()
+void  ESPmanager::_NewFilesCheck()
 {
     bool found = false;
 
@@ -1092,7 +1092,7 @@ void cache ESPmanager::_NewFilesCheck()
 //URI Decoding function
 //no check if dst buffer is big enough to receive string so
 //use same size as src is a recommendation
-void cache ESPmanager::urldecode(char *dst, const char *src)
+void  ESPmanager::urldecode(char *dst, const char *src)
 {
     char a, b, c;
     if (dst == NULL) { return; }
@@ -1127,7 +1127,7 @@ void cache ESPmanager::urldecode(char *dst, const char *src)
     *dst++ = '\0';
 }
 
-bool cache ESPmanager::StringtoMAC(uint8_t *mac, const String & input)
+bool  ESPmanager::StringtoMAC(uint8_t *mac, const String & input)
 {
 
     char tempbuffer[input.length() + 1];
@@ -1215,7 +1215,7 @@ void ESPmanager::handleFileUpload()
 }
 
 
-void cache ESPmanager::HandleDataRequest()
+void  ESPmanager::HandleDataRequest()
 {
 
     String buf;

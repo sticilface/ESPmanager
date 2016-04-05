@@ -60,8 +60,6 @@ To Upload
 #endif
 
 
-#define cache  //ICACHE_FLASH_ATTR
-
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
 
