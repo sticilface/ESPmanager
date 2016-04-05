@@ -46,7 +46,7 @@ To Upload
 #define USE_WEB_UPDATER 
 
 
-#define Debug_ESPManager
+//#define Debug_ESPManager
 
 
 #ifdef Debug_ESPManager
