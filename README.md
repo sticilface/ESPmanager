@@ -1,5 +1,6 @@
 # ESPmanager
 Full wifi and OTA manager for ESP8266 Arduino IDE
+[![Build Status](https://travis-ci.org/sticilface/ESPmanager.svg?branch=master)](https://travis-ci.org/sticilface/ESPmanager)
 
 
 Super early stuff.  Likely to be bugs.
