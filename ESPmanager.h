@@ -48,7 +48,6 @@ To Upload
 
 //#define Debug_ESPManager
 
-
 #ifdef Debug_ESPManager
 #define ESPMan_Debug(x)    Serial.print(x)
 #define ESPMan_Debugln(x)  Serial.println(x)

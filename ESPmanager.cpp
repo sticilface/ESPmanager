@@ -83,7 +83,6 @@ ESPmanager::~ESPmanager()
 
 void  ESPmanager::begin()
 {
-//   HTTPClient http;
 
     ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
 
@@ -184,7 +183,7 @@ void  ESPmanager::begin()
 void ESPmanager::_extractkey(JsonObject& root, const char * name, char *& ptr )
 {
 
-    if (root.containsKey(name)) {
+    if (name && root.containsKey(name)) {
 
         const char* temp = root[name];
         if (ptr) {
@@ -192,11 +191,9 @@ void ESPmanager::_extractkey(JsonObject& root, const char * name, char *& ptr )
             ptr = nullptr;
         };
 
-        if (temp) {
+        if (!ptr && temp) {
             ptr = strdup(temp);
-        } else {
-            ptr = nullptr ;
-        } ;
+        }
     }
 }
 
@@ -764,7 +761,7 @@ bool  ESPmanager::_upgrade()
         } else {
             ESPMan_Debugf("HTTP CODE [%d]", httpCode);
             http.end();
-            return false; 
+            return false;
         }
     } else {
         ESPMan_Debugln("GET request Failed");
