@@ -1012,7 +1012,7 @@ bool  ESPmanager::Wifistart()
     }
 
 //  Try Config_file Last
-    if (status != WL_CONNECTED) {
+    if (status != WL_CONNECTED && _ssid && _pass) {
 
         ESPMan_Debug(F("Auto connect failed..\nTrying SPIFFS credentials...\n"));
         ESPMan_Debugf("Using ssid %s, psk %s \n", _ssid, _pass );
