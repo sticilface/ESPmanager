@@ -77,7 +77,7 @@ static const char * __jq1 =  "/jquery/jq1.11.1.js.gz";
 static const char * __jq2 =  "/jquery/jqm1.4.5.css.gz";
 static const char * __jq3 =  "/jquery/jqm1.4.5.js.gz";
 static const char * __jq4 =  "/espman/espman.js";
-static const char * __gif1 = "/espman/images/ajax-loader.gif";
+static const char * __gif1 = "/jquery/images/ajax-loader.gif";
 static const char * __htm1 = "/espman/index.htm";
 static const char * TRUEfileslist[file_no] = {__jq1, __jq2, __jq3, __jq4, __htm1, __gif1} ;
 
