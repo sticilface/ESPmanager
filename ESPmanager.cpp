@@ -103,7 +103,7 @@ void  ESPmanager::begin()
     Serial.printf("\n");
   }
 #endif
-  
+
  //       _NewFilesCheck();
 
         if (!_FilesCheck(true)) {
@@ -181,8 +181,8 @@ void  ESPmanager::begin()
 
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::HandleDataRequest, this));
     _HTTP.on("/espman/upload", HTTP_POST , [this]() { _HTTP.send(200, "text/plain", ""); }, std::bind(&ESPmanager::handleFileUpload, this)  );
-    _HTTP.serveStatic("/espman", _fs, "/espman", "max-age=86400");
-    _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
+    _HTTP.serveStatic("/espman/", _fs, "/espman/", "max-age=86400");
+    _HTTP.serveStatic("/jquery/", _fs, "/jquery/", "max-age=86400");
 
 }
 

@@ -473,14 +473,14 @@ loadcss("/jquery/jqm1.4.5.css", function() {
         $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
 
          $("#clearwifibutton").click(function() {
-            $.post("/data.esp", "resetwifi");
+            $.post("/espman/data.esp", "resetwifi");
          });
          
          $("#formatspiffsbutton").click(function() {
-            $.post("/data.esp", "formatSPIFFS");
+            $.post("/espman/data.esp", "formatSPIFFS");
          });
          $("#deletesettingsbutton").click(function() {
-             $.post("/data.esp", "deletesettings");
+             $.post("/espman/data.esp", "deletesettings");
          });
 
         });
