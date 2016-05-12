@@ -1,0 +1,500 @@
+<!DOCTYPE html> 
+<html> 
+<head> 
+  <title>ESP Manager</title> 
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> 
+<!--
+  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+  <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+  <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+-->
+  <!--<link rel="stylesheet" href="/espman/jqm1.4.5.css">-->
+  <!--<script src="/espman/jq1.11.1.js"></script>-->
+  <!--<script src="/espman/jqm1.4.5.js"></script>-->
+
+<!--
+<script>
+  if (typeof jQuery == 'undefined')
+{
+    document.write(unescape("%3Cscript src='jquery-1.11.1.min.js' type='text/javascript'%3E%3C/script%3E"));
+}
+</script>
+
+<script>
+  if(typeof $.mobile == 'undefined')
+{
+    document.write(unescape("%3Cscript src='jquery.mobile-1.4.5.min.js' type='text/javascript'%3E%3C/script%3E"));
+}
+$(function() {
+    if($('.ui-helper-hidden:first').is(':visible') === true){
+        $('<link rel="stylesheet" type="text/css" href="jquery.mobile-1.4.5.min.css" />').appendTo('head');
+    }
+});
+</script>
+-->  
+   <STYLE type="text/css">
+   .centerwrapper {margin:0 auto;margin-left:auto;margin-right:auto;align:center;text-align:center}
+   .ui-btn.my-tooltip-btn,
+   .ui-btn.my-tooltip-btn:hover,
+   .ui-btn.my-tooltip-btn:active {
+     background: none;
+     border: 0;
+     }
+     .center {
+    text-align: center;
+      }
+    </STYLE>
+  
+
+
+<style>body{visibility:hidden}</style>
+
+
+
+
+</head> 
+<body>
+   <div class='ui-helper-hidden'></div>
+
+         <div data-role="header" data-theme="a" data-position="fixed">
+         <h1>ESP Manager</h1>
+               <a href="#leftpanel"  class="ui-btn ui-btn-left ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-bars">Menu</a>
+               <a href="#rightpanel"  class="ui-btn ui-btn-right ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-gear">Menu</a>
+         </div>
+
+
+      <div data-role="panel" id="leftpanel" data-position="left" data-display="overlay" data-theme="b" >
+         <!-- panel content goes here -->
+         <div class="center">
+         <h1 class="center">Menu</h1>
+         </div>
+         <div>
+               <a href="/" data-ajax="false" data-role="button" class="ui-btn">Home</a>
+               <a href="#generalpage" data-role="button" class="ui-btn">General</a>
+               <a href="#wifipage" data-role="button" class="ui-btn">WiFi - STA</a>
+               <a href="#appage" data-role="button" class="ui-btn">WiFi - AP</a>
+               <a href="#otapage" data-role="button" class="ui-btn">OTA</a>
+               <a href="#aboutpage" data-role="button" class="ui-btn">About</a>
+               <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
+
+               </div>
+
+      </div>
+
+      <div data-role="panel" id="rightpanel" data-position="right" data-display="overlay" data-theme="b" >
+         <!-- panel content goes here -->
+         <div>
+         <h1>More</h1>
+               <a id="rebootbutton" data-role="button" class="ui-btn">Reboot</a>
+               <a href="#popupDialogClearWiFi" data-rel="popup" class="ui-btn" data-transition="pop">Clear WiFi</a>
+               <a href="#popupDialogDeleteSettings" data-rel="popup" class="ui-btn" data-transition="pop">Delete Settings</a>
+               <a href="#popupDialogSPIFFS" data-rel="popup" class="ui-btn" data-transition="pop" >Format SPIFFS</a>
+               <a id="upgradebutton" data-role="button" class="ui-btn">Upgrade</a>
+
+               <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
+
+<!--             <label for="removesaftey-1">Disable Checks:</label>
+            <select id="removesaftey-1" name="removesaftey" data-role="flipswitch" class="onesend">
+               <option>No</option>
+               <option>Yes</option>
+            </select> -->
+         </div>
+      </div>
+
+<div id="popupDialogSPIFFS" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;" >
+    <div data-role="header" data-theme="a">
+         <h2>FORMAT SPIFFS?</h2>
+        </div>
+        <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Format SPIFFS?</h3>
+        <p>This action cannot be undone, and will require all javascript files to be uploaded to SPIFFs.</p>
+        <p>It will BREAK settings manager</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+        <a id="formatspiffsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+    </div>
+</div>
+
+<div id="popupDialogDeleteSettings" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;" >
+    <div data-role="header" data-theme="a">
+         <h2>Delete Settings?</h2>
+        </div>
+        <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Delete Settings File?</h3>
+        <p>This action cannot be undone.</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+        <a id="deletesettingsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+    </div>
+</div>
+
+<div id="popupDialogClearWiFi" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;" >
+    <div data-role="header" data-theme="a">
+         <h2>Clear Wifi?</h2>
+        </div>
+        <div role="main" class="ui-content">
+        <h3 class="ui-title">Are you sure you want to Clear the WiFi?</h3>
+        <p>This action removed stored credentials from WiFi, you will have to supply them.</p>
+        <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+        <a id="clearwifibutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+    </div>
+</div>
+
+<!-- ***********************************************************************
+
+         General Page 
+
+*********************************************************************** -->
+
+<div data-role="page" id="generalpage">
+
+   <div data-role="header">
+      <h1>General Settings</h1>
+   </div><!-- /header -->
+
+   <div role="main" class="ui-content">
+
+         <div id="gen-page-status"></div>
+               <form id="general-form">
+                  <label for="device-name">Device Name:</label>
+                  <input type="text" name="deviceid" id="device-name" value="">
+                  <div class="ui-field-contain">
+    <label for="select-AP-behav">Select AP behaviour:</label>
+                <select name="select-AP-behaviour" id="select-AP-behav">
+                  <option value="1">None</option>
+                  <option value="2">No STA on boot = 5min AP</option>
+                  <option value="3">No STA on boot = 10min AP</option>
+                  <option value="4">When ever no STA</option>
+                </select>
+                </div>
+
+                  <div class="ui-field-contain">
+                  <label for="flip-mdnsenable">Enable mDNS:</label>
+                  <select id="flip-mdnsenable" name="mdnsenable" data-role="flipswitch">
+                     <option>off</option>
+                     <option>on</option>
+                  </select>
+                  </div>
+<!--                  <div class="ui-field-contain">
+                  <label for="flip-wifimanage">Manage WiFi:</label>
+                  <select id="flip-wifimanage" name="wifimanage" data-role="flipswitch">
+                     <option>off</option>
+                     <option>on</option>
+                  </select>
+                  </div> -->
+                  <input type="button" value="Submit" id="general-1-submit">
+                  </form>
+
+   </div><!-- /content -->
+
+</div><!-- /page -->
+
+
+<!-- ***********************************************************************
+
+         WiFi Page 
+
+*********************************************************************** -->
+
+<div data-role="page" id="wifipage">
+
+   <div data-role="header">
+      <h1>WiFi Settings</h1>
+   </div><!-- /header -->
+
+   <div role="main" class="ui-content">
+
+         <div data-role="tabs">
+            <div data-role="navbar">
+               <ul>
+                  <li><a href="#WiFi_config"  data-theme="a" data-ajax="false">Settings</a></li>
+
+                  <li><a href="#WiFi_networks" data-theme="a" data-ajax="false">Networks</a></li>
+               </ul>
+            </div>
+
+            <!-- /two -->
+            <div id="WiFi_config" class="ui-content">
+               <!--   THIRD TAB --> 
+               <h3>Station Settings</h3>
+               <div id="STA_settings_div">
+                  <div id="STA_state"></div>
+                  <div id="STA_connectedto"></div>
+                  <div id="STA_dhcp"></div>
+                  <div id="STA_ip"></div>
+                  <div id="STA_gateway"></div>
+                  <div id="STA_subnet"></div>
+                  <div id="STA_mac"></div>
+               </div>
+<!--                <a href="#popup-STA-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-a" data-transition="pop">Edit</a> -->
+               <div data-role="collapsible" id="stacollapse">
+               <h4>Edit</h4>
+               <form id="STAform">
+<!--                   <div style="padding:10px 20px;">
+ -->                     <h3>Edit Station</h3>
+                     <div class="ui-field-contain">
+                        <label for="flip-STA">Enable:</label>
+                        <select name="enable-STA" id="flip-STA" data-role="flipswitch" data-mini="true">
+                           <option value="off">Off</option>
+                           <option value="on">On</option>
+                        </select>
+                     </div>
+                     <div class="ui-field-contain">
+                        <label for="flip-dhcp">DHCP:</label>
+                        <select name="enable-dhcp" id="flip-dhcp" data-role="flipswitch" data-mini="true">
+                           <option value="off">Off</option>
+                           <option value="on">On</option>
+                        </select>
+                     </div>
+                     <div class="ui-field-contain">
+                        <label for="text-STA-set-ip">IP:</label>
+                        <input type="text" data-mini="true" name="setSTAsetip" id="text-STA-set-ip" value="">
+                     </div>
+                     <div class="ui-field-contain">
+                        <label for="text-STA-set-gw">Gateway:</label>
+                        <input type="text" data-mini="true" name="setSTAsetgw" id="text-STA-set-gw" value="">
+                     </div>
+                     <div class="ui-field-contain">
+                        <label for="text-STA-set-sn">Subnet:</label>
+                        <input type="text" data-mini="true" name="setSTAsetsn" id="text-STA-set-sn" value="">
+                     </div>
+                     <div class="ui-field-contain">
+                        <label for="text-STA-set-mac">MAC:</label>
+                        <input type="text" data-mini="true" name="setSTAsetmac" id="text-STA-set-mac" value="">
+                     </div>
+                     <button id="apply_sta" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+<!--                   </div>
+ -->               </form>       
+
+
+            </div>
+ 
+            </div>
+
+            <div id="WiFi_networks" class="ui-content">
+               <!--   SECOND TAB --> 
+               <form id="wifinetworks-form">
+                  <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data">
+                  </fieldset>
+                  <label for="pass-1">Password:</label>
+                  <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">   
+                  <input type="button" value="More Info" id="ssid-1-moreinfo">
+                  <input type="button" value="Rescan" id="ssid-1-rescan"> 
+                  <input type="button" value="Connect" id="ssid-1-submit"> 
+               </form>
+            </div>
+            <!--  POP UPS -->
+            <div id="wifiinsert" data-role="popup" data-theme="a" class="ui-content"> </div>
+
+         </div>
+         <!-- /tabs -->
+      </div>
+
+
+</div><!-- /page -->
+
+
+<!-- *******************************************************************
+
+         AP Page 
+
+*********************************************************************** -->
+
+<div data-role="page" id="appage">
+
+   <div data-role="header">
+      <h1>AP Settings</h1>
+      <a id="refresh_data"  class="ui-btn ui-btn-right ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-refresh">Refresh</a>
+   </div><!-- /header -->
+
+   <div role="main" class="ui-content">
+               <div id="AP_settings_div">
+                  <div id="AP_state"></div>
+                  <div id="AP_ssid"></div>
+                  <div id="AP_pass"></div>
+                  <div id="AP_channel"></div>
+                  <div id="AP_ip"></div>
+                  <div id="AP_hidden"></div>
+                  <div id="AP_mac"></div>
+               </div>
+<!--                <a href="#popup-AP-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline  ui-btn-a" data-transition="pop">Edit</a> -->
+         <div data-role="collapsible" id="apcollapse">
+           <h4>Edit</h4>
+            <form id="APform">
+<!--                   <div style="padding:10px 20px;">
+ -->                     <h3>Edit AP</h3>
+                     <fieldset data-role="fieldcontain">
+                        <div class="ui-field-contain">
+                           <label for="flip-AP">Enable:</label>
+                           <select name="enable-AP" id="flip-AP" data-role="flipswitch" data-mini="true">
+                              <option value="off">Off</option>
+                              <option value="on">On</option>
+                           </select>
+                        </div>
+                        <div class="ui-field-contain">
+                           <label for="flip-AP-hidden">Hidden:</label>
+                           <select name="APhidden" id="flip-AP-hidden" data-role="flipswitch" data-mini="true">
+                              <option value="off">No</option>
+                              <option value="on">Yes</option>
+                           </select>
+                        </div>
+                        <div class="ui-field-contain">
+                           <label for="text-AP-set-ssid">SSID:</label>
+                           <input type="text" data-mini="true" name="setAPsetssid" id="text-AP-set-ssid" value="">
+                        </div>
+                        <div class="ui-field-contain">
+                           <label for="text-AP-set-pass">Password:</label>
+                           <input type="text" data-mini="true" name="setAPsetpass" id="text-AP-set-pass" value="">
+                        </div>
+                        <div class="ui-field-contain">
+                           <label for="text-AP-set-channel">Channel:</label>
+                           <input type="text" data-mini="true" name="setAPsetchannel" id="text-AP-set-channel" value="">
+                        </div>
+                        <div class="ui-field-contain">
+                           <label for="text-AP-set-ip">IP:</label>
+                           <input type="text" data-mini="true" name="setAPsetip" id="text-AP-set-ip" value="">
+                        </div>
+                        <div class="ui-field-contain">
+                           <label for="text-AP-set-mac">MAC:</label>
+                           <input type="text" data-mini="true" name="setAPsetmac" id="text-AP-set-mac" value="">
+                        </div>
+                     </fieldset>
+                     <button id="apply_ap" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+                     </form>
+                     </div>
+   </div><!-- /content -->
+
+</div><!-- /page -->
+
+
+<!-- ***********************************************************************
+
+         OTA Page 
+
+*********************************************************************** -->
+
+<div data-role="page" id="otapage">
+
+   <div data-role="header">
+      <h1>OTA Settings</h1>
+   </div><!-- /header -->
+
+   <div role="main" class="ui-content">
+               <h3>IDE Upload</h3>             
+               <form>
+                  <div class="ui-field-contain">
+                  <label for="flip-OTAusechipID">Append ChipID to Host:</label>
+                  <select id="flip-OTAusechipID" name="OTAusechipID" data-role="flipswitch">
+                     <option>No</option>
+                     <option>Yes</option>
+                  </select>
+                  </div>
+                  
+                  <div class="ui-field-contain">
+                  <label for="flip-otaenable">Enable OTA:</label>
+                  <select id="flip-otaenable" name="otaenable" data-role="flipswitch">
+                     <option>off</option>
+                     <option>on</option>
+                  </select>
+                  </div>
+                  
+                  
+                  
+               </form>
+               <h3>File Upload</h3>
+                  <form id="updaterform" method='POST' action='/espman/upload' enctype='multipart/form-data'>
+                     <input type='file' name='update'>
+                     <input type='submit' value='Update'>
+                  </form>
+
+   </div><!-- /content -->
+
+</div><!-- /page -->
+
+<!-- ***********************************************************************
+
+         About Page 
+
+*********************************************************************** -->
+
+<div data-role="page" id="aboutpage">
+
+   <div data-role="header">
+      <h1>About Device</h1>
+   </div><!-- /header -->
+
+   <div role="main" class="ui-content">
+         <div id="aboutvars"></div>
+   </div><!-- /content -->
+
+</div><!-- /page -->
+
+
+   <!--  PAGE BOUNDARY -->
+   <!--  PAGE BOUNDARY -->
+
+   <!-- /page -->
+  <script>
+    
+ 
+function loadcss(url, callback) {
+    var link= document.createElement("link");
+    link.setAttribute("rel", "stylesheet");
+ link.setAttribute("href", url);
+    link.addEventListener('load', function() {
+        var script = document.createElement("script");
+        script.textContent = "(" + callback.toString()  + ")();";
+        document.body.appendChild(script);
+    }, false);
+    document.body.appendChild(link);
+}
+
+  function loadjs(url, callback) {
+    var script = document.createElement("script");
+    script.setAttribute("src", url);
+    script.addEventListener('load', function() {
+        var script = document.createElement("script");
+        script.textContent = "(" + callback.toString()  + ")();";
+        document.body.appendChild(script);
+    }, false);
+    document.body.appendChild(script);
+}
+
+loadcss("/jquery/jqm1.4.5.css", function() { 
+  loadjs("/jquery/jq1.11.1.js", function() {
+    loadjs("/jquery/jqm1.4.5.js", function() {
+      
+                $(function() {
+
+        $( "[data-role='header']").toolbar();
+        $( "body>[data-role='panel']" ).panel();
+            
+        $( "#popupDialogSPIFFS" ).enhanceWithin().popup();
+        $( "#popupDialogDeleteSettings" ).enhanceWithin().popup();
+        $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
+
+         $("#clearwifibutton").click(function() {
+            $.post("/data.esp", "resetwifi");
+         });
+         
+         $("#formatspiffsbutton").click(function() {
+            $.post("/data.esp", "formatSPIFFS");
+         });
+         $("#deletesettingsbutton").click(function() {
+             $.post("/data.esp", "deletesettings");
+         });
+
+        });
+        loadjs("/espman.js", function() {
+          getGenvars();
+          $("body").css("visibility","visible");
+        }); 
+        
+      });
+    });
+  });
+
+  </script>
+
+</body>
+
+</html>

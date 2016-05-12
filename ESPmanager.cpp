@@ -91,12 +91,25 @@ void  ESPmanager::begin()
     if (_fs.begin()) {
         ESPMan_Debugln(F("File System mounted sucessfully"));
 
-        _NewFilesCheck();
+#ifdef ESPMan_Debug
+          Serial.println("SPIFFS FILES:");
+  {
+    Dir dir = SPIFFS.openDir("/");
+    while (dir.next()) {
+      String fileName = dir.fileName();
+      size_t fileSize = dir.fileSize();
+      Serial.printf("     FS File: %s\n", fileName.c_str());
+    }
+    Serial.printf("\n");
+  }
+#endif
+  
+ //       _NewFilesCheck();
 
         if (!_FilesCheck(true)) {
             ESPMan_Debugln(F("Major FAIL, required files are NOT in SPIFFS, please upload required files"));
         } else {
-            _NewFilesCheck();
+ //           _NewFilesCheck();
         }
 
 
@@ -169,6 +182,7 @@ void  ESPmanager::begin()
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::HandleDataRequest, this));
     _HTTP.on("/espman/upload", HTTP_POST , [this]() { _HTTP.send(200, "text/plain", ""); }, std::bind(&ESPmanager::handleFileUpload, this)  );
     _HTTP.serveStatic("/espman", _fs, "/espman", "max-age=86400");
+    _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
 
 }
 
@@ -691,6 +705,8 @@ void  ESPmanager::InitialiseFeatures()
 
 bool  ESPmanager::_upgrade()
 {
+    return false; // disable for now.... 
+
     static const uint16_t httpPort = 80;
     static const size_t bufsize = 1024;
 //  get files list into json
@@ -1058,33 +1074,33 @@ String ESPmanager::formatBytes(size_t bytes)
     }
 }
 
-void  ESPmanager::_NewFilesCheck()
-{
-    bool found = false;
+// void  ESPmanager::_NewFilesCheck()
+// {
+//     bool found = false;
 
-    for (uint8_t i = 0; i < file_no; i++) {
+//     for (uint8_t i = 0; i < file_no; i++) {
 
-        if (_fs.exists(fileslist[i])) {
-            found = true;
-            String buf = "/espman";
-            buf += fileslist[i];
-            if (fileslist[i] == "/config.htm") { buf = "/espman/index.htm"; }
-            if (fileslist[i] == "/ajax-loader.gif") { buf = "/espman/images/ajax-loader.gif"; }
-            if (_fs.exists(buf)) {_fs.remove(buf); };
-            if (_fs.rename(fileslist[i], buf)) {
-                ESPMan_Debugf("Found %s Renamed to %s\n", fileslist[i], buf.c_str());
-            } else {
-                ESPMan_Debugf("Failed to rename %s ==> %s\n", fileslist[i], buf.c_str());
-            }
-        }; //  else ESPMan_Debugf("%s : Not found\n", fileslist[i]);
-    }
+//         if (_fs.exists(fileslist[i])) {
+//             found = true;
+//             String buf = "/espman";
+//             buf += fileslist[i];
+//             if (fileslist[i] == "/config.htm") { buf = "/espman/index.htm"; }
+//             if (fileslist[i] == "/ajax-loader.gif") { buf = "/espman/images/ajax-loader.gif"; }
+//             if (_fs.exists(buf)) {_fs.remove(buf); };
+//             if (_fs.rename(fileslist[i], buf)) {
+//                 ESPMan_Debugf("Found %s Renamed to %s\n", fileslist[i], buf.c_str());
+//             } else {
+//                 ESPMan_Debugf("Failed to rename %s ==> %s\n", fileslist[i], buf.c_str());
+//             }
+//         }; //  else ESPMan_Debugf("%s : Not found\n", fileslist[i]);
+//     }
 
-    if (found) {
-        ESPMan_Debugf("[ESPmanager::_NewFilesCheck] Files Renames: Rebooting\n");
-        ESP.restart();
-    }
+//     if (found) {
+//         ESPMan_Debugf("[ESPmanager::_NewFilesCheck] Files Renames: Rebooting\n");
+//         ESP.restart();
+//     }
 
-}
+// }
 
 //URI Decoding function
 //no check if dst buffer is big enough to receive string so
@@ -1872,7 +1888,7 @@ void  ESPmanager::HandleDataRequest()
             if (_upgrade()) {
                 _HTTP.send(200, "SUCCESS");
                 Serial.println("Download Finished.  Files Updated");
-                _NewFilesCheck();
+                //_NewFilesCheck();
             } else {
                 _HTTP.send(200, "FAILED");
                 Serial.println("Error.  Try Again");

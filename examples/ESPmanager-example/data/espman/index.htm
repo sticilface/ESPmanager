@@ -459,9 +459,9 @@ function loadcss(url, callback) {
     document.body.appendChild(script);
 }
 
-loadcss("/espman/jqm1.4.5.css", function() { 
-  loadjs("/espman/jq1.11.1.js", function() {
-    loadjs("/espman/jqm1.4.5.js", function() {
+loadcss("/jquery/jqm1.4.5.css", function() { 
+  loadjs("/jquery/jq1.11.1.js", function() {
+    loadjs("/jquery/jqm1.4.5.js", function() {
       
                 $(function() {
 
@@ -473,18 +473,18 @@ loadcss("/espman/jqm1.4.5.css", function() {
         $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
 
          $("#clearwifibutton").click(function() {
-            $.post("data.esp", "resetwifi");
+            $.post("/data.esp", "resetwifi");
          });
          
          $("#formatspiffsbutton").click(function() {
-            $.post("data.esp", "formatSPIFFS");
+            $.post("/data.esp", "formatSPIFFS");
          });
          $("#deletesettingsbutton").click(function() {
-             $.post("data.esp", "deletesettings");
+             $.post("/data.esp", "deletesettings");
          });
 
         });
-        loadjs("/espman/configjava.js", function() {
+        loadjs("/espman/espman.js", function() {
           getGenvars();
           $("body").css("visibility","visible");
         }); 

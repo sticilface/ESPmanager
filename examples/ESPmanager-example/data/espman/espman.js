@@ -29,7 +29,7 @@ $( "popup" ).on( "popupcreate", function( event, ui ) {
  ****************************************************/
  
     function getGenvars() {
-        $.getJSON("data.esp?plain=WiFiDetails", function(result) {
+        $.getJSON("/espman/data.esp?plain=WiFiDetails", function(result) {
           
             $("#select-AP-behav").val(result.general.APrestartmode).selectmenu( "refresh" );
 
@@ -58,7 +58,7 @@ $( "popup" ).on( "popupcreate", function( event, ui ) {
 $( document ).on( "panelcreate", function( event, ui ) {
 
          $("#rebootbutton").click(function() {
-            $.post("data.esp", "reboot");
+            $.post("/espman/data.esp", "reboot");
          });
 
          // $("#upgradebutton").click(function() {
@@ -69,7 +69,7 @@ $( document ).on( "panelcreate", function( event, ui ) {
 });
 
 $(document).off('click', '#upgradebutton').on('click', '#upgradebutton',function(e) {
-    $.post("data.esp", "upgrade"); 
+    $.post("/espman/data.esp", "upgrade"); 
     }); 
 
 /****************************************************
@@ -83,7 +83,7 @@ $(document).on("pageshow", "#generalpage", function() {
       getGenvars();
 
     $("#general-1-submit").click(function() { 
-        $.post("data.esp", $(this.form).serialize());
+        $.post("/espman/data.esp", $(this.form).serialize());
     });
     
 }); // end of general page.. 
@@ -152,7 +152,7 @@ $(document).on("pagecreate", "#wifipage", function() {
     });
 
     $("#apply_sta").click(function() {
-        $.post("data.esp", $(this.form).serialize());
+        $.post("/data.esp", $(this.form).serialize());
         $( "#stacollapse" ).collapsible( "collapse" );
             setTimeout(function() {
                 getWiFiVars(false);
@@ -185,7 +185,7 @@ $(document).on("pagecreate", "#wifipage", function() {
     //alert('A page with an id of "aboutPage" was just created by jQuery Mobile!');
 
     $("#general-1-submit").click(function() { // this is being used by the front page
-        $.post("data.esp", $(this.form).serialize());
+        $.post("/data.esp", $(this.form).serialize());
         var val = $("#device-name").val();
         $("#device-name").val("").attr("placeholder", val).blur();
         //return false;
@@ -206,7 +206,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
 
     function refreshAPlist() {
-        $.getJSON("data.esp?plain=PerformWiFiScan", function(result) {
+        $.getJSON("/data.esp?plain=PerformWiFiScan", function(result) {
             globalwifi = result.networks;
             $("#wifinetworks-data").empty();
             $("#wifinetworks-data").append("<div>");
@@ -225,12 +225,12 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     function submitnewssid() {
 
-        $.post("data.esp", $("#wifinetworks-form,#removesaftey-1").serialize(), function(data, success) {
+        $.post("/data.esp", $("#wifinetworks-form,#removesaftey-1").serialize(), function(data, success) {
             if (data == "accepted") {
                 var startTime = new Date().getTime();
                 $.mobile.loading('show');
                 timer = setTimeout(function() {
-                    $.post("data.esp", "WiFiresult", function(data, success2) {
+                    $.post("/data.esp", "WiFiresult", function(data, success2) {
                         if (success2) {
                             if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied");
                             if (data == "2") alert(data + " :ERROR Reverted to previous settings");
@@ -299,10 +299,10 @@ $(document).on("pagecreate", "#wifipage", function() {
         
         var request;
         if (scan) {
-            request = "data.esp?plain=PerformWiFiScan";
+            request = "/data.esp?plain=PerformWiFiScan";
         }
         if (!scan) {
-            request = "data.esp?plain=WiFiDetails";
+            request = "/data.esp?plain=WiFiDetails";
         }
         $.getJSON(request, function(result) {
             globalwifi = result;
@@ -390,7 +390,7 @@ $(document).on("pagecreate", "#aboutpage", function() {
     //var results; 
     //var staticwifi; 
     function GetAboutVars() {
-        $.getJSON("data.esp?plain=AboutPage", function(results) {
+        $.getJSON("/data.esp?plain=AboutPage", function(results) {
             $("#aboutvars").empty();
             $("#aboutvars").append("<br>Version = " + results.version_var);
             $("#aboutvars").append("<br>Compile Date = " + results.compiletime_var);
@@ -478,7 +478,7 @@ $(document).on("pagecreate", "#appage", function() {
 
     function getAPvars() {
 
-        $.getJSON("data.esp?plain=WiFiDetails", function(result) {
+        $.getJSON("/data.esp?plain=WiFiDetails", function(result) {
             
             if (result.AP.state === true) {
                 $('#flip-AP').val('on').flipswitch('refresh');
@@ -534,7 +534,7 @@ $(document).on("pagecreate", "#appage", function() {
     }
 
     $("#apply_ap").click(function() {
-        $.post("data.esp", $(this.form).serialize());
+        $.post("/data.esp", $(this.form).serialize());
         $( "#apcollapse" ).collapsible( "collapse" );
         setTimeout(function() {
             getAPvars();            

@@ -46,7 +46,7 @@ To Upload
 #define USE_WEB_UPDATER 
 
 
-//#define Debug_ESPManager
+#define Debug_ESPManager
 
 #ifdef Debug_ESPManager
 #define ESPMan_Debug(x)    Serial.print(x)
@@ -63,20 +63,20 @@ To Upload
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
 
 //  These are used to place files into the /espman/directoy...  Directory is used as it has lower memory overhead than 5 seperate requesthandlers.
-static const uint8_t file_no = 6;
-static const char * _jq1 =  "/jq1.11.1.js.gz";
-static const char * _jq2 =  "/jqm1.4.5.css.gz";
-static const char * _jq3 =  "/jqm1.4.5.js.gz";
-static const char * _jq4 =  "/configjava.js";
-static const char * _gif1 = "/ajax-loader.gif";
-static const char * _htm1 = "/config.htm";
-static const char * fileslist[file_no] = {_jq1, _jq2, _jq3, _jq4, _htm1, _gif1} ;
+ static const uint8_t file_no = 6;
+// static const char * _jq1 =  "/jq1.11.1.js.gz";
+// static const char * _jq2 =  "/jqm1.4.5.css.gz";
+// static const char * _jq3 =  "/jqm1.4.5.js.gz";
+// static const char * _jq4 =  "/configjava.js";
+// static const char * _gif1 = "/ajax-loader.gif";
+// static const char * _htm1 = "/config.htm";
+// static const char * fileslist[file_no] = {_jq1, _jq2, _jq3, _jq4, _htm1, _gif1} ;
 
 // These are used to search for the presence of the required files
-static const char * __jq1 =  "/espman/jq1.11.1.js.gz";
-static const char * __jq2 =  "/espman/jqm1.4.5.css.gz";
-static const char * __jq3 =  "/espman/jqm1.4.5.js.gz";
-static const char * __jq4 =  "/espman/configjava.js";
+static const char * __jq1 =  "/jquery/jq1.11.1.js.gz";
+static const char * __jq2 =  "/jquery/jqm1.4.5.css.gz";
+static const char * __jq3 =  "/jquery/jqm1.4.5.js.gz";
+static const char * __jq4 =  "/espman/espman.js";
 static const char * __gif1 = "/espman/images/ajax-loader.gif";
 static const char * __htm1 = "/espman/index.htm";
 static const char * TRUEfileslist[file_no] = {__jq1, __jq2, __jq3, __jq4, __htm1, __gif1} ;
@@ -125,7 +125,7 @@ private:
 #endif
 
 	void _extractkey(JsonObject & root, const char * name, char *& ptr ); 
-	void _NewFilesCheck();
+	//void _NewFilesCheck();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
 
 	const char * C_null = "";
