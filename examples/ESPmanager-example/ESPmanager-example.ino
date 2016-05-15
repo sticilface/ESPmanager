@@ -12,16 +12,20 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 --------------------------------------------------------------------------------------------------------*/
 #include <FS.h> //  Settings saved to SPIFFS
 #include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
 #include <ESP8266HTTPClient.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include <ESP8266WebServer.h>
+
+
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+#include <AsyncJson.h>
+
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h> // required for settings file to make it readable
 
+
 #include <ESPmanager.h>
 
-ESP8266WebServer HTTP(80);
+AsyncWebServer HTTP(80);
 
 ESPmanager settings(HTTP, SPIFFS, "ESPManager");
 
@@ -40,7 +44,7 @@ void setup()
 	SPIFFS.begin();
 
 	Serial.println("");
-	Serial.println(F("Example ESPconfig"));
+	Serial.println(F("Example ESPconfig - using ESPAsyncWebServer"));
 
 	Serial.printf("Sketch size: %u\n", ESP.getSketchSize());
 	Serial.printf("Free size: %u\n", ESP.getFreeSketchSpace());
@@ -58,7 +62,6 @@ void setup()
 
 void loop()
 {
-	HTTP.handleClient();
 	settings.handle();
 }
 

@@ -31,33 +31,40 @@ To Upload
 
 #include "Arduino.h"
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
-#include <ESP8266HTTPUpdateServer.h>
+
+
+#include <ESPAsyncTCP.h>
+#include <ESPAsyncWebServer.h>
+
 #include <ESP8266HTTPClient.h>
+
+
 #include <FS.h>
 #include <functional>
 #include <ArduinoJson.h>
 
 
 #define SETTINGS_FILE "/espman/settings.txt"
-#define ESPMANVERSION "1.2"
+#define ESPMANVERSION "1.2-async"
 
 
 #define USE_WEB_UPDATER 
 
 
-#define Debug_ESPManager
+//#define Debug_ESPManager
 
-#ifdef Debug_ESPManager
-#define ESPMan_Debug(x)    Serial.print(x)
-#define ESPMan_Debugln(x)  Serial.println(x)
-#define ESPMan_Debugf(...) Serial.printf(__VA_ARGS__)
+#ifdef DEBUG_ESP_PORT && Debug_ESPManager
+	#define ESPMan_Debug(x)    DEBUG_ESP_PORT.print(x)
+	#define ESPMan_Debugln(x)  DEBUG_ESP_PORT.println(x)
+	#define ESPMan_Debugf(...) DEBUG_ESP_PORT.printf(__VA_ARGS__)
+  	#pragma message("DEBUG enabled for ESPManager.")
 #else
-#define ESPMan_Debug(x)    {}
-#define ESPMan_Debugln(x)  {}
-#define ESPMan_Debugf(...) {}
+	#define ESPMan_Debug(x)    {}
+	#define ESPMan_Debugln(x)  {}
+	#define ESPMan_Debugf(...) {}
 #endif
 
+using namespace std::placeholders;
 
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
@@ -91,7 +98,7 @@ static const char * __updatepath = "/espmanupdate.json";
 class ESPmanager
 {
 public:
-	ESPmanager(ESP8266WebServer & HTTP, FS & fs = SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL);
+	ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL);
 	~ESPmanager();
 	void begin();
 	void handle();
@@ -100,7 +107,7 @@ public:
 	static String formatBytes(size_t bytes);
 	static bool StringtoMAC(uint8_t *mac, const String &input);
 	static void urldecode(char *dst, const char *src); // need to check it works to decode the %03... for :
-	template <class T> static void sendJsontoHTTP( const T& root, ESP8266WebServer & _HTTP) ;
+	template <class T> static void sendJsontoHTTP( const T& root, AsyncWebServerRequest *request) ;
 
 	bool Wifistart();
 
@@ -109,7 +116,7 @@ public:
 
 private:
 
-	void HandleDataRequest();
+	void _HandleDataRequest(AsyncWebServerRequest *request);
 	void InitialiseFeatures();
 	void InitialiseSoftAP();
 	bool LoadSettings();
@@ -127,6 +134,8 @@ private:
 	void _extractkey(JsonObject & root, const char * name, char *& ptr ); 
 	//void _NewFilesCheck();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
+
+	void _WiFiEventCallback(WiFiEvent_t event); 
 
 	const char * C_null = "";
 
@@ -146,8 +155,8 @@ private:
 
 
 	FS & _fs;
-	ESP8266WebServer & _HTTP;
-	ESP8266HTTPUpdateServer httpUpdater;
+	AsyncWebServer & _HTTP;
+	//ESP8266HTTPUpdateServer httpUpdater;
 	HTTPClient* httpclient{nullptr}; 
 
 	uint8_t _APchannel{1};
@@ -160,6 +169,10 @@ private:
 	bool _mDNSenabled{true};
 	uint8_t _APrestartmode{2};   // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
 	uint32_t _APtimer{0};
+	int _wifinetworksfound{0};
+	//AsyncWebServerRequest * _wifiRequestHandler{nullptr}; 
+
+	std::function<void(void)> _syncCallback{nullptr}; 
 
 	struct IPconfigs_t {
 		IPAddress IP;
@@ -176,50 +189,5 @@ private:
 };
 
 
-template<size_t CAPACITY>
-class BufferedPrint_internal : public Print
-{
-public:
-	BufferedPrint_internal(ESP8266WebServer & HTTP) : _size(0)
-	{
-		_client = HTTP.client();
-	}
-
-	BufferedPrint_internal(WiFiClient & client) : _client(client), _size(0)
-	{
-	}
-
-	~BufferedPrint_internal()
-	{
-		_client.stop();
-	}
-
-	virtual size_t write(uint8_t c)
-	{
-		_buffer[_size++] = c;
-
-		if (_size + 1 == CAPACITY) {
-			flush();
-		}
-		
-		return 1;
-	}
-
-	void flush()
-	{
-		_client.write( (const char *)_buffer, _size);
-		_size = 0;
-	}
-
-	void stop()
-	{
-		_client.stop();
-	}
-
-private:
-	WiFiClient _client;
-	size_t _size;
-	char _buffer[CAPACITY];
-};
 
 
