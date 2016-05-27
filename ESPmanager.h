@@ -53,7 +53,7 @@ To Upload
 
 //#define Debug_ESPManager
 
-#ifdef DEBUG_ESP_PORT && Debug_ESPManager
+#if defined(DEBUG_ESP_PORT) && defined(Debug_ESPManager)
 	#define ESPMan_Debug(x)    DEBUG_ESP_PORT.print(x)
 	#define ESPMan_Debugln(x)  DEBUG_ESP_PORT.println(x)
 	#define ESPMan_Debugf(...) DEBUG_ESP_PORT.printf(__VA_ARGS__)
@@ -104,6 +104,7 @@ public:
 	void handle();
 
 	const char * deviceName() { return _host; }
+	
 	static String formatBytes(size_t bytes);
 	static bool StringtoMAC(uint8_t *mac, const String &input);
 	static void urldecode(char *dst, const char *src); // need to check it works to decode the %03... for :
@@ -112,6 +113,7 @@ public:
 	bool Wifistart();
 
 	const char * getHostname() { return _host; };
+
 	static String _file_md5 (File& f);
 
 private:

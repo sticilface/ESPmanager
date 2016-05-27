@@ -110,16 +110,16 @@ void  ESPmanager::begin()
     if (_fs.begin()) {
         ESPMan_Debugln(F("File System mounted sucessfully"));
 
-#ifdef ESPMan_Debug
-        Serial.println("SPIFFS FILES:");
+#ifdef DEBUG_ESP_PORT && ESPMan_Debug
+        DEBUG_ESP_PORT.println("SPIFFS FILES:");
         {
             Dir dir = SPIFFS.openDir("/");
             while (dir.next()) {
                 String fileName = dir.fileName();
                 size_t fileSize = dir.fileSize();
-                Serial.printf("     FS File: %s\n", fileName.c_str());
+                DEBUG_ESP_PORT.printf("     FS File: %s\n", fileName.c_str());
             }
-            Serial.printf("\n");
+            DEBUG_ESP_PORT.printf("\n");
         }
 #endif
 
@@ -157,8 +157,9 @@ void  ESPmanager::begin()
     }
 
     if (_manageWiFi) {
-
-        Serial.print("Connecting to WiFi...");
+#ifdef DEBUG_ESP_PORT
+        DEBUG_ESP_PORT.print("Connecting to WiFi...");
+#endif
         WiFi.mode(WIFI_STA);
 
         if (!_APssid) {
@@ -181,11 +182,13 @@ void  ESPmanager::begin()
                 ESPMan_Debugln(F("Soft AP disbaled by config"));
             }
         } else {
-            Serial.print(F("Success\nConnected to "));
-            Serial.print(WiFi.SSID());
-            Serial.print(" (");
-            Serial.print(WiFi.localIP());
-            Serial.println(")");
+#ifdef DEBUG_ESP_PORT
+            DEBUG_ESP_PORT.print(F("Success\nConnected to "));
+            DEBUG_ESP_PORT.print(WiFi.SSID());
+            DEBUG_ESP_PORT.print(" (");
+            DEBUG_ESP_PORT.print(WiFi.localIP());
+            DEBUG_ESP_PORT.println(")");
+#endif
         }
     }
 
@@ -200,8 +203,8 @@ void  ESPmanager::begin()
 
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
     //_HTTP.on("/espman/upload", HTTP_POST , [this]() { _HTTP.send(200, "text/plain", ""); }, std::bind(&ESPmanager::handleFileUpload, this)  );
-    _HTTP.serveStatic("/espman/", _fs, "/espman/", "max-age=86400");
-    _HTTP.serveStatic("/jquery/", _fs, "/jquery/", "max-age=86400");
+    _HTTP.serveStatic("/espman", _fs, "/espman", "max-age=86400");
+    _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
 
 }
 
@@ -690,31 +693,31 @@ void  ESPmanager::InitialiseFeatures()
 
     // No authentication by default
     // ArduinoOTA.setPassword((const char *)"123");
-
+#ifdef DEBUG_ESP_PORT
     ArduinoOTA.onStart([]() {
-        Serial.print(F(   "[              Performing OTA Upgrade              ]\n["));
+        DEBUG_ESP_PORT.print(F(   "[              Performing OTA Upgrade              ]\n["));
 //                       ("[--------------------------------------------------]\n ");
     });
     ArduinoOTA.onEnd([]() {
-        Serial.println(F("]\nOTA End"));
+        DEBUG_ESP_PORT.println(F("]\nOTA End"));
     });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
         static uint8_t done = 0;
         uint8_t percent = (progress / (total / 100) );
         if ( percent % 2 == 0  && percent != done ) {
-            Serial.print("-");
+            DEBUG_ESP_PORT.print("-");
             done = percent;
         }
     });
     ArduinoOTA.onError([](ota_error_t error) {
-        Serial.printf("OTA Error[%u]: ", error);
-        if (error == OTA_AUTH_ERROR) { Serial.println(F("Auth Failed")); }
-        else if (error == OTA_BEGIN_ERROR) { Serial.println(F("Begin Failed")); }
-        else if (error == OTA_CONNECT_ERROR) { Serial.println(F("Connect Failed")); }
-        else if (error == OTA_RECEIVE_ERROR) { Serial.println(F("Receive Failed")); }
-        else if (error == OTA_END_ERROR) { Serial.println(F("End Failed")); }
+        DEBUG_ESP_PORT.printf("OTA Error[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) { DEBUG_ESP_PORT.println(F("Auth Failed")); }
+        else if (error == OTA_BEGIN_ERROR) { DEBUG_ESP_PORT.println(F("Begin Failed")); }
+        else if (error == OTA_CONNECT_ERROR) { DEBUG_ESP_PORT.println(F("Connect Failed")); }
+        else if (error == OTA_RECEIVE_ERROR) { DEBUG_ESP_PORT.println(F("Receive Failed")); }
+        else if (error == OTA_END_ERROR) { DEBUG_ESP_PORT.println(F("End Failed")); }
     });
-
+#endif
     ArduinoOTA.begin();
 
 
@@ -917,9 +920,10 @@ bool  ESPmanager::_FilesCheck(bool startwifi)
         WiFi.mode(WIFI_STA); //  == WIFI_AP
 
         if ( (startwifi && Wifistart() ) || WiFi.status() == WL_CONNECTED) {
-            Serial.print("Connected to WiFi: ");
-            Serial.println(WiFi.SSID());
-
+#ifdef DEBUG_ESP_PORT
+            DEBUG_ESP_PORT.print("Connected to WiFi: ");
+            DEBUG_ESP_PORT.println(WiFi.SSID());
+#endif
 
 // need this.. taken out tempararily
 #ifdef USE_WEB_UPDATER
@@ -1272,14 +1276,14 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     String buf;
 
-#ifdef ESPMan_Debug
+#ifdef DEBUG_ESP_PORT && ESPMan_Debug
 
 //List all collected headers
     int params = request->params();
     int i;
     for (i = 0; i < params; i++) {
         AsyncWebParameter* h = request->getParam(i);
-        Serial.printf("[ESPmanager::_HandleDataRequest] [%s]: %s\n", h->name().c_str(), h->value().c_str());
+        DEBUG_ESP_PORT.printf("[ESPmanager::_HandleDataRequest] [%s]: %s\n", h->name().c_str(), h->value().c_str());
     }
 #endif
 
@@ -2041,14 +2045,20 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             static uint32_t timeout = 0;
 
             if (millis() - timeout > 30000 || timeout == 0 ) {
-                Serial.println("Upgrade Started..");
+#ifdef DEBUG_ESP_PORT
+                DEBUG_ESP_PORT.println("Upgrade Started..");
+#endif 
                 if (_upgrade()) {
                     request->send(200, "SUCCESS");
-                    Serial.println("Download Finished.  Files Updated");
+#ifdef DEBUG_ESP_PORT
+                    DEBUG_ESP_PORT.println("Download Finished.  Files Updated");
+#endif
                     //_NewFilesCheck();
                 } else {
                     request->send(200, "FAILED");
-                    Serial.println("Error.  Try Again");
+#ifdef DEBUG_ESP_PORT
+                    DEBUG_ESP_PORT.println("Error.  Try Again");
+#endif
                 }
                 timeout = millis();
                 return;

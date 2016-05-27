@@ -14,7 +14,6 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
 
-
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncJson.h>
@@ -22,6 +21,8 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h> // required for settings file to make it readable
 
+#include <Hash.h>
+#include <ESP8266mDNS.h>
 
 #include <ESPmanager.h>
 
@@ -30,7 +31,7 @@ AsyncWebServer HTTP(80);
 ESPmanager settings(HTTP, SPIFFS, "ESPManager");
 
 
-//  You can specify a default hard coded set of credentials 
+//  You can specify a default hard coded set of credentials
 /*
 const char * defaultSSID = "";
 const char * defaultPSK = "";
@@ -64,11 +65,3 @@ void loop()
 {
 	settings.handle();
 }
-
-
-
-
-
-
-
-
