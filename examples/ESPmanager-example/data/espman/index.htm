@@ -9,9 +9,9 @@
   <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
   <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
 -->
-  <!--<link rel="stylesheet" href="/espman/jqm1.4.5.css">-->
-  <!--<script src="/espman/jq1.11.1.js"></script>-->
-  <!--<script src="/espman/jqm1.4.5.js"></script>-->
+  <link rel="stylesheet" href="/jquery/jqm1.4.5.css">
+  <script src="/jquery/jq1.11.1.js"></script>
+  <script src="/jquery/jqm1.4.5.js"></script>
 
 <!--
 <script>
@@ -459,9 +459,9 @@ function loadcss(url, callback) {
     document.body.appendChild(script);
 }
 
-loadcss("/jquery/jqm1.4.5.css", function() { 
-  loadjs("/jquery/jq1.11.1.js", function() {
-    loadjs("/jquery/jqm1.4.5.js", function() {
+// loadcss("/jquery/jqm1.4.5.css", function() { 
+//   loadjs("/jquery/jq1.11.1.js", function() {
+//     loadjs("/jquery/jqm1.4.5.js", function() {
       
                 $(function() {
 
@@ -472,16 +472,16 @@ loadcss("/jquery/jqm1.4.5.css", function() {
         $( "#popupDialogDeleteSettings" ).enhanceWithin().popup();
         $( "#popupDialogClearWiFi" ).enhanceWithin().popup();
 
-         $("#clearwifibutton").click(function() {
+        $("#clearwifibutton").click(function() {
             $.post("/espman/data.esp", "resetwifi");
-         });
+        });
          
-         $("#formatspiffsbutton").click(function() {
+        $("#formatspiffsbutton").click(function() {
             $.post("/espman/data.esp", "formatSPIFFS");
-         });
-         $("#deletesettingsbutton").click(function() {
-             $.post("/espman/data.esp", "deletesettings");
-         });
+        });
+        $("#deletesettingsbutton").click(function() {
+            $.post("/espman/data.esp", "deletesettings");
+        });
 
         });
         loadjs("/espman/espman.js", function() {
@@ -489,9 +489,9 @@ loadcss("/jquery/jqm1.4.5.css", function() {
           $("body").css("visibility","visible");
         }); 
         
-      });
-    });
-  });
+  //     });
+  //   });
+  // });
 
   </script>
 
