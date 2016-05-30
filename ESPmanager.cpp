@@ -204,16 +204,18 @@ void  ESPmanager::begin()
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
     //_HTTP.on("/espman/upload", HTTP_POST , [this]() { _HTTP.send(200, "text/plain", ""); }, std::bind(&ESPmanager::handleFileUpload, this)  );
     _HTTP.serveStatic("/espman", _fs, "/espman", "max-age=86400");
-    _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
+
+//   _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
+
+    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.css", "/jquery/jqm1.4.5.css", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css",  "max-age=86400"));
+    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jq1.11.1.js", "/jquery/jq1.11.1.js",   "http://code.jquery.com/jquery-1.11.1.min.js",  "max-age=86400"));
+    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.js", "/jquery/jqm1.4.5.js",   "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js",  "max-age=86400"));
+
+
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
 }
 
-// template<class T>
-// void ESPmanager::_extract( const char * name, T dest )
-// {
 
-
-// }
 
 
 void ESPmanager::_extractkey(JsonObject& root, const char * name, char *& ptr )
@@ -859,9 +861,8 @@ bool  ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename, co
 
     File f = _fs.open("/tempfile", "w+"); //  w+ is to allow read operations on file.... otherwise crc gets 255!!!!!
 
-
     if (!f) {
-        ESPMan_Debugf("\n  [ERROR] file open failed\n");
+        ESPMan_Debugf("\n  [ERROR] tempfile open failed\n");
         return false;
     } else {
 
@@ -963,6 +964,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
             int files_expected = 0;
             int files_recieved = 0;
+            int file_count = 0;
             DynamicJsonBuffer jsonBuffer;
 
             JsonObject * p_root = nullptr;
@@ -978,6 +980,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
                 JsonArray & array = root["files"];
 
                 for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
+                    file_count++;
                     JsonObject& item = *it;
                     String remote_path = item["location"];
                     const char* md5 = item["md5"];
@@ -985,16 +988,18 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
                     if (remote_path.endsWith("bin") && filename == "sketch" ) {
                         updatesketch = true;
+                        files_recieved++; //  add one to keep count in order...
+                        ESPMan_Debugf("[%u/%u] BIN Updated pending (%s)\n", file_count, files_expected , remote_path.c_str()  );
                         continue;
                     }
 
-                    ESPMan_Debugf("[%u/%u] Downloading (%s)..", files_recieved + 1 , files_expected , remote_path.c_str()  );
+                    ESPMan_Debugf("[%u/%u] Downloading (%s)..", file_count, files_expected , remote_path.c_str()  );
 
                     bool downloaded = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5 );
 
                     if (downloaded) {
                         ESPMan_Debugf("SUCCESS \n", remote_path.c_str()  );
-                        files_recieved++;
+                        //files_recieved++;
                     }
 
                     delay(1);
@@ -1059,7 +1064,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
 bool ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, String path)
 {
-    const int bufsize = 1024;
+    const int bufsize = 2048;
 
     ESPMan_Debugf("[ESPmanager::_parseUpdateJson] path = %s\n", path.c_str());
 
@@ -2308,9 +2313,12 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (plaincmd == "formatSPIFFS") {
             ESPMan_Debug(F("Format SPIFFS"));
             request->send(200, "text", "OK");
-            _fs.format();
-            ESPMan_Debugln(F(" done"));
-            return;
+
+            _syncCallback = [this]() {
+                _fs.format();
+                ESPMan_Debugln(F(" done"));
+                return true;
+            }; 
         }
 // **************************
 
