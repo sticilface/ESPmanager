@@ -35,9 +35,10 @@ To Upload
 
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
+#include "AsyncStaticPassThroughWebHandler.h"
 
 #include <ESP8266HTTPClient.h>
-
+#include <ESP8266httpUpdate.h>
 
 #include <FS.h>
 #include <functional>
@@ -51,7 +52,7 @@ To Upload
 #define USE_WEB_UPDATER 
 
 
-//#define Debug_ESPManager
+#define Debug_ESPManager
 
 #if defined(DEBUG_ESP_PORT) && defined(Debug_ESPManager)
 	#define ESPMan_Debug(x)    DEBUG_ESP_PORT.print(x)
@@ -131,6 +132,10 @@ private:
 	bool _DownloadToSPIFFS(const char * url , const char * path, const char * md5 = nullptr);
 	bool _upgrade();
 	//bool _upgradewrapper(uint8_t * buff); 
+
+	//  new functions to handle updates of individual spiffs files and sketch...
+	bool _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, String path); 
+	void _HandleSketchUpdate(AsyncWebServerRequest *request);
 #endif
 
 	void _extractkey(JsonObject & root, const char * name, char *& ptr ); 
@@ -174,7 +179,7 @@ private:
 	int _wifinetworksfound{0};
 	//AsyncWebServerRequest * _wifiRequestHandler{nullptr}; 
 
-	std::function<void(void)> _syncCallback{nullptr}; 
+	std::function<bool(void)> _syncCallback{nullptr}; 
 
 	struct IPconfigs_t {
 		IPAddress IP;
@@ -190,6 +195,27 @@ private:
 
 };
 
+
+/*
+
+
+upgrade template
+
+{
+	"filecount" : no_of_file,
+	"files" : [
+		{
+			"index" : index,
+			"location" : "relative web path",
+			"saveto" : "SPIFFS location",
+			"md5" : "checksum"
+		}
+	]
+
+}
+
+
+*/
 
 
 
