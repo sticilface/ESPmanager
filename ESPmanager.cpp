@@ -159,10 +159,6 @@ void  ESPmanager::begin()
     if (_manageWiFi) {
 
 
-
-
-        WiFi.mode(WIFI_STA);
-
         if (!_APssid) {
             _APssid = strdup(_host);
         }
@@ -175,6 +171,8 @@ void  ESPmanager::begin()
         }
 
         if (_STAenabled) {
+
+            WiFi.mode(WIFI_STA);
 
 #ifdef DEBUG_ESP_PORT
             DEBUG_ESP_PORT.print("Connecting to WiFi...");
@@ -571,7 +569,7 @@ void  ESPmanager::SaveSettings()
     root[F("APhidden")] = (_APhidden) ? true : false;
     root[F("OTAenabled")] = (_OTAenabled) ? true : false;
     root[F("OTApassword")] = (_OTApassword) ? _OTApassword : C_null;
-    root[F("STAenabled")] = _STAenabled; 
+    root[F("STAenabled")] = _STAenabled;
 
     //root[F("OTAusechipID")] = (_OTAusechipID) ? true : false;
     root[F("mDNSenable")] = (_mDNSenabled) ? true : false;
@@ -2471,6 +2469,27 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
 
+ESPmanager::version_state ESPmanager::CheckVersion( String current, String check)
+{
+    int current_placeholders = current.indexOf(".");
+    int check_placeholders = check.indexOf(".");
+
+
+    int * current_array = new int[ current_placeholders ];
+    int * check_array = new int[ check_placeholders];
+
+
+    if (current_array && current_placeholders) {
+        for (int i = 0; i < current_placeholders; i++) {
+
+        }
+
+        for (int i = 0; i < check_placeholders; i++) {
+
+        }
+    }
+
+}
 
 
 
