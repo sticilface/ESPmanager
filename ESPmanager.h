@@ -17,6 +17,13 @@ ToDo
 8) ? File Manager
 9)
 
+
+NEW TODO... 
+
+3)  change download serial output to work without Debug_ESPManager, if debug output is enambled. 
+4)  Some form of versioning output / control.... 
+
+
 To Upload
 
   upload the contents of the data folder with MkSPIFFS Tool ("ESP8266 Sketch Data Upload" in Tools menu in Arduino IDE)
@@ -100,6 +107,7 @@ class ESPmanager
 {
 public:
 	ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL);
+	enum version_state  { lower = -1, current = 0, higher = 1 };
 	~ESPmanager();
 	void begin();
 	void handle();
@@ -116,6 +124,11 @@ public:
 	const char * getHostname() { return _host; };
 
 	static String _file_md5 (File& f);
+
+	void upgrade(String path); 
+
+
+
 
 private:
 
@@ -169,6 +182,7 @@ private:
 	uint8_t _APchannel{1};
 	bool _APhidden{false};
 	bool _APenabled{false};
+	bool _STAenabled{true}; 
 	bool _OTAenabled{true};
 	bool save_flag{false};
 	bool _DHCP{true};

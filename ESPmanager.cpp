@@ -157,39 +157,59 @@ void  ESPmanager::begin()
     }
 
     if (_manageWiFi) {
-#ifdef DEBUG_ESP_PORT
-        DEBUG_ESP_PORT.print("Connecting to WiFi...");
-#endif
+
+
+
+
         WiFi.mode(WIFI_STA);
 
         if (!_APssid) {
             _APssid = strdup(_host);
         }
 
-        if (!Wifistart()) {
-            ESPMan_Debug(F("WiFi Failed: "));
-            if (_APrestartmode > 1) { // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
-
-                _APtimer = millis();
-                ESPMan_Debugf("Starting AP: ssid (%s)", _APssid);
-
-                // if (!_APenabled) {
-                InitialiseSoftAP();
-                // }
-
-                ESPMan_Debugln();
-            } else {
-                ESPMan_Debugln(F("Soft AP disbaled by config"));
-            }
-        } else {
+        if (_APenabled) {
 #ifdef DEBUG_ESP_PORT
-            DEBUG_ESP_PORT.print(F("Success\nConnected to "));
-            DEBUG_ESP_PORT.print(WiFi.SSID());
-            DEBUG_ESP_PORT.print(" (");
-            DEBUG_ESP_PORT.print(WiFi.localIP());
-            DEBUG_ESP_PORT.println(")");
+            DEBUG_ESP_PORT.printf("Creating AP (%s)\n", _APssid);
 #endif
+            InitialiseSoftAP();
         }
+
+        if (_STAenabled) {
+
+#ifdef DEBUG_ESP_PORT
+            DEBUG_ESP_PORT.print("Connecting to WiFi...");
+#endif
+            if (!Wifistart()) {
+                ESPMan_Debug(F("WiFi Failed: "));
+                if (_APrestartmode > 1) { // 1 = none, 2 = 5min, 3 = 10min, 4 = whenever : 0 is reserved for unset...
+
+                    _APtimer = millis();
+                    ESPMan_Debugf("Starting AP: ssid (%s)", _APssid);
+
+                    // if (!_APenabled) {
+                    InitialiseSoftAP();
+                    // }
+
+                    ESPMan_Debugln();
+                } else {
+                    ESPMan_Debugln(F("Soft AP disbaled by config"));
+                }
+            } else {
+#ifdef DEBUG_ESP_PORT
+                DEBUG_ESP_PORT.print(F("Success\nConnected to "));
+                DEBUG_ESP_PORT.print(WiFi.SSID());
+                DEBUG_ESP_PORT.print(" (");
+                DEBUG_ESP_PORT.print(WiFi.localIP());
+                DEBUG_ESP_PORT.println(")");
+#endif
+            }
+
+        }
+
+
+
+
+
     }
 
 
@@ -208,8 +228,8 @@ void  ESPmanager::begin()
 //   _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
 
     _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.css", "/jquery/jqm1.4.5.css", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css",  "max-age=86400"));
-    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jq1.11.1.js", "/jquery/jq1.11.1.js",   "http://code.jquery.com/jquery-1.11.1.min.js",  "max-age=86400"));
-    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.js", "/jquery/jqm1.4.5.js",   "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js",  "max-age=86400"));
+    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jq1.11.1.js" , "/jquery/jq1.11.1.js" ,   "http://code.jquery.com/jquery-1.11.1.min.js",  "max-age=86400"));
+    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.js" , "/jquery/jqm1.4.5.js" ,   "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js",  "max-age=86400"));
 
 
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
@@ -379,7 +399,9 @@ bool  ESPmanager::LoadSettings()
         //     if (OTApassword) { _OTApassword = strdup(OTApassword); } else {_OTApassword = nullptr; } ;
         // }
 
-
+        if (root.containsKey("STAenabled")) {
+            _STAenabled = root["STAenabled"];
+        }
 
         if (root.containsKey("mDNSenable")) {
             _mDNSenabled = root["mDNSenable"];
@@ -452,6 +474,13 @@ bool  ESPmanager::LoadSettings()
             }
         }
 
+#ifdef Debug_ESPManager
+
+        DEBUG_ESP_PORT.println("JSON Settings file: ");
+        root.prettyPrintTo(DEBUG_ESP_PORT);
+        DEBUG_ESP_PORT.println();
+
+#endif
 
         ESPMan_Debugln(F("----- Saved Variables -----"));
         PrintVariables();
@@ -466,7 +495,8 @@ bool  ESPmanager::LoadSettings()
 void  ESPmanager::PrintVariables()
 {
 
-#ifdef DEBUG_YES
+#ifdef Debug_ESPManager
+
     ESPMan_Debugln(F("VARIABLE STATES: "));
     ESPMan_Debugf("_host = %s\n", _host);
     ESPMan_Debugf("_ssid = %s\n", _ssid);
@@ -541,6 +571,7 @@ void  ESPmanager::SaveSettings()
     root[F("APhidden")] = (_APhidden) ? true : false;
     root[F("OTAenabled")] = (_OTAenabled) ? true : false;
     root[F("OTApassword")] = (_OTApassword) ? _OTApassword : C_null;
+    root[F("STAenabled")] = _STAenabled; 
 
     //root[F("OTAusechipID")] = (_OTAusechipID) ? true : false;
     root[F("mDNSenable")] = (_mDNSenabled) ? true : false;
@@ -868,19 +899,6 @@ bool  ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename, co
 
 
         http.begin(url);
-//
-//
-        // http.addHeader("Content-MD5", " ");
-
-        // const char * headerkeys[] = { "x-MD5" };
-        // size_t headerkeyssize = sizeof(headerkeys) / sizeof(char*);
-
-        // // track these headers
-        // http.collectHeaders(headerkeys, headerkeyssize);
-
-
-//
-//
 
         int httpCode = http.GET();
 
@@ -918,23 +936,30 @@ bool  ESPmanager::_DownloadToSPIFFS(const char * url , const char * filename, co
                             return true;
                         } else {
                             ESPMan_Debugf("\n  [ERROR] CRC mismatch\n");
-                            _fs.remove("/tempfile");
+                            //_fs.remove("/tempfile");
                         }
 
                     } else {
                         ESPMan_Debugf("\n  [ERROR] Download FAILED %s downloaded (%s required) \n", formatBytes(byteswritten).c_str(), formatBytes(http.getSize()).c_str() );
-                        _fs.remove("/tempfile");
+                        //_fs.remove("/tempfile");
                     }
                 } else {
                     ESPMan_Debugf("\n  [ERROR] Download FAILED File too big \n");
-                    _fs.remove("/tempfile");
+                    //_fs.remove("/tempfile");
                 }
 
-            } else { ESPMan_Debugf("\n  [ERROR] HTTP code not correct [%d] \n", httpCode); }
-        } else { ESPMan_Debugf("\n  [ERROR] HTTP code ERROR [%d] \n", httpCode); }
+            } else {
+                ESPMan_Debugf("\n  [ERROR] HTTP code not correct [%d] \n", httpCode);
+                //_fs.remove("/tempfile");
+            }
+        } else {
+            ESPMan_Debugf("\n  [ERROR] HTTP code ERROR [%d] \n", httpCode);
+            //_fs.remove("/tempfile");
+        }
         yield();
     }
 
+    _fs.remove("/tempfile");
     http.end();
     f.close();
     return false;
@@ -962,95 +987,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
         _syncCallback = [ = ]() {
 
-            int files_expected = 0;
-            int files_recieved = 0;
-            int file_count = 0;
-            DynamicJsonBuffer jsonBuffer;
-
-            JsonObject * p_root = nullptr;
-            uint8_t * buff = nullptr;
-            bool updatesketch = false;
-
-            if (_parseUpdateJson(buff, jsonBuffer, p_root, path)) {
-
-                ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] _parseUpdateJson success\n");
-                JsonObject & root = *p_root;
-                files_expected = root["filecount"];
-
-                JsonArray & array = root["files"];
-
-                for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
-                    file_count++;
-                    JsonObject& item = *it;
-                    String remote_path = item["location"];
-                    const char* md5 = item["md5"];
-                    String filename = item["saveto"];
-
-                    if (remote_path.endsWith("bin") && filename == "sketch" ) {
-                        updatesketch = true;
-                        files_recieved++; //  add one to keep count in order...
-                        ESPMan_Debugf("[%u/%u] BIN Updated pending (%s)\n", file_count, files_expected , remote_path.c_str()  );
-                        continue;
-                    }
-
-                    ESPMan_Debugf("[%u/%u] Downloading (%s)..", file_count, files_expected , remote_path.c_str()  );
-
-                    bool downloaded = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5 );
-
-                    if (downloaded) {
-                        ESPMan_Debugf("SUCCESS \n", remote_path.c_str()  );
-                        //files_recieved++;
-                    }
-
-                    delay(1);
-                }
-
-                if (updatesketch) {
-
-                    for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
-                        JsonObject& item = *it;
-                        String remote_path = item["location"];
-                        String filename = item["saveto"];
-
-                        if (remote_path.endsWith("bin") && filename == "sketch" ) {
-
-                            ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
-
-                            t_httpUpdate_return ret = ESPhttpUpdate.update(remote_path);
-
-                            switch (ret) {
-                            case HTTP_UPDATE_FAILED:
-                                ESPMan_Debugf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-                                break;
-
-                            case HTTP_UPDATE_NO_UPDATES:
-                                ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
-                                break;
-
-                            case HTTP_UPDATE_OK:
-                                ESPMan_Debugf("HTTP_UPDATE_OK");
-                                ESP.restart();
-
-                                break;
-                            }
-
-                            return true; // shouldn't get here...
-                        }
-                    }
-                }
-
-
-
-            } else {
-
-                ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] _parseUpdateJson FAILED\n");
-
-            }
-
-            if (buff) {
-                delete[] buff;
-            }
-
+            upgrade(path);
             return true;
 
         };
@@ -1058,6 +995,133 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
     }
 
     request->send(200, "Started");
+
+}
+
+void ESPmanager::upgrade(String path)
+{
+
+    int files_expected = 0;
+    int files_recieved = 0;
+    int file_count = 0;
+    DynamicJsonBuffer jsonBuffer;
+    String rooturi = String();
+
+    JsonObject * p_root = nullptr;
+    uint8_t * buff = nullptr;
+    bool updatesketch = false;
+
+    if (_parseUpdateJson(buff, jsonBuffer, p_root, path)) {
+
+        ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] _parseUpdateJson success\n");
+        JsonObject & root = *p_root;
+        files_expected = root["filecount"];
+        JsonArray & array = root["files"];
+
+        if (root.containsKey("formatSPIFFS")) {
+            if (root["formatSPIFFS"] == true) {
+                ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Formatting SPIFFS....");
+                _fs.format();
+                ESPMan_Debugf("done\n");
+            }
+        }
+
+        if (root.containsKey("clearWiFi")) {
+            if (root["clearWiFi"] == true) {
+                ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Erasing WiFi Config ....");
+                ESP.eraseConfig();
+                ESPMan_Debugf("done\n");
+            }
+        }
+
+
+        if (root.containsKey("rooturi")) {
+            ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Using root uri : %s\n" , rooturi.c_str());
+            rooturi = String(root["rooturi"].asString());
+        }
+
+
+        for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
+            file_count++;
+            JsonObject& item = *it;
+            String remote_path = rooturi + String(item["location"].asString());
+            const char* md5 = item["md5"];
+            String filename = item["saveto"];
+
+            if (remote_path.endsWith("bin") && filename == "sketch" ) {
+                updatesketch = true;
+                files_recieved++; //  add one to keep count in order...
+#if defined(DEBUG_ESP_PORT)
+                DEBUG_ESP_PORT.printf("[%u/%u] BIN Updated pending (%s)\n", file_count, files_expected , remote_path.c_str()  );
+#endif
+                continue;
+            }
+#if defined(DEBUG_ESP_PORT)
+            DEBUG_ESP_PORT.printf("[%u/%u] Downloading (%s)..", file_count, files_expected , remote_path.c_str()  );
+#endif
+
+            bool downloaded = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5 );
+
+#if defined(DEBUG_ESP_PORT)
+
+            if (downloaded) {
+                DEBUG_ESP_PORT.printf("SUCCESS \n", remote_path.c_str()  );
+                //files_recieved++;
+            } else {
+#if !defined(ESPMan_Debug)
+                DEBUG_ESP_PORT.printf("FAILED \n", remote_path.c_str()  );
+#endif
+            }
+#endif
+
+            delay(1);
+        }
+
+        if (updatesketch) {
+
+            for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
+                JsonObject& item = *it;
+                String remote_path = rooturi + String(item["location"].asString());
+                String filename = item["saveto"];
+
+                if (remote_path.endsWith("bin") && filename == "sketch" ) {
+
+                    ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
+
+                    t_httpUpdate_return ret = ESPhttpUpdate.update(remote_path);
+
+                    switch (ret) {
+                    case HTTP_UPDATE_FAILED:
+                        ESPMan_Debugf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+                        break;
+
+                    case HTTP_UPDATE_NO_UPDATES:
+                        ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
+                        break;
+
+                    case HTTP_UPDATE_OK:
+                        ESPMan_Debugf("HTTP_UPDATE_OK");
+                        ESP.restart();
+
+                        break;
+                    }
+
+                    return ; // shouldn't get here...
+                }
+            }
+        }
+
+
+
+    } else {
+
+        ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] _parseUpdateJson FAILED\n");
+
+    }
+
+    if (buff) {
+        delete[] buff;
+    }
 
 }
 
@@ -1959,11 +2023,26 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         String enable_sta = request->getParam("enable-STA", true)->value();
 
         if (enable_sta == "off" && (mode == WIFI_STA || mode == WIFI_AP_STA)) {
-            WiFi.mode(WIFI_AP); // always fall back to AP mode...
-            WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
+            _STAenabled = false;
+
+            _syncCallback = [this]() {
+                WiFi.mode(WIFI_AP);
+                InitialiseSoftAP();
+                return true;
+            };
+
+            // WiFi.mode(WIFI_AP); // always fall back to AP mode...
+            // WiFi.softAP(_APssid, _APpass, (int)_APchannel, (int)_APhidden);
             ESPMan_Debugln(F("STA-disabled: falling back to AP mode."));
         } else if (enable_sta == "on" && mode == WIFI_AP) {
-            WiFi.mode(WIFI_AP_STA);
+            _STAenabled = true;
+
+            _syncCallback = [this]() {
+                Wifistart();
+                return true;
+            };
+
+            //WiFi.mode(WIFI_AP_STA);
             ESPMan_Debugln(F("Enabling STA mode"));
             reinit = true;
         }
@@ -2318,7 +2397,7 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 _fs.format();
                 ESPMan_Debugln(F(" done"));
                 return true;
-            }; 
+            };
         }
 // **************************
 
