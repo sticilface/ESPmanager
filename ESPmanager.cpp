@@ -506,6 +506,8 @@ void  ESPmanager::PrintVariables()
     (_APenabled) ? ESPMan_Debugln(F("_APenabled = true")) : ESPMan_Debugln(F("_APenabled = false"));
     (_APhidden) ? ESPMan_Debugln(F("_APhidden = true")) : ESPMan_Debugln(F("_APhidden = false"));
     (_OTAenabled) ? ESPMan_Debugln(F("_OTAenabled = true")) : ESPMan_Debugln(F("_OTAenabled = false"));
+    (_STAenabled) ? ESPMan_Debugln(F("_STAenabled = true")) : ESPMan_Debugln(F("_STAenabled = false"));
+
 
     if (_IPs) {
         ESPMan_Debug(F("IPs->IP = "));
@@ -569,7 +571,7 @@ void  ESPmanager::SaveSettings()
     root[F("APhidden")] = (_APhidden) ? true : false;
     root[F("OTAenabled")] = (_OTAenabled) ? true : false;
     root[F("OTApassword")] = (_OTApassword) ? _OTApassword : C_null;
-    root[F("STAenabled")] = _STAenabled;
+    root[F("STAenabled")] = (_STAenabled) ? true : false;
 
     //root[F("OTAusechipID")] = (_OTAusechipID) ? true : false;
     root[F("mDNSenable")] = (_mDNSenabled) ? true : false;
@@ -2122,7 +2124,10 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
 
         if (reinit &&  request->hasParam("enable-STA", true) &&   request->getParam("enable-STA", true)->value() == "on") {
-            Wifistart();
+            _syncCallback = [this]() {
+                Wifistart();
+                return true;
+            };
         }
         //printdiagnositics();
 
