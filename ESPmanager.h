@@ -59,7 +59,7 @@ To Upload
 #define USE_WEB_UPDATER 
 
 
-#define Debug_ESPManager
+//#define Debug_ESPManager
 
 #if defined(DEBUG_ESP_PORT) && defined(Debug_ESPManager)
 	#define ESPMan_Debug(x)    DEBUG_ESP_PORT.print(x)

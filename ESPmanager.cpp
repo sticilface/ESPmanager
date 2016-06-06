@@ -473,11 +473,12 @@ bool  ESPmanager::LoadSettings()
         }
 
 #ifdef Debug_ESPManager
+#ifdef DEBUG_ESP_PORT
 
         DEBUG_ESP_PORT.println("JSON Settings file: ");
         root.prettyPrintTo(DEBUG_ESP_PORT);
         DEBUG_ESP_PORT.println();
-
+#endif
 #endif
 
         ESPMan_Debugln(F("----- Saved Variables -----"));
@@ -494,6 +495,7 @@ void  ESPmanager::PrintVariables()
 {
 
 #ifdef Debug_ESPManager
+#ifdef DEBUG_ESP_PORT
 
     ESPMan_Debugln(F("VARIABLE STATES: "));
     ESPMan_Debugf("_host = %s\n", _host);
@@ -528,6 +530,7 @@ void  ESPmanager::PrintVariables()
         ESPMan_Debug(F("AP MAC = "));
         ESPMan_Debugf("%02X:%02X:%02X:%02X:%02X:%02X\n", _APmac[0],  _APmac[1], _APmac[2], _APmac[3], _APmac[4], _APmac[5]);
     } else { ESPMan_Debugln("AP MAC not held in memory"); }
+#endif
 #endif
 }
 
