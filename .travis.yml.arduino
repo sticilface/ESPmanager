@@ -1,0 +1,58 @@
+sudo: false
+language: bash
+os:
+- linux
+script:
+- /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile
+  --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16
+- sleep 3
+- export DISPLAY=:1.0
+- wget http://downloads.arduino.cc/arduino-1.6.5-linux64.tar.xz
+- tar xf arduino-1.6.5-linux64.tar.xz
+- mv arduino-1.6.5 $HOME/arduino_ide
+- export PATH="$HOME/arduino_ide:$PATH"
+- which arduino
+- mkdir -p $HOME/Arduino/libraries
+- cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/build
+- git clone https://github.com/bblanchon/ArduinoJson  $HOME/Arduino/libraries/ArduinoJson
+#- git clone https://github.com/me-no-dev/ESPAsyncWebServer $HOME/Arduino/libraries/ESPAsyncWebServer
+- git clone https://github.com/sticilface/ESPAsyncWebServer $HOME/Arduino/libraries/ESPAsyncWebServer
+- cd $HOME/Arduino/libraries/ESPAsyncWebServer
+- git checkout FileFallbackHandler
+- git clone https://github.com/me-no-dev/ESPAsyncTCP $HOME/Arduino/libraries/ESPAsyncTCP
+- cd $HOME/arduino_ide/hardware
+- mkdir esp8266com
+- cd esp8266com
+- git clone https://github.com/esp8266/Arduino.git esp8266
+- cd esp8266/tools
+- python get.py
+- mkdir $HOME/travis
+- cd $HOME/travis
+- wget https://raw.githubusercontent.com/me-no-dev/ESPAsyncTCP/master/travis/common.sh
+- source $HOME/travis/common.sh
+- arduino --board esp8266com:esp8266:generic --save-prefs
+- arduino --get-pref sketchbook.path
+- build_sketches arduino $HOME/Arduino/libraries/build esp8266
+#- build_sketches $HOME/arduino_ide $HOME/Arduino/libraries/build "-l $HOME/Arduino/libraries"
+notifications:
+  email:
+    on_success: change
+    on_failure: change
+  webhooks:
+    urls: 
+    on_success: change
+    on_failure: always
+    on_start: false
+# deploy:
+#   provider: releases
+#   api_key:
+#     secure: vL2qs5lSTpLcFyY8SkmKGRmsEVvPeslmisGZlLX1xyrGXeZrdm4OlmTAJpgVQunSo6uCtrVWaUhUpl8gCtMqOpQTP3kh2hdZXsXNZ0yrZaVg8w75xN5OK10ypEMoaCAFSnaze3WjtZveSAKNVIq3EQYq7NwLpr6F4hZhJi+aMekDjYWEYSlhXWmgi58Duyj0AMnijcBGU2qlPYt1bNH+3R1RpLeAAuBfk/oIqtUdqcKniAkeY6rFdeYYGKZH5gs/87BeiuGbCxF+aRDUWyndJT3hlY36in3WTLpHzjC8qIuVIzagOe+Jiz8HezLWvbhqXYAcAdOdO7w4BKl0E4Q0uU5M00IjmJZ5Pg7d6IApupSqGO4YOHwb5R9C9ns63eYVedostjmGn5GvduZSVunH6jtOzBfIULxTKIIWdQHRCbUH/QoM7xD+p8+wBEyNUiid45qBE6Q1udkVStd8VjchttIRED71GJFpdeiz2ed98YwQInwa8Mu2kylCIYI/yeXgfdb3t10YYUrAwB81Wd4oG5/BVYUrLRKqGDx9CE+Wm2yz3QsiH0viIrH3R+vI/mG4BULguMBOEtfUG4OAuNiPCE5B/TO8Dip+5N9tmsJxoah6vtdzpDh4He7cNqFgWnBUxeXmNzO/059v05IHou8aBeN2mCSLqNP09SPWhHUzT4o=
+#   file: build.tmp/*.bin
+#   on:
+#     #repo: sticilface/ESPmanager
+#     branch: ASYNC
+# env:
+#   global:
+#   - secure: o6yfMMv8r+nJ5QeuXrVPTBNUHax0xTps9OYWun0i4IdgnBujFp+0SFnlQQYtjHtAiJ2DpRFRQJgxe94GhPn4E/NlkMvC+UX5ryu2KAJ4Ms3l0b5w/L7zd46NM1lV7U3nInfclMlq/e5XxkLa7lbQWIr4DlJ+cLXk8Ftw1N2UCvLuneqkZ9hxqh+6Vskc/qDkCbM3vyWTDFvIoP8cByWvRMnDIWShKxyyCdFZ46su1K/WuQAUXEVhH+//VV8X+1dcIjcwAqFHBuPNgPaxSh3kTuBl1vmddUpU6xDehDCaA/KSTcvd4F+qs6SJT87IDIHut7qRyGWUOs7A+01uEn69OhE6ZyXjW0iS2QUhiFMj5TO0LJ1wK987E3jo9+MpecFDuVWX/FT6p9EteSIaD13D8YHWNeZkoZDjq4vffmNaMa+xm6tyhOIorveS1tzSa3w0m8wi8Dm4J3LS40ZIhJ1KM6LzUVEHMawpqCaggqldLx8XHm9Ndch9BCwCRHf4Awwlzz8FY5BuGOBZp2Aq/n3jcBgw5iVWnDCzAShJw14F89Um4tdlFlk2t34Hp3H10fRK5UuxpmIgw61B9qpfPsVFBcSpfQ8wfIFWjOJsXJAMkNWGBc6eUCvRGjPfPXYOy233XZFnUtOwO/KP8ePojb8X30lZXNg1LGjVr87fAbvX8H4=
+#   - secure: RmH+pReF3J6FMbFfCBsmoMr5MHLZSOq5oKu/7JFXuQVZRTOrmzyPQ9fdNHOfg7awFctrycxUt2OVz7O2eNfe4clM2aiRIVwpAiylUJueRMNWK9cQG9qdU4tXnSob0Q1wBB/HgpSruCNxLFDg2nkyVXkVwTw+AgN+AokMQQlKPF26g2I/IOY98geb9DFPW/yeLeijY3Tp00WPhnFm5++w+KrIuEW3U2u1dYaCbCGE3Jr1pBvnxilLhALX3Xt4V/tQhXA74PExn+8Rjth9H2WQ9z2dfHnk1NtiFNWyMeBDtxMgpHods1zoQQ2JtJjQ8bNhyPd4le8z+G2rP2hnUu4bruwse3odl1iyVBdz5/V/ZGer2hZc6iuKBa1KoOTh69/mUYZNwND1inLZkfESibWJgQ9PW6TxT2LdLG3uXRqxTmgP2oULjpN11eRX7x9sQx0Wx2Hj4fAfZwq0TwV3DTwKI2gTzIk0jSdWHXarZok2v30kkc+AQUIYA/HRBRpT8FxK5QP0ciqDAFnoVdyyDrgg+RSUgrBdN3/6o3NLWGxt6iKywWqc3KkXpoBwssOAnZLS1zJ+fJYB/AC+MWeiqDB3IZ0AozURpU0CCvVvwAChawcuYwfFPnIZdYeZyEzKDv4NX+ryYMzynuj/l0geS/FojvOxPQRkUqQcfo7xE7XlI1M=
+#   - secure: THl5HfEzamwUtlJwVg6fuyDOoO73macX+/QzGBlxH+RZkxkp+gtQd1L8/F12ZDSQeBYDXNDi6Q7oO1l74WhMlyoHD+zVaTfzFBu0LLhrpRQIOd4YfsLEihgUHLn4ss+3BV8LxhHAfrZKnyvr5ZllNlAaHohYw64Nso8UIDYz70D97ov3zwqbY+uHkV4uIX7XJRxsXb0xQIreKOncTZWIOXR7B3kwMQ2RnPAHtnSNDhQpqkBC+7eNDlOBFSplKpmyVmL3LoxjBdmTK+fP0PhZikgJeLz6hy9CcMST00vaV3kwkfHbw93uRCpC6iJtfskGTr2Bx0elW2hebWYEYzAxu0rAvzgks0RV/lhnquOOTt1JOKP2BW+j/PQFup/vR04scH1WJi9t8J/wxkCm2GK5AgAuLzjxAnVGse/xDfLtgmuWnOaYzzBBfGsIgt2k4FL1egzE5MRL/E134yaO74p3YTZ082weiYz6UcabzNgda/faGHARLq/WAuWBOPCYHYuI/e7G/m4IVLG6hPmTzsY7U8ry72OHxR35LswSJQw8sjTRSsSHHlkypHgoVPOTtVTbX6CiN6jRjGpGHqjkWLyOt4TJfAe+3iZ2y3IwW1fydH6S2/yGrgK0FPd3Ar5Uwe5DwOBYYlAe+WnI6KhsZgHntrIYXZo7tE2IQ9oIMAA17LQ=
