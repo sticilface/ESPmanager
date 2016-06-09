@@ -7,7 +7,6 @@ cache:
   - ~/.platformio
 env:
 - PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS=!echo '-DBUILD_TAG='${TRAVIS_TAG:-"0.0.0"}
-- TRAVIS_TAG=1.1.1
 install:
 - pip install -U platformio
 - platformio lib install 64
