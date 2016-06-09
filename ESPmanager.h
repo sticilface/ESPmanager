@@ -57,6 +57,11 @@ To Upload
 
 #define USE_WEB_UPDATER 
 
+// Stringifying the BUILD_TAG parameter
+#define TEXTIFY(A) #A
+#define ESCAPEQUOTE(A) TEXTIFY(A)
+
+String buildTag = ESCAPEQUOTE(BUILD_TAG);
 
 //#define Debug_ESPManager
 

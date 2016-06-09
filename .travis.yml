@@ -6,7 +6,7 @@ cache:
   directories:
   - ~/.platformio
 env:
-- PLATFORMIO_CI_SRC=examples/ESPmanager-example
+- PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS=!echo '-DBUILD_TAG='${TRAVIS_TAG:-"0.0.0"}
 install:
 - pip install -U platformio
 - platformio lib install 64
@@ -26,4 +26,5 @@ deploy:
   on:
     repo: sticilface/ESPmanager
     branch: ASYNC
+  condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
 #test
