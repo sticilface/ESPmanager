@@ -15,7 +15,7 @@ env:
 install:
     - pip install -U platformio
     - platformio lib install 293  
-    - git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServe
+    - git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServer
     - mkdir /tmp/build
 
 script:
