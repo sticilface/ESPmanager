@@ -46,7 +46,7 @@ deploy:
     secure: vL2qs5lSTpLcFyY8SkmKGRmsEVvPeslmisGZlLX1xyrGXeZrdm4OlmTAJpgVQunSo6uCtrVWaUhUpl8gCtMqOpQTP3kh2hdZXsXNZ0yrZaVg8w75xN5OK10ypEMoaCAFSnaze3WjtZveSAKNVIq3EQYq7NwLpr6F4hZhJi+aMekDjYWEYSlhXWmgi58Duyj0AMnijcBGU2qlPYt1bNH+3R1RpLeAAuBfk/oIqtUdqcKniAkeY6rFdeYYGKZH5gs/87BeiuGbCxF+aRDUWyndJT3hlY36in3WTLpHzjC8qIuVIzagOe+Jiz8HezLWvbhqXYAcAdOdO7w4BKl0E4Q0uU5M00IjmJZ5Pg7d6IApupSqGO4YOHwb5R9C9ns63eYVedostjmGn5GvduZSVunH6jtOzBfIULxTKIIWdQHRCbUH/QoM7xD+p8+wBEyNUiid45qBE6Q1udkVStd8VjchttIRED71GJFpdeiz2ed98YwQInwa8Mu2kylCIYI/yeXgfdb3t10YYUrAwB81Wd4oG5/BVYUrLRKqGDx9CE+Wm2yz3QsiH0viIrH3R+vI/mG4BULguMBOEtfUG4OAuNiPCE5B/TO8Dip+5N9tmsJxoah6vtdzpDh4He7cNqFgWnBUxeXmNzO/059v05IHou8aBeN2mCSLqNP09SPWhHUzT4o=
   file: build.tmp/*.bin
   on:
-    repo: sticilface/ESPmanager
+    #repo: sticilface/ESPmanager
     branch: ASYNC
 env:
   global:
