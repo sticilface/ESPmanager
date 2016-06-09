@@ -13,7 +13,7 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 #include <FS.h> //  Settings saved to SPIFFS
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-#include <ESP8266HTTPUpdate.h>
+#include <ESP8266httpUpdate.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncJson.h>

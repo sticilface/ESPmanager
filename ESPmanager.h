@@ -44,7 +44,7 @@ To Upload
 #include <ESPAsyncWebServer.h>
 
 #include <ESP8266HTTPClient.h>
-#include <ESP8266HTTPUpdate.h>
+#include <ESP8266httpUpdate.h>
 
 #include <FS.h>
 #include <functional>
