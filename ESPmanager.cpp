@@ -14,6 +14,12 @@ extern "C" {
 #include "user_interface.h"
 }
 
+// Stringifying the BUILD_TAG parameter
+#define TEXTIFY(A) #A
+#define ESCAPEQUOTE(A) TEXTIFY(A)
+
+String buildTag = ESCAPEQUOTE(BUILD_TAG);
+
 
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs, const char* host, const char* ssid, const char* pass)
@@ -1633,7 +1639,7 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     }
 #endif
 #endif
-    
+
     /*------------------------------------------------------------------------------------------------------------------
                                                                     Reboot command
     ------------------------------------------------------------------------------------------------------------------*/
