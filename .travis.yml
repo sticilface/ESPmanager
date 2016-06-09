@@ -16,11 +16,12 @@ install:
     - pip install -U platformio
     - platformio lib install 293  
     - git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServer
+    - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
     - mkdir /tmp/build
 
 script:
     
-    - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer" --board=nodemcu
+    - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer" --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 
 
 # platform = espressif
