@@ -111,7 +111,8 @@ void  ESPmanager::begin()
     if (_fs.begin()) {
         ESPMan_Debugln(F("File System mounted sucessfully"));
 
-#ifdef DEBUG_ESP_PORT && ESPMan_Debug
+#ifdef DEBUG_ESP_PORT 
+#ifdef ESPMan_Debug
         DEBUG_ESP_PORT.println("SPIFFS FILES:");
         {
             Dir dir = SPIFFS.openDir("/");
@@ -122,6 +123,7 @@ void  ESPmanager::begin()
             }
             DEBUG_ESP_PORT.printf("\n");
         }
+#endif
 #endif
 
 //       _NewFilesCheck();
