@@ -15,7 +15,8 @@ script:
 - mkdir -p $HOME/Arduino/libraries
 - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/build
 - git clone https://github.com/bblanchon/ArduinoJson  $HOME/Arduino/libraries/ArduinoJson
-- git clone https://github.com/me-no-dev/ESPAsyncWebServer $HOME/Arduino/libraries/ESPAsyncWebServer
+#- git clone https://github.com/me-no-dev/ESPAsyncWebServer $HOME/Arduino/libraries/ESPAsyncWebServer
+- git clone https://github.com/sticilface/ESPAsyncWebServer $HOME/Arduino/libraries/ESPAsyncWebServer
 - git clone https://github.com/me-no-dev/ESPAsyncTCP $HOME/Arduino/libraries/ESPAsyncTCP
 - cd $HOME/arduino_ide/hardware
 - mkdir esp8266com
