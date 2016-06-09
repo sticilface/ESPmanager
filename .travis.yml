@@ -14,7 +14,7 @@ env:
 
 install:
     - pip install -U platformio
-    - platformio lib install 293  
+    - platformio lib install 64 #arduinojson   
     - git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServer
     - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
     - mkdir /tmp/build
