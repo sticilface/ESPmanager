@@ -61,7 +61,7 @@ To Upload
 #define TEXTIFY(A) #A
 #define ESCAPEQUOTE(A) TEXTIFY(A)
 
-String buildTag = ESCAPEQUOTE(BUILD_TAG);
+String buildTagString = ESCAPEQUOTE(BUILD_TAG);
 
 //#define Debug_ESPManager
 
