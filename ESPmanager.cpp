@@ -1621,7 +1621,8 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     String buf;
 
-#ifdef DEBUG_ESP_PORT && ESPMan_Debug
+#ifdef DEBUG_ESP_PORT 
+#ifdef ESPMan_Debug
 
 //List all collected headers
     int params = request->params();
@@ -1631,7 +1632,8 @@ void  ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         DEBUG_ESP_PORT.printf("[ESPmanager::_HandleDataRequest] [%s]: %s\n", h->name().c_str(), h->value().c_str());
     }
 #endif
-
+#endif
+    
     /*------------------------------------------------------------------------------------------------------------------
                                                                     Reboot command
     ------------------------------------------------------------------------------------------------------------------*/
