@@ -7,6 +7,7 @@ cache:
   - ~/.platformio
 env:
 - PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS=!echo '-DBUILD_TAG='${TRAVIS_TAG:-"0.0.0"}
+- TRAVIS_TAG=1.1.1
 install:
 - pip install -U platformio
 - platformio lib install 64
@@ -14,6 +15,7 @@ install:
   /tmp/ESPAsyncWebServer
 - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
 - mkdir /tmp/build
+- export PLATFORMIO_BUILD_FLAGS="-D GLOBAL_MACROS_FOR_ALL_TEST_ENV"
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
@@ -23,6 +25,7 @@ deploy:
     secure: XgkPqJpKcEsWspl38k5A4JhkuCnOms4sYmgmgYwzPb/Fbsbuicxz+b21xXxUDnMjhheZsQQ/7y0X2gia4sbdvyYZxxsWQYdB/ThO9KnQERqf/8ih/ewN3Pv4qo74AYlgoF6yCU9oGdC4SuWdhv9Ci1di8V+Ns6uzm3TrNadO1lR5TaRA03SxpbBk9LRMvu0WnLhk0tuURR5RIb6C8PlWjqNLfIyS2YZJ4Q6AxAx/9je8Ea5lAEK81I4/tVQwbWcJImLDFzs6HJFb+DzQbVuaIfvFmqy26C6PiqojBskRscClJGyfckq8QED+u2GJUYDfycUIjCSWvO4ynymLtBqSqr9RP+yX5lTLDcIj0tM5vRcFBLZ03oVJienHZmyR68jBZUu8pjX3II0drQNz/5WRw/bmhTfpZw9m7BczhGQ+l/rTdc5Rr5GlbezMn9aXWZ/Ih4jbD8LnTzw/+7Z4xw7Bx/TX28XgmgjlW3r6VHNMfAMBygRl3/q7Q6PeZ7rBhc0eBZFoCV74Fb/+e7JUYlntHL+TxYtOLECTh7RW1DPPrkYb1jXbtgpF+lYjGAxoG5vC1ZCA0bm8hszxQTsrupcr+0n7XbLrnOx0gk/i5dOrC93vBk5FOaufYDzIIpn9XfiNrb/fn1bv2MJtaMxvk4u4caE2QV3C6Kj4MDit9I8reI8=
   file: "/tmp/build/.pioenvs/nodemcu/firmware.bin"
   skip_cleanup: true
+  overwrite: true
   on:
     repo: sticilface/ESPmanager
     branch: ASYNC
