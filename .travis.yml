@@ -15,6 +15,8 @@ script:
 - mkdir -p $HOME/Arduino/libraries
 - cp -r $TRAVIS_BUILD_DIR $HOME/Arduino/libraries/build
 - git clone https://github.com/bblanchon/ArduinoJson  $HOME/Arduino/libraries/ArduinoJson
+- git clone https://github.com/me-no-dev/ESPAsyncWebServer $HOME/Arduino/libraries/ESPAsyncWebServer
+- git clone https://github.com/me-no-dev/ESPAsyncTCP $HOME/Arduino/libraries/ESPAsyncTCP
 - cd $HOME/arduino_ide/hardware
 - mkdir esp8266com
 - cd esp8266com
@@ -38,16 +40,13 @@ notifications:
     on_failure: always
     on_start: false
 deploy:
+  provider: releases
+  api_key:
+    secure: vL2qs5lSTpLcFyY8SkmKGRmsEVvPeslmisGZlLX1xyrGXeZrdm4OlmTAJpgVQunSo6uCtrVWaUhUpl8gCtMqOpQTP3kh2hdZXsXNZ0yrZaVg8w75xN5OK10ypEMoaCAFSnaze3WjtZveSAKNVIq3EQYq7NwLpr6F4hZhJi+aMekDjYWEYSlhXWmgi58Duyj0AMnijcBGU2qlPYt1bNH+3R1RpLeAAuBfk/oIqtUdqcKniAkeY6rFdeYYGKZH5gs/87BeiuGbCxF+aRDUWyndJT3hlY36in3WTLpHzjC8qIuVIzagOe+Jiz8HezLWvbhqXYAcAdOdO7w4BKl0E4Q0uU5M00IjmJZ5Pg7d6IApupSqGO4YOHwb5R9C9ns63eYVedostjmGn5GvduZSVunH6jtOzBfIULxTKIIWdQHRCbUH/QoM7xD+p8+wBEyNUiid45qBE6Q1udkVStd8VjchttIRED71GJFpdeiz2ed98YwQInwa8Mu2kylCIYI/yeXgfdb3t10YYUrAwB81Wd4oG5/BVYUrLRKqGDx9CE+Wm2yz3QsiH0viIrH3R+vI/mG4BULguMBOEtfUG4OAuNiPCE5B/TO8Dip+5N9tmsJxoah6vtdzpDh4He7cNqFgWnBUxeXmNzO/059v05IHou8aBeN2mCSLqNP09SPWhHUzT4o=
+  file: build.tmp/*.bin
   on:
     repo: sticilface/ESPmanager
-    all_branches: true
-    #condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
-  skip_cleanup: true
-  provider: releases
-  overwrite: true
-  api_key:
-    secure: qW8TawLq2pACxAbNYtKG3D7A2BJ4K3El4RQ6UlvXJjsYZPY3NjsHSAPtI05v4G0OJatGgKjK885bFkoFr/TI7XzO9fh5srs2boDpr3pIJrJqPaP71oephgTM0/MS+7+dWV07NUtmBRS18Tub3pLQwOuta061HxbkXFgp+PokucQ5a257GYvELamhoHyHPSGDL7svaz95EKC6TipdptP4WWNTWu8YMYXQbfK7AEo+iMkDZKzMaoyWhRS0+MgDwvZDF8vxfU+4dNH7M45Tzius5ZEX30w2M+Z03ap3K+6GcNu3bhXAwhagbxic3N5cbuThWzt6Jm2WgibpfUkIxGuedzyz0i1aLwkWZNEodD6471gdb9TOBQyGtGe2eaYWvCDVhZksKfC7Ivar8gbSKjTHYv2XxUWt54ZWG/78HDKLSvXZSIZwGL4hazIL8PBgjzxcKx141EIIGskfO+MkiTIn1oXGdbNvutXgCqpLNFlI7K1SCD+m0MLGEb+HQiJRnYmZOkQRWcmBHmLJEDpeVk0nIP641+OAiGwfo3bKKPWJxYpFJwzTVtQA4wLt80PELjcYzCn/QHooRP+dOWNeZ4wWRVBv4amNRNrwsmdNQ9I2nM1KlHJ0cjuiKQg0/IuzfOZNTD+SbjblkwpA8u1R4+tSUbW1caytxyxyfzTKockbHLc=
-  file: "build.tmp/*.bin"
+    branch: ASYNC
 env:
   global:
   - secure: o6yfMMv8r+nJ5QeuXrVPTBNUHax0xTps9OYWun0i4IdgnBujFp+0SFnlQQYtjHtAiJ2DpRFRQJgxe94GhPn4E/NlkMvC+UX5ryu2KAJ4Ms3l0b5w/L7zd46NM1lV7U3nInfclMlq/e5XxkLa7lbQWIr4DlJ+cLXk8Ftw1N2UCvLuneqkZ9hxqh+6Vskc/qDkCbM3vyWTDFvIoP8cByWvRMnDIWShKxyyCdFZ46su1K/WuQAUXEVhH+//VV8X+1dcIjcwAqFHBuPNgPaxSh3kTuBl1vmddUpU6xDehDCaA/KSTcvd4F+qs6SJT87IDIHut7qRyGWUOs7A+01uEn69OhE6ZyXjW0iS2QUhiFMj5TO0LJ1wK987E3jo9+MpecFDuVWX/FT6p9EteSIaD13D8YHWNeZkoZDjq4vffmNaMa+xm6tyhOIorveS1tzSa3w0m8wi8Dm4J3LS40ZIhJ1KM6LzUVEHMawpqCaggqldLx8XHm9Ndch9BCwCRHf4Awwlzz8FY5BuGOBZp2Aq/n3jcBgw5iVWnDCzAShJw14F89Um4tdlFlk2t34Hp3H10fRK5UuxpmIgw61B9qpfPsVFBcSpfQ8wfIFWjOJsXJAMkNWGBc6eUCvRGjPfPXYOy233XZFnUtOwO/KP8ePojb8X30lZXNg1LGjVr87fAbvX8H4=
