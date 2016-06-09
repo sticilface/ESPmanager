@@ -3,10 +3,11 @@
 
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-//#include <ArduinoJson.h>
+#include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
 #include <MD5Builder.h>
 #include <AsyncJson.h>
+#include "FileFallbackHandler.h"
 
 
 extern "C" {
@@ -84,13 +85,13 @@ ESPmanager::~ESPmanager()
     }
 }
 
-void ESPmanager::_WiFiEventCallback(WiFiEvent_t event)
-{
+// void ESPmanager::_WiFiEventCallback(WiFiEvent_t event)
+// {
 
-    ESPMan_Debugf("[ESPmanager::WiFi Event] : %u\n", (uint8_t)event);
+//     ESPMan_Debugf("[ESPmanager::WiFi Event] : %u\n", (uint8_t)event);
 
 
-}
+// }
 
 using namespace std::placeholders;
 
@@ -101,10 +102,10 @@ void  ESPmanager::begin()
 
     wifi_set_sleep_type(NONE_SLEEP_T); // workaround no modem sleep.
 
-    uint32_t value = WiFi.onEvent( std::bind( &ESPmanager::_WiFiEventCallback, this, _1 ) );
+    //uint32_t value = WiFi.onEvent( std::bind( &ESPmanager::_WiFiEventCallback, this, _1 ) );
 
 
-    WiFi.removeEvent( value );
+    //WiFi.removeEvent( value );
 
 
     if (_fs.begin()) {
@@ -225,9 +226,9 @@ void  ESPmanager::begin()
 
 //   _HTTP.serveStatic("/jquery", _fs, "/jquery", "max-age=86400");
 
-    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.css", "/jquery/jqm1.4.5.css", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css",  "max-age=86400"));
-    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jq1.11.1.js" , "/jquery/jq1.11.1.js" ,   "http://code.jquery.com/jquery-1.11.1.min.js",  "max-age=86400"));
-    _HTTP.addHandler( new AsyncStaticPassThroughWebHandler(_fs, "/jquery/jqm1.4.5.js" , "/jquery/jqm1.4.5.js" ,   "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js",  "max-age=86400"));
+    _HTTP.addHandler( new FileFallbackHandler(_fs, "/jquery/jqm1.4.5.css", "/jquery/jqm1.4.5.css", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css",  "max-age=86400"));
+    _HTTP.addHandler( new FileFallbackHandler(_fs, "/jquery/jq1.11.1.js" , "/jquery/jq1.11.1.js" ,   "http://code.jquery.com/jquery-1.11.1.min.js",  "max-age=86400"));
+    _HTTP.addHandler( new FileFallbackHandler(_fs, "/jquery/jqm1.4.5.js" , "/jquery/jqm1.4.5.js" ,   "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js",  "max-age=86400"));
 
 
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));

@@ -42,7 +42,6 @@ To Upload
 
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
-#include "AsyncStaticPassThroughWebHandler.h"
 
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
@@ -107,7 +106,6 @@ class ESPmanager
 {
 public:
 	ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS, const char* host = NULL, const char* ssid = NULL, const char* pass = NULL);
-	enum version_state  { lower = -1, current = 0, higher = 1 };
 	~ESPmanager();
 	void begin();
 	void handle();
@@ -126,7 +124,8 @@ public:
 	static String _file_md5 (File& f);
 
 	void upgrade(String path); 
-
+	enum version_state  { lower = -1, current = 0, higher = 1, failed = 2 };
+	static version_state CheckVersion( String current, String check); 
 
 
 
@@ -155,7 +154,7 @@ private:
 	//void _NewFilesCheck();
 	void handleFileUpload();  // Thank to Me-No-Dev and the FSBrowser for this function .
 
-	void _WiFiEventCallback(WiFiEvent_t event); 
+//	void _WiFiEventCallback(WiFiEvent_t event); 
 
 	const char * C_null = "";
 
