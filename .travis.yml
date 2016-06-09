@@ -18,7 +18,7 @@ install:
     - git clone https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServer
     - cd /tmp/ESPAsyncWebServer
     - git checkout FileFallbackHandler
-    - mkdir /tmp/build"
+    - mkdir /tmp/build
 
 script:
     
