@@ -20,7 +20,7 @@ install:
 
 script:
     
-    - platformio ci --lib="." --lib="/tmp/ESPAsyncWebServer" --platform=espressif --framework=arduino --board=nodemcu
+    - platformio ci --lib="." --lib="/tmp/ESPAsyncWebServer" --board=nodemcu
 
 
 # platform = espressif
