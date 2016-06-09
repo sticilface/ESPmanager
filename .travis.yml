@@ -30,7 +30,7 @@ script:
 - arduino --board esp8266com:esp8266:generic --save-prefs
 - arduino --get-pref sketchbook.path
 #- build_sketches arduino $HOME/Arduino/libraries/build esp8266
-- build_sketches $HOME/arduino_ide $TRAVIS_BUILD_DIR/libraries "-l $HOME/Arduino/libraries"
+- build_sketches $HOME/arduino_ide  "-l $HOME/Arduino/libraries"
 notifications:
   email:
     on_success: change
