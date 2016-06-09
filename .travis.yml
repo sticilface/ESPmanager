@@ -9,6 +9,7 @@ cache:
         - "~/.platformio"
 
 env:
+
     - PLATFORMIO_CI_SRC=examples/ESPmanager-example/ESPmanager-example.ino
 
 install:
@@ -20,7 +21,7 @@ install:
 
 script:
     
-    - platformio ci --lib="." --lib="/tmp/ESPAsyncWebServer" --board=nodemcu
+    - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer" --board=nodemcu
 
 
 # platform = espressif
