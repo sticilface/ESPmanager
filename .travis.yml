@@ -57,10 +57,9 @@ deploy:
     repo: sticilface/ESPmanager
     branch: ASYNC
     tags: true
-  condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
-  
-  # provider: script
-  # script: $TRAVIS_BUILD_DIR/travis/deploy.sh
-  # on:
-  #   repo: sticilface/ESPmanager
-  #   all_branches: true
+  condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$  
+  provider: script
+  script: travis/deploy.sh
+  on:
+    repo: sticilface/ESPmanager
+    all_branches: true
