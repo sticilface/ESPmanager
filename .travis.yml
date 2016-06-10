@@ -31,6 +31,8 @@ script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success:
+  - pwd
+  - ls $TRAVIS_BUILD_DIR
 # - openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
 #   -in travis.enc -out /tmp/travis.key -d
 # - chmod 600 /tmp/travis.key
@@ -57,7 +59,7 @@ deploy:
   condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
   
   provider: script
-  script: sh $TRAVIS_BUILD/travis/deploy.sh
+  script: sh ./travis/deploy.sh
   on:
     repo: sticilface/ESPmanager
     all_branches: true
