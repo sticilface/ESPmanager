@@ -29,12 +29,12 @@ script:
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success:
 - openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
-  -in travis.enc -out ~\/.ssh/travis -d
+  -in travis.enc -out $HOME\travis.key -d
 - mkdir /tmp/package
 - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
 - cp -r "examples/ESPmanager-example/data" "/tmp/package/"
 - ls /tmp/package/
-- scp -i ~\/.ssh/travis "/tmp/packages/" "$HOME_USER@$HOME_IP:/~" 
+- scp -i $HOME\travis.key "/tmp/packages/" "$HOME_USER@$HOME_IP:/~" 
 deploy:
   provider: releases
   api_key:
