@@ -20,7 +20,7 @@ env:
 install:
 - pip install -U platformio
 - platformio lib install 64
-- git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer/tmp/ESPAsyncWebServer
+- git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServer
 - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
 - mkdir /tmp/build
 #- export PLATFORMIO_BUILD_FLAGS="-D GLOBAL_MACROS_FOR_ALL_TEST_ENV"
