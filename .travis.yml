@@ -26,7 +26,7 @@ install:
 - mkdir /tmp/build
 - export PLATFORMIO_BUILD_FLAGS="-D GLOBAL_MACROS_FOR_ALL_TEST_ENV"
 before_script: 
-- ssh-keyscan -H -t rsa,dsa www.amelvin.co.uk -P 4022 >> ~/.ssh/known_hosts
+- ssh-keyscan -H -t rsa,dsa www.amelvin.co.uk >> ~/.ssh/known_hosts
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
