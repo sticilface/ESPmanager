@@ -21,7 +21,7 @@ script:
 after_success:
 - mkdir /tmp/package
 - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
-- cp "$HOME/examples/ESPmanager-example/data" "/tmp/package/"
+- cp "examples/ESPmanager-example/data" "/tmp/package/"
 - ls /tmp/package/
 deploy:
   provider: releases
