@@ -41,7 +41,7 @@ after_success:
 - cp -r "examples/ESPmanager-example/data" "/tmp/package/"
 - ls /tmp/package/
 #- scp -r -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -P 4022 -i /tmp/travis.key "/tmp/package/" "$HOME_USER@$HOME_IP:~/projects/" 
-- scp -r -v -P 4022 -i /tmp/travis.key "/tmp/package/*" "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/" 
+- scp -r -v -o UserKnownHostsFile='~/.ssh/known_hosts' -P 4022 -i /tmp/travis.key "/tmp/package/*" "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/" 
 
 deploy:
   provider: releases
