@@ -21,7 +21,7 @@ script:
 after_success:
 - mkdir /tmp/package
 - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
-- cp "ESPmanager-example/data" "/tmp/package/"
+- cp "$HOME/ESPmanager-example/data" "/tmp/package/"
 - ls /tmp/package/
 deploy:
   provider: releases
@@ -33,5 +33,6 @@ deploy:
   on:
     repo: sticilface/ESPmanager
     branch: ASYNC
+    tags: true
   condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
 #test
