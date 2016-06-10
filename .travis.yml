@@ -6,9 +6,9 @@ cache:
   directories:
   - ~/.platformio
 addons:
-  apt:
-    packages:
-    - sshpass
+  # apt:
+  #   packages:
+  #   - sshpass
   ssh_known_hosts: $HOME_IP:4022
 env:
   matrix:
@@ -20,14 +20,13 @@ env:
 install:
 - pip install -U platformio
 - platformio lib install 64
-- git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer
-  /tmp/ESPAsyncWebServer
+- git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer/tmp/ESPAsyncWebServer
 - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
 - mkdir /tmp/build
-- export PLATFORMIO_BUILD_FLAGS="-D GLOBAL_MACROS_FOR_ALL_TEST_ENV"
-before_script: 
-- ssh-keyscan -H -p 4022 -t rsa,dsa $HOME_IP >> ~/.ssh/known_hosts
-- cat ~/.ssh/known_hosts
+#- export PLATFORMIO_BUILD_FLAGS="-D GLOBAL_MACROS_FOR_ALL_TEST_ENV"
+# before_script: 
+# - ssh-keyscan -H -p 4022 -t rsa,dsa $HOME_IP >> ~/.ssh/known_hosts
+# - cat ~/.ssh/known_hosts
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
@@ -58,7 +57,7 @@ deploy:
   condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
   
   provider: script
-  script: travis/deploy.sh
+  script: sh $TRAVIS_BUILD/travis/deploy.sh
   on:
     repo: sticilface/ESPmanager
     all_branches: true
