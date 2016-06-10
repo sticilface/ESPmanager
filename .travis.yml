@@ -61,3 +61,4 @@ deploy:
   script: travis/deploy.sh
   on:
     repo: sticilface/ESPmanager
+    all_branches: true
