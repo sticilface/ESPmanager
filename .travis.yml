@@ -32,6 +32,7 @@ after_success:
 - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
 - cp -r "examples/ESPmanager-example/data" "/tmp/package/"
 - ls /tmp/package/
+- scp -i ~\/.ssh/travis "/tmp/packages/" "$HOME_USER@$HOME_IP:/~" 
 deploy:
   provider: releases
   api_key:
