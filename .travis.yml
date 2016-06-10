@@ -33,6 +33,7 @@ script:
 after_success:
   - pwd
   - ls $TRAVIS_BUILD_DIR
+  - sh travis/deploy.sh
 # - openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
 #   -in travis.enc -out /tmp/travis.key -d
 # - chmod 600 /tmp/travis.key
@@ -58,8 +59,8 @@ deploy:
     tags: true
   condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
   
-  provider: script
-  script: $TRAVIS_BUILD_DIR/travis/deploy.sh
-  on:
-    repo: sticilface/ESPmanager
-    all_branches: true
+  # provider: script
+  # script: $TRAVIS_BUILD_DIR/travis/deploy.sh
+  # on:
+  #   repo: sticilface/ESPmanager
+  #   all_branches: true
