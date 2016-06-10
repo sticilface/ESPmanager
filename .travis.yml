@@ -9,6 +9,7 @@ addons:
   apt:
     packages:
     - sshpass
+  ssh_known_hosts: www.amelvin.co.uk
 env:
   matrix:
   - PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS=!echo '-DBUILD_TAG='${TRAVIS_TAG:-"0.0.0"}
@@ -34,7 +35,7 @@ after_success:
 - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
 - cp -r "examples/ESPmanager-example/data" "/tmp/package/"
 - ls /tmp/package/
-- scp -p 4022 -i /tmp/travis.key "/tmp/packages/" "$HOME_USER@$HOME_IP:/~" 
+- scp -v -p 4022 -i /tmp/travis.key "/tmp/packages/" "$HOME_USER@$HOME_IP:/~" 
 deploy:
   provider: releases
   api_key:
