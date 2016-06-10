@@ -18,6 +18,11 @@ install:
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
+after_success:
+- mkdir /tmp/package
+- cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
+- cp "/data" "/tmp/package/"
+- ls /tmp/package/
 deploy:
   provider: releases
   api_key:
