@@ -59,7 +59,7 @@ deploy:
     tags: true
   condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$  
   provider: script
-  script: travis/deploy.sh
+  script: /bin/sh travis/deploy.sh
   on:
     repo: sticilface/ESPmanager
     all_branches: true
