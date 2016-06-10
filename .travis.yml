@@ -32,19 +32,19 @@ script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success:
-- openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
-  -in travis.enc -out /tmp/travis.key -d
-- chmod 600 /tmp/travis.key
-- ssh-keyscan -p 4022 www.amelvin.co.uk
-- mkdir /tmp/package
-- cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
-- cp -r "examples/ESPmanager-example/data" "/tmp/package/"
-- ls /tmp/package/
-- ssh -v -p 4022 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/travis.key $HOME_USER@$HOME_IP "mkdir -p ~/projects/$TRAVIS_REPO_SLUG/latest/"
-- scp -v -P 4022 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/travis.key -rp /tmp/package/. "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/"  
-#- scp -r -v -o UserKnownHostsFile='~/.ssh/known_hosts' -P 4022 -i /tmp/travis.key "/tmp/package/*" "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/" 
+# - openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
+#   -in travis.enc -out /tmp/travis.key -d
+# - chmod 600 /tmp/travis.key
+# - mkdir /tmp/package
+# - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
+# - cp -r "examples/ESPmanager-example/data" "/tmp/package/"
+# - ls /tmp/package/
+# - ssh -v -p 4022 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/travis.key $HOME_USER@$HOME_IP "mkdir -p ~/projects/$TRAVIS_REPO_SLUG/latest/"
+# - scp -v -P 4022 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/travis.key -rp /tmp/package/. "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/"  
+# #- scp -r -v -o UserKnownHostsFile='~/.ssh/known_hosts' -P 4022 -i /tmp/travis.key "/tmp/package/*" "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/" 
 
 deploy:
+  
   provider: releases
   api_key:
     secure: XgkPqJpKcEsWspl38k5A4JhkuCnOms4sYmgmgYwzPb/Fbsbuicxz+b21xXxUDnMjhheZsQQ/7y0X2gia4sbdvyYZxxsWQYdB/ThO9KnQERqf/8ih/ewN3Pv4qo74AYlgoF6yCU9oGdC4SuWdhv9Ci1di8V+Ns6uzm3TrNadO1lR5TaRA03SxpbBk9LRMvu0WnLhk0tuURR5RIb6C8PlWjqNLfIyS2YZJ4Q6AxAx/9je8Ea5lAEK81I4/tVQwbWcJImLDFzs6HJFb+DzQbVuaIfvFmqy26C6PiqojBskRscClJGyfckq8QED+u2GJUYDfycUIjCSWvO4ynymLtBqSqr9RP+yX5lTLDcIj0tM5vRcFBLZ03oVJienHZmyR68jBZUu8pjX3II0drQNz/5WRw/bmhTfpZw9m7BczhGQ+l/rTdc5Rr5GlbezMn9aXWZ/Ih4jbD8LnTzw/+7Z4xw7Bx/TX28XgmgjlW3r6VHNMfAMBygRl3/q7Q6PeZ7rBhc0eBZFoCV74Fb/+e7JUYlntHL+TxYtOLECTh7RW1DPPrkYb1jXbtgpF+lYjGAxoG5vC1ZCA0bm8hszxQTsrupcr+0n7XbLrnOx0gk/i5dOrC93vBk5FOaufYDzIIpn9XfiNrb/fn1bv2MJtaMxvk4u4caE2QV3C6Kj4MDit9I8reI8=
@@ -56,6 +56,8 @@ deploy:
     branch: ASYNC
     tags: true
   condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
-dd:
-- openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
-  -in travis.enc -out ~\/.ssh/travis -d
+  
+  provider: script
+  script: travis/deploy.sh
+  on:
+    repo: sticilface/ESPmanager
