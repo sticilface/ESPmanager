@@ -38,19 +38,23 @@ List = []
 index = 0; 
 
 # Set the directory you want to start from
+
+
 rootDir = sys.argv[1]
 for dirName, subdirList, fileList in os.walk(rootDir):
 	if not dirName.startswith('.'):
 		for fname in fileList:
 			if not fname.startswith('.'):
+				relPath = os.path.relpath( dirName + "/" + fname, rootDir)
+				# print("RelPath = " + relPath)
 				item = {}
 				item["index"] = index    		
 				index = index + 1
-				item["location"] = dirName + "/" + fname
+				item["location"] = relPath
 				item["isurl"] = False
 				item["md5"] = md5(dirName + "/" + fname) 
 				if not fname.endswith(".bin"):
-					item["saveto"] = dirName + "/" + fname   			    				 
+					item["saveto"] = "/" + relPath   			    				 
 				else:
 					item["saveto"] = "sketch"
 				List.append(item) 
