@@ -40,7 +40,7 @@ index = 0;
 # Set the directory you want to start from
 
 
-rootDir = sys.argv[1]
+rootDir = sys.argv[1] + "/data"
 for dirName, subdirList, fileList in os.walk(rootDir):
 	if not dirName.startswith('.'):
 		for fname in fileList:
@@ -59,7 +59,15 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 					item["saveto"] = "sketch"
 				List.append(item) 
 
+binary = {}
+binary["index"] = index  
+binary["location"] = "firmware.bin"
+binary["saveto"] = "sketch"
+binary["md5"] = md5(sys.argv[1]  + "/firmware.bin")
+List.append(binary) 
+
 data["files"] = List 
+data["filecount"] = index
 
 print(json.dumps(data, sort_keys=False, indent=4))
 with open(sys.argv[2], 'w') as outfile:
