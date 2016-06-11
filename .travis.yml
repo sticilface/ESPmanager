@@ -17,6 +17,12 @@ env:
   - secure: xKmrlZd8sdPkU9vg6v1jMbo4wzCg+fiLH65Z3a2TYrqYHudBZYSJ7e9PwmEY0TAnvgK+dkDY3dvCZMyqQNd2u6o6MsoKMakzPbNQtvzijasc/cQklPLeaPtL4dgluk/k3NIpvRBHKS/XeCzxYDgqGchkKIY+mwP2qYyzLGYQ1zElrqL0g+W5WLCxBOeOj5JBQvj/WWyZpySwTV15zoZu5kseIFBTZQfZaX85yCMMEwWIM1wAjPnhHlvZhXhqdlkTjBw1sEHxN7mgpDAAJRVp/pThNVAAKWznNl+tYFqH+/BvUih0WrsZM0IMOTKpr/5BEmcS0TKnL9T/AtsT0GDWG+QEiJX9Hxt5RbVxvl1h5x8T4uhaM0cCNPUnSZ2FH3qXb2SEBybWBtxBPhQwxlhTcFHfbrgsO8WSkYpDv4qnLgCBI3zDVshVydeDWZBFpluzlrd7xcntEuU0z7r0DQbsK1xmCgITFU0iWvUS8heXGOvj+qNr+38JV7HEXhzNFIyMH2kJT8KSFuLOTAnX1iCYamWie3wIO2Az8NxsX5O2awyy5EbIjZiuI6OPkgeH95YXcahWYf0An2Ga5jSRrpVQwxxexJfaMOu8TZQ/AVO5vwa1TFfHJdzp8eJbivZ9Wl65SX6caAwCFkpfe/I2Jz+s6ks9Pw3djSw5dvG6Mh1F9UU=
   - secure: qzq1Gv5y7THaap42xu+kft1SpclpkA9+uLECIDXcArT+Qd/vHBe34M40WbJA85/AN8Ry9d+JspOE/mduJTCIbu9HrHTYZzRzqTIfQRGoDsqSHGOgGUXWgQ2iit9psoxrGf89pqAeZ98wpnxAcozfNeqIiN3oO1J+z5cs44tPSPTqY22tK2qUrPNGnEJJ/vQn3S2PHe4gZYGqqOM60PnCWbldC0TTB8ZEAAzdoegoBjAH5rK3qwvlEMghO/E1A4Nh68lxfb1u4KzRit+oVYnSjDXIRM1XSxmfR6Vl45MHWCXwMj2UH9uDMyqg5XcwoBzjE/Xx4/Y+rZ08FfvYbzNWXepoNw1CZKpgN4U20PHN7xO27rJGH4xV2+CbJ+6O6CpMrGJ2g4+Fhf3qg8ALAkdjNdvcrvTDIlMICGq3XVB+UygTxAN/EBNu+j0Rnki8PsjhLIieh5R54H9wQyFDPgjw9bO0JxtmMBEVL156RD14wzsDqW0nhd8kr20Pxvo2HdwV+mt3hMPXvxfrrQEF+n0T2vr1rxDpbA49oA0BStwwcNMVu4BuCGdl2bssGH3zGJpgvTZkyke9MMeaLLNH/tLQgnExjpP0m/x7IIuTlq0KgZiH3+UzMZR2256uafrG066gjzsuKlG/3OHK3VtlSLHE6w6LndSNUtA5FTZWkXOjiiY=
   - secure: SuhwQGRiG42TQwnMzdJ2l4JxRA53p/H+BCV7itaMfESQvCEDTCWo2+bTZ+f/MTbpUnkR2MAynVv4XHsOPvkVxgpgvMlZAXmHEDMkq/3bYbT3vpFV69u5BuXZ1qt5yLIFs4U+KBxajxTrsJVkGhGwuX+FcBf/02lj7dvI+1MYxWio4/exFkwMQblpXzjYquor5nPjpWZNOj4p+13AaoWv0qwSmxl6Wp958l5WYS6DhMdTtEl/lI+IoQGUHlL6IY01S9DCP363fy2UVuHDYR+DK6fxnbG/A++oYz6DmWFtk+ORHnGGXUZty6Qb0zBG9fHYLz/1ApOPjysytaDdgAYFgnn+3u8QRXWiTEf6kVaCfAHyOEll7JDA+nYqs67rKMRjejwOrnLJERZQN+51IU0YRnbFB8/kXvWX3tznfZDbfWAVyOGPaIWXB6J+zkk+ej+TjJyJ2BzaCAFxHgpIKqR4lVuPMoWYr62fGtNwaNp2PaIk40EofP09IMvXa8kK57N47q6iMX8qgbM8AiPgL2SesKVN9hedPtJ57x6iZMR7f8U4PGiiWPA7NPJ1WZHk/B+EUtO5o1fwDyPMNhUeVmCXrcYlH7zakrPdAIq4m7XzKYprveWxLsW6+gELzl9lFltba1YkVU6QUJj/3EnpRKWTIykggnQdeY1QNYJ2w51QaE4=
+  - MY_NAME="ESPmanager"
+  - MY_VERSION="1.0.0"
+  - MY_URL="http://sticilface.co.uk"
+  - MY_ROOT="root"
+  - MY_AUTHOR="sticilface"
+
 install:
 - pip install -U platformio
 - platformio lib install 64
@@ -31,9 +37,7 @@ script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success:
-  - pwd
-  - ls $TRAVIS_BUILD_DIR
-  - sh travis/deploy.sh
+
 # - openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
 #   -in travis.enc -out /tmp/travis.key -d
 # - chmod 600 /tmp/travis.key
