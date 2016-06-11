@@ -37,7 +37,7 @@ List = []
 
 index = 0; 
 
-# Set the directory you want to start from
+# Set the directory you want to start from..  all stuff for SPIFFS is in the ./data directory.. 
 
 
 rootDir = sys.argv[1] + "/data"
@@ -46,11 +46,12 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 		for fname in fileList:
 			if not fname.startswith('.'):
 				relPath = os.path.relpath( dirName + "/" + fname, rootDir)
+				locPath = os.path.relpath( dirName + "/" + fname, sys.argv[1])
 				# print("RelPath = " + relPath)
 				item = {}
 				item["index"] = index    		
 				index = index + 1
-				item["location"] = relPath
+				item["location"] = locPath
 				item["isurl"] = False
 				item["md5"] = md5(dirName + "/" + fname) 
 				if not fname.endswith(".bin"):
@@ -58,6 +59,8 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 				else:
 					item["saveto"] = "sketch"
 				List.append(item) 
+
+# add the binary
 
 binary = {}
 binary["index"] = index  
