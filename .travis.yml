@@ -44,13 +44,19 @@ before_deploy:
 skip_cleanup: true
 
 deploy:
-  provider: script
+  - provider: script
   on:
     repo: sticilface/ESPmanager
     all_branches: true
   file: /tmp/build/.pioenvs/nodemcu/firmware.bin
-  script: /bin/sh travis/deploy.sh
-
+  script: /bin/sh travis/deploy.sh latest
+  - provider: script
+  on:
+    repo: sticilface/ESPmanager
+    all_branches: true
+    tags : true
+  file: /tmp/build/.pioenvs/nodemcu/firmware.bin
+  script: /bin/sh travis/deploy.sh stable
 
 
 
