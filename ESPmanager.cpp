@@ -19,6 +19,7 @@ extern "C" {
 #define ESCAPEQUOTE(A) TEXTIFY(A)
 
 String buildTag = ESCAPEQUOTE(BUILD_TAG);
+String commitTag = ESCAPEQUOTE(TRAVIS_COMMIT);
 
 
 ESPmanager::ESPmanager(
@@ -105,6 +106,10 @@ void  ESPmanager::begin()
 {
 
     ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
+    ESPMan_Debugf("BuildTag: %s\n",  buildTag.c_str() );
+    ESPMan_Debugf("commitTag: %s\n",  commitTag.c_str() );
+
+    
 
     wifi_set_sleep_type(NONE_SLEEP_T); // workaround no modem sleep.
 
