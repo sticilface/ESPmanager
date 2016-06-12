@@ -18,8 +18,14 @@ extern "C" {
 #define TEXTIFY(A) #A
 #define ESCAPEQUOTE(A) TEXTIFY(A)
 
-String buildTag = ESCAPEQUOTE(BUILD_TAG);
+//String buildTag = ESCAPEQUOTE(BUILD_TAG);
 String commitTag = ESCAPEQUOTE(TRAVIS_COMMIT);
+
+#ifndef BUILD_TAG
+    #define BUILD_TAG "0.0.0"
+#endif
+
+const char * buildTag = BUILD_TAG; 
 
 
 ESPmanager::ESPmanager(
@@ -106,7 +112,7 @@ void  ESPmanager::begin()
 {
 
     ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
-    ESPMan_Debugf("BuildTag: %s\n",  buildTag.c_str() );
+    ESPMan_Debugf("BuildTag: %s\n",  buildTag );
     ESPMan_Debugf("commitTag: %s\n",  commitTag.c_str() );
 
     
