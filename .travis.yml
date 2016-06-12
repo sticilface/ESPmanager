@@ -6,53 +6,37 @@ cache:
   directories:
   - ~/.platformio
 addons:
-  # apt:
-  #   packages:
-  #   - sshpass
   ssh_known_hosts: $HOME_IP:4022
 env:
   matrix:
-  - PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS=!echo '-DBUILD_TAG='${TRAVIS_TAG:-"0.0.0"}
+  - PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS=!echo '-DBUILD_TAG='${TRAVIS_TAG:-"0.0.0"} -DTRAVIS_COMMIT=$TRAVIS_COMMIT
   global:
   - secure: xKmrlZd8sdPkU9vg6v1jMbo4wzCg+fiLH65Z3a2TYrqYHudBZYSJ7e9PwmEY0TAnvgK+dkDY3dvCZMyqQNd2u6o6MsoKMakzPbNQtvzijasc/cQklPLeaPtL4dgluk/k3NIpvRBHKS/XeCzxYDgqGchkKIY+mwP2qYyzLGYQ1zElrqL0g+W5WLCxBOeOj5JBQvj/WWyZpySwTV15zoZu5kseIFBTZQfZaX85yCMMEwWIM1wAjPnhHlvZhXhqdlkTjBw1sEHxN7mgpDAAJRVp/pThNVAAKWznNl+tYFqH+/BvUih0WrsZM0IMOTKpr/5BEmcS0TKnL9T/AtsT0GDWG+QEiJX9Hxt5RbVxvl1h5x8T4uhaM0cCNPUnSZ2FH3qXb2SEBybWBtxBPhQwxlhTcFHfbrgsO8WSkYpDv4qnLgCBI3zDVshVydeDWZBFpluzlrd7xcntEuU0z7r0DQbsK1xmCgITFU0iWvUS8heXGOvj+qNr+38JV7HEXhzNFIyMH2kJT8KSFuLOTAnX1iCYamWie3wIO2Az8NxsX5O2awyy5EbIjZiuI6OPkgeH95YXcahWYf0An2Ga5jSRrpVQwxxexJfaMOu8TZQ/AVO5vwa1TFfHJdzp8eJbivZ9Wl65SX6caAwCFkpfe/I2Jz+s6ks9Pw3djSw5dvG6Mh1F9UU=
   - secure: qzq1Gv5y7THaap42xu+kft1SpclpkA9+uLECIDXcArT+Qd/vHBe34M40WbJA85/AN8Ry9d+JspOE/mduJTCIbu9HrHTYZzRzqTIfQRGoDsqSHGOgGUXWgQ2iit9psoxrGf89pqAeZ98wpnxAcozfNeqIiN3oO1J+z5cs44tPSPTqY22tK2qUrPNGnEJJ/vQn3S2PHe4gZYGqqOM60PnCWbldC0TTB8ZEAAzdoegoBjAH5rK3qwvlEMghO/E1A4Nh68lxfb1u4KzRit+oVYnSjDXIRM1XSxmfR6Vl45MHWCXwMj2UH9uDMyqg5XcwoBzjE/Xx4/Y+rZ08FfvYbzNWXepoNw1CZKpgN4U20PHN7xO27rJGH4xV2+CbJ+6O6CpMrGJ2g4+Fhf3qg8ALAkdjNdvcrvTDIlMICGq3XVB+UygTxAN/EBNu+j0Rnki8PsjhLIieh5R54H9wQyFDPgjw9bO0JxtmMBEVL156RD14wzsDqW0nhd8kr20Pxvo2HdwV+mt3hMPXvxfrrQEF+n0T2vr1rxDpbA49oA0BStwwcNMVu4BuCGdl2bssGH3zGJpgvTZkyke9MMeaLLNH/tLQgnExjpP0m/x7IIuTlq0KgZiH3+UzMZR2256uafrG066gjzsuKlG/3OHK3VtlSLHE6w6LndSNUtA5FTZWkXOjiiY=
   - secure: SuhwQGRiG42TQwnMzdJ2l4JxRA53p/H+BCV7itaMfESQvCEDTCWo2+bTZ+f/MTbpUnkR2MAynVv4XHsOPvkVxgpgvMlZAXmHEDMkq/3bYbT3vpFV69u5BuXZ1qt5yLIFs4U+KBxajxTrsJVkGhGwuX+FcBf/02lj7dvI+1MYxWio4/exFkwMQblpXzjYquor5nPjpWZNOj4p+13AaoWv0qwSmxl6Wp958l5WYS6DhMdTtEl/lI+IoQGUHlL6IY01S9DCP363fy2UVuHDYR+DK6fxnbG/A++oYz6DmWFtk+ORHnGGXUZty6Qb0zBG9fHYLz/1ApOPjysytaDdgAYFgnn+3u8QRXWiTEf6kVaCfAHyOEll7JDA+nYqs67rKMRjejwOrnLJERZQN+51IU0YRnbFB8/kXvWX3tznfZDbfWAVyOGPaIWXB6J+zkk+ej+TjJyJ2BzaCAFxHgpIKqR4lVuPMoWYr62fGtNwaNp2PaIk40EofP09IMvXa8kK57N47q6iMX8qgbM8AiPgL2SesKVN9hedPtJ57x6iZMR7f8U4PGiiWPA7NPJ1WZHk/B+EUtO5o1fwDyPMNhUeVmCXrcYlH7zakrPdAIq4m7XzKYprveWxLsW6+gELzl9lFltba1YkVU6QUJj/3EnpRKWTIykggnQdeY1QNYJ2w51QaE4=
+  - secure: EklQvDoISuwJNf2Z46RUf/nAjK2AkvFVTOYVY7gdYKfpv/Iuc89DDpHc+ZdDhPPC5haXqPR+aECm5TmO170TfvSjgYordjJYkkhcrLDsJn+9Ioap9m7Ot2mN9y6HrLbRm44Wn8LzZSNHi5HsPLas5S8ipNUqm399LKoScM/dXirSjFr33s8vzmS0rn/I491R+k6XK5PXzWbjcuP7yrSlXY2wNOHU0BLjqSEo5rFclI/FHz95dC4SvVUnZGRenvqhQ9VB2DmE0RuzW+h5ERX746wOxGDwTYUfrZLOt3BJrRc2BQicAEq1URUkqFzPxCL9LKazzjtB4rPgArYTc8X6OiajMyvhbL/OMj8Ge71ch0inRKlR75baKTYO8ycmoxh4DpkeGwJDOwbkNvYFcZTowQhDgrfWu+fVqsu6hTkUJc449FNh/j9jyhPoDgKHVjMcla/qE3Zv/SAMLH/8vHsDa5EFsjbF67LXP7bqwQnpeGGEoJfzT461q43TufHaQ0QNGujnQcf5eGCLAbus1hbptK3x2Z83ZFz9JJi78FHsyrsthxBsuHW4gnrOf4rHukz1/xXcX8Ib9lOpeftYbTr3GUEJZmJV4n5rfip+Z2IjlvW5aIYxwhJo3QnXInyd61llAkz1d2h+JKp9OUiMX3m2CnUENjchLCJ/bAS/ROfn/EY=
+
   - MY_NAME="ESPmanager"
   - MY_VERSION="1.0.0"
   - MY_URL="http://sticilface.co.uk"
   - MY_ROOT="root"
   - MY_AUTHOR="sticilface"
-  - DEBUG_ESP_PORT=Serial
-
+  
 install:
 - pip install -U platformio
 - platformio lib install 64
-- git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer /tmp/ESPAsyncWebServer
+- git clone --recursive -b FileFallbackHandler https://github.com/sticilface/ESPAsyncWebServer
+  /tmp/ESPAsyncWebServer
 - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
 - mkdir /tmp/build
-#- export PLATFORMIO_BUILD_FLAGS="-D GLOBAL_MACROS_FOR_ALL_TEST_ENV"
-# before_script: 
-# - ssh-keyscan -H -p 4022 -t rsa,dsa $HOME_IP >> ~/.ssh/known_hosts
-# - cat ~/.ssh/known_hosts
+# enable debugging 
+- export PLATFORMIO_BUILD_FLAGS="-DDEBUG_ESP_PORT=Serial" # Debug to Serial 
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
-after_success:
-
-# - openssl aes-256-cbc -K $encrypted_5d8775c46482_key -iv $encrypted_5d8775c46482_iv
-#   -in travis.enc -out /tmp/travis.key -d
-# - chmod 600 /tmp/travis.key
-# - mkdir /tmp/package
-# - cp "/tmp/build/.pioenvs/nodemcu/firmware.bin" "/tmp/package/"
-# - cp -r "examples/ESPmanager-example/data" "/tmp/package/"
-# - ls /tmp/package/
-# - ssh -v -p 4022 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/travis.key $HOME_USER@$HOME_IP "mkdir -p ~/projects/$TRAVIS_REPO_SLUG/latest/"
-# - scp -v -P 4022 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /tmp/travis.key -rp /tmp/package/. "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/"  
-# #- scp -r -v -o UserKnownHostsFile='~/.ssh/known_hosts' -P 4022 -i /tmp/travis.key "/tmp/package/*" "$HOME_USER@$HOME_IP:~/projects/$TRAVIS_REPO_SLUG/latest/" 
-
+after_success: 
 deploy:
-  
-  provider: releases
+  provider: script
   api_key:
     secure: XgkPqJpKcEsWspl38k5A4JhkuCnOms4sYmgmgYwzPb/Fbsbuicxz+b21xXxUDnMjhheZsQQ/7y0X2gia4sbdvyYZxxsWQYdB/ThO9KnQERqf/8ih/ewN3Pv4qo74AYlgoF6yCU9oGdC4SuWdhv9Ci1di8V+Ns6uzm3TrNadO1lR5TaRA03SxpbBk9LRMvu0WnLhk0tuURR5RIb6C8PlWjqNLfIyS2YZJ4Q6AxAx/9je8Ea5lAEK81I4/tVQwbWcJImLDFzs6HJFb+DzQbVuaIfvFmqy26C6PiqojBskRscClJGyfckq8QED+u2GJUYDfycUIjCSWvO4ynymLtBqSqr9RP+yX5lTLDcIj0tM5vRcFBLZ03oVJienHZmyR68jBZUu8pjX3II0drQNz/5WRw/bmhTfpZw9m7BczhGQ+l/rTdc5Rr5GlbezMn9aXWZ/Ih4jbD8LnTzw/+7Z4xw7Bx/TX28XgmgjlW3r6VHNMfAMBygRl3/q7Q6PeZ7rBhc0eBZFoCV74Fb/+e7JUYlntHL+TxYtOLECTh7RW1DPPrkYb1jXbtgpF+lYjGAxoG5vC1ZCA0bm8hszxQTsrupcr+0n7XbLrnOx0gk/i5dOrC93vBk5FOaufYDzIIpn9XfiNrb/fn1bv2MJtaMxvk4u4caE2QV3C6Kj4MDit9I8reI8=
   file: /tmp/build/.pioenvs/nodemcu/firmware.bin
@@ -60,11 +44,9 @@ deploy:
   overwrite: true
   on:
     repo: sticilface/ESPmanager
-    branch: ASYNC
-    tags: true
-  condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$  
-  provider: script
-  script: /bin/sh travis/deploy.sh
-  on:
-    repo: sticilface/ESPmanager
     all_branches: true
+  condition: $TRAVIS_TAG =~ ^[0-9]+\.[0-9]+\.[0-9]+$
+  script: /bin/sh travis/deploy.sh
+  notifications: 
+  email:
+  - PROWLEMAIL
