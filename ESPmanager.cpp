@@ -1133,9 +1133,10 @@ void ESPmanager::upgrade(String path)
                 String filename = item["saveto"];
                 String commit = root["commit"];
 
-                if (commit != String(commitTag)) {
 
-                    if (remote_path.endsWith("bin") && filename == "sketch" ) {
+
+                if (remote_path.endsWith("bin") && filename == "sketch" ) {
+                    if (commit != String(commitTag)) {
 
                         ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
 
@@ -1158,10 +1159,10 @@ void ESPmanager::upgrade(String path)
                         }
 
                         return ; // shouldn't get here...
+                    } else {
+                        ESPMan_Debugf("SKETCH HAS SAME COMMIT (%s)\n", commitTag  );
+
                     }
-                } else {
-                         ESPMan_Debugf("SKETCH HAS SAME COMMIT (%s)\n", commitTag  );
-                   
                 }
             }
         }
