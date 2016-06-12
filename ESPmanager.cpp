@@ -15,8 +15,8 @@ extern "C" {
 }
 
 // Stringifying the BUILD_TAG parameter
-// #define TEXTIFY(A) #A
-// #define ESCAPEQUOTE(A) TEXTIFY(A)
+ #define TEXTIFY(A) #A
+ #define ESCAPEQUOTE(A) TEXTIFY(A)
 
 // //String buildTag = ESCAPEQUOTE(BUILD_TAG);
 // String commitTag = ESCAPEQUOTE(TRAVIS_COMMIT);
@@ -24,13 +24,14 @@ extern "C" {
 #ifndef BUILD_TAG
     #define BUILD_TAG "Not Set"
 #endif
+
 #ifndef COMMIT_TAG
     #define COMMIT_TAG "Not Set"
 #endif
 
 
-const char * buildTag = BUILD_TAG; 
-const char * commitTag = COMMIT_TAG; 
+const char * buildTag = ESCAPEQUOTE(BUILD_TAG); 
+const char * commitTag = ESCAPEQUOTE(COMMIT_TAG); 
 
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs, const char* host, const char* ssid, const char* pass)
