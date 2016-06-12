@@ -25,7 +25,7 @@ env:
   - MY_ROOT="root"
   - MY_AUTHOR="sticilface"
 addons:
-  ssh_known_hosts: $HOME_IP:4022
+  ssh_known_hosts: www.amelvin.co.uk:4022
 install:
 - pip install -U platformio
 - platformio lib install 64
@@ -34,7 +34,7 @@ install:
 - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
 - mkdir /tmp/build
 # enable debugging 
-#- export PLATFORMIO_BUILD_FLAGS="-DDEBUG_ESP_PORT=Serial" # Debug to Serial 
+- export PLATFORMIO_BUILD_FLAGS="-DDEBUG_ESP_PORT=Serial" # Debug to Serial 
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
