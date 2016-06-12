@@ -40,6 +40,9 @@ script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success: 
+  before_deploy:
+    skip_cleanup: true
+
   deploy:
     provider: script
     on:
