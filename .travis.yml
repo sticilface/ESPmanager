@@ -40,16 +40,16 @@ script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success: 
-  before_deploy:
-    skip_cleanup: true
+before_deploy:
+  skip_cleanup: true
 
-  deploy:
-    provider: script
-    on:
-      repo: sticilface/ESPmanager
-      all_branches: true
-    file: /tmp/build/.pioenvs/nodemcu/firmware.bin
-    script: /bin/sh travis/deploy.sh
+deploy:
+  provider: script
+  on:
+    repo: sticilface/ESPmanager
+    all_branches: true
+  file: /tmp/build/.pioenvs/nodemcu/firmware.bin
+  script: /bin/sh travis/deploy.sh
 
 
 
