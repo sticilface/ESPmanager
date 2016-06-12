@@ -1041,7 +1041,11 @@ void ESPmanager::upgrade(String path)
     int files_recieved = 0;
     int file_count = 0;
     DynamicJsonBuffer jsonBuffer;
-    String rooturi = String();
+    
+    String rooturi = path.substring(0, path.lastIndexOf('/') ); 
+
+    ESPMan_Debugf("[ESPmanager::upgrade] rooturi=%s\n", rooturi.c_str()); 
+
 
     JsonObject * p_root = nullptr;
     uint8_t * buff = nullptr;
@@ -1071,16 +1075,24 @@ void ESPmanager::upgrade(String path)
         }
 
 
-        if (root.containsKey("rooturi")) {
-            ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Using root uri : %s\n" , rooturi.c_str());
-            rooturi = String(root["rooturi"].asString());
-        }
+        // if (root.containsKey("rooturi")) {
+        //     ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Using root uri : %s\n" , rooturi.c_str());
+        //     rooturi = String(root["rooturi"].asString());
+        // }
 
 
         for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
             file_count++;
             JsonObject& item = *it;
-            String remote_path = rooturi + String(item["location"].asString());
+            String remote_path = String();
+
+            //  if the is url is set to true then don't prepend the rootUri... 
+            if (item["isurl"] == true) {
+                remote_path = String(item["location"].asString()); 
+            } else {
+                remote_path = rooturi + String(item["location"].asString());
+            }
+             
             const char* md5 = item["md5"];
             String filename = item["saveto"];
 

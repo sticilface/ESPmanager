@@ -51,7 +51,7 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 				item = {}
 				item["index"] = index    		
 				index = index + 1
-				item["location"] =  locPath
+				item["location"] =  "/" + locPath
 				item["isurl"] = False
 				item["md5"] = md5(dirName + "/" + fname) 
 				if not fname.endswith(".bin"):
