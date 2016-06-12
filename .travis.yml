@@ -22,6 +22,7 @@ env:
   - MY_URL="http://sticilface.co.uk"
   - MY_ROOT="root"
   - MY_AUTHOR="sticilface"
+  - DEBUG_ESP_PORT=Serial
 
 install:
 - pip install -U platformio
