@@ -41,7 +41,7 @@ script:
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
 after_success: 
 before_deploy:
-  skip_cleanup: true
+skip_cleanup: true
 
 deploy:
   provider: script
