@@ -5,8 +5,7 @@ sudo: false
 cache:
   directories:
   - ~/.platformio
-addons:
-  ssh_known_hosts: $HOME_IP:4022
+
 env:
   matrix:
   # - PLATFORMIO_CI_SRC=examples/ESPmanager-example PLATFORMIO_BUILD_FLAGS= "-D BUILD_TAG=$TRAVIS_TAG -D TRAVIS_COMMIT=$TRAVIS_COMMIT"
@@ -25,7 +24,8 @@ env:
   - MY_URL="http://sticilface.co.uk"
   - MY_ROOT="root"
   - MY_AUTHOR="sticilface"
-  
+addons:
+  ssh_known_hosts: $HOME_IP:4022
 install:
 - pip install -U platformio
 - platformio lib install 64
@@ -34,7 +34,7 @@ install:
 - git clone --recursive  https://github.com/me-no-dev/ESPAsyncTCP /tmp/ESPAsyncTCP
 - mkdir /tmp/build
 # enable debugging 
-- export PLATFORMIO_BUILD_FLAGS="-DDEBUG_ESP_PORT=Serial" # Debug to Serial 
+#- export PLATFORMIO_BUILD_FLAGS="-DDEBUG_ESP_PORT=Serial" # Debug to Serial 
 script:
 - platformio ci --build-dir="/tmp/build" --keep-build-dir --lib="." --lib="/tmp/ESPAsyncWebServer"
   --lib="/tmp/ESPAsyncTCP" --board=nodemcu
