@@ -64,7 +64,7 @@ for dirName, subdirList, fileList in os.walk(rootDir):
 
 binary = {}
 binary["index"] = index  
-binary["location"] = "firmware.bin"
+binary["location"] = "/firmware.bin"
 binary["saveto"] = "sketch"
 binary["md5"] = md5(sys.argv[1]  + "/firmware.bin")
 List.append(binary) 
