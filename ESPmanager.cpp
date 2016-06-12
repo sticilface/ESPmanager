@@ -24,14 +24,20 @@ extern "C" {
 #ifndef BUILD_TAG
     #define BUILD_TAG "Not Set"
 #endif
-
 #ifndef COMMIT_TAG
     #define COMMIT_TAG "Not Set"
 #endif
-
+#ifndef BRANCH_TAG
+    #define BRANCH_TAG "Not Set"
+#endif
+#ifndef SLUG_TAG
+    #define SLUG_TAG "Not Set"
+#endif
 
 const char * buildTag = ESCAPEQUOTE(BUILD_TAG); 
 const char * commitTag = ESCAPEQUOTE(COMMIT_TAG); 
+const char * branchTag = ESCAPEQUOTE(BRANCH_TAG);
+const char * slugTag = ESCAPEQUOTE(SLUG_TAG); 
 
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs, const char* host, const char* ssid, const char* pass)
@@ -117,6 +123,8 @@ void  ESPmanager::begin()
 {
 
     ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
+    ESPMan_Debugf("REPO: %s\n",  slugTag );
+    ESPMan_Debugf("BRANCH: %s\n",  branchTag );
     ESPMan_Debugf("BuildTag: %s\n",  buildTag );
     ESPMan_Debugf("commitTag: %s\n",  commitTag ) ;
 
