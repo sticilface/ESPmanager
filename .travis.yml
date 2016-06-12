@@ -42,12 +42,12 @@ script:
 after_success: 
   deploy:
     provider: script
-      on:
-        repo: sticilface/ESPmanager
-        all_branches: true
-      file: /tmp/build/.pioenvs/nodemcu/firmware.bin
-      script: /bin/sh travis/deploy.sh
-      
+    on:
+      repo: sticilface/ESPmanager
+      all_branches: true
+    file: /tmp/build/.pioenvs/nodemcu/firmware.bin
+    script: /bin/sh travis/deploy.sh
+
 
 
 
