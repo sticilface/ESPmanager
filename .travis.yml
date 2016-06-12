@@ -53,7 +53,7 @@ deploy:
   on:
     repo: sticilface/ESPmanager
     all_branches: true
-  tags : true
+    tags : true
   file: /tmp/build/.pioenvs/nodemcu/firmware.bin
   script: /bin/sh travis/deploy.sh stable
 
