@@ -1,5 +1,8 @@
 [![Build Status](https://travis-ci.org/sticilface/ESPmanager.svg?branch=master)](https://travis-ci.org/sticilface/ESPmanager)
 
+#IMPORTANT
+- Any objections to merging the async webserver lib to this? Please file an issue.  I don't seem to have got the hang of cerry picking to merge bugfixes back from the async branch to this... so it needs to just be a merge.  That will break many sketches if they are not using async though... comments welcome? 
+
 # ESPmanager
 Full wifi and OTA manager for ESP8266 Arduino IDE
 
