@@ -5,7 +5,7 @@ Full wifi and OTA manager for ESP8266 Arduino IDE
 
 Uses Jquerymobile and AJAX to run everything, with AppCache should mean fairly snappy handling. 
 
-V2 Released please see [Changelog] (https://github.com/sticilface/ESPmanager/ChangeLog.md) 
+V2 Released please see [Changelog](https://github.com/sticilface/ESPmanager/blob/master/ChangeLog.md)  
 There are several changes that are breaking, and it is quite different. 
 Many new feature, including single URL updating of sketch and SPIFFS. 
 
