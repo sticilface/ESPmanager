@@ -24,8 +24,8 @@ This project uses SPIFFS, JqueryMobile, AJAX, ArduinoJson and handles lots of as
 3. Add in your WiFi details if wanted.  This will provide sketch credentials.  This is not necessary. 
 4. Upload sketch data directory as shown [here](http://esp8266.github.io/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system)   
 5. Upload the sketch via serial or OTA if previous sketch supports it. 
-6. Reboot the ESP..  
-7. Now visit http://X.X.X.X/espman and it should work...  
+6. Reboot the ESP.  
+7. Now visit http://X.X.X.X/espman/ and it should work.  (the trailing / is important for jquery to fetch the data from the ESP. )  
 8. Save settings by pressing Save. 
 
 Feedback welcome... 
