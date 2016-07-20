@@ -13,7 +13,7 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 #include <FS.h> //  Settings saved to SPIFFS
 #include <ESP8266WiFi.h>
 #include <ESP8266HTTPClient.h>
-
+#include <ESP8266httpUpdate.h>
 #include <ESPAsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <AsyncJson.h>
@@ -28,7 +28,7 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 
 AsyncWebServer HTTP(80);
 
-ESPmanager settings(HTTP, SPIFFS, "ESPManager");
+ESPmanager settings(HTTP, SPIFFS);
 
 
 //  You can specify a default hard coded set of credentials
