@@ -759,6 +759,7 @@ $(document).on("pagecreate", "#wifipage", function() {
                 $("#aboutvars").append("<br>");
 
                 $("#aboutvars").append("<br>Chip ID = " + results.chipid_var);
+                $("#aboutvars").append("<br>Core Version = " + results.core_var);
                 $("#aboutvars").append("<br>SDK Version = " + results.sdk_var);
                 $("#aboutvars").append("<br>Boot Version = " + results.bootverion_var);
                 $("#aboutvars").append("<br>Boot Mode = " + results.bootmode_var);
@@ -799,9 +800,6 @@ $(document).on("pagecreate", "#wifipage", function() {
                 $("#aboutvars").append("<br>Free Blocks = " + results.UMM.freeBlocks);
                 $("#aboutvars").append("<br>Max Free Contiguous Blocks = " + results.UMM.maxFreeContiguousBlocks);
 
-
-
-
                 $("#aboutvars").append("<br>");
                 $("#aboutvars").append("<br>Sketch Size = " + results.sketchsize_var);
                 $("#aboutvars").append("<br>Free Space = " + results.freespace_var);
@@ -809,11 +807,15 @@ $(document).on("pagecreate", "#wifipage", function() {
 
                 $("#aboutvars").append("<br>VCC = " + results.vcc_var);
                 $("#aboutvars").append("<br>RSSI = " + results.rssi_var);
+
+                $("#aboutvars").append("<br>Reset Reason = " + results.reset.resaon);
+                $("#aboutvars").append("<br>Reset info = " + results.reset.info);
+
             }).success(function() {
-                $("#status").empty().append("Connected").css("color", "green");
+                //$("#status").empty().append("Connected").css("color", "green");
             })
             .error(function() {
-                $("#status").empty().append("Not Connected").css("color", "red");
+                //$("#status").empty().append("Not Connected").css("color", "red");
             })
             .complete(function() {});
     }
@@ -973,7 +975,7 @@ $(document).on("pagecreate", "#appage", function() {
              $("#text-UpgradeURL").val(result.General.updateURL);
            }
            if (result.General.hasOwnProperty("updateFreq")) {
-             $("#text-Upgrade-freq").val(result.General.updatefreq);
+             $("#text-Upgrade-freq").val(result.General.updateFreq);
            } else {
              $("#text-Upgrade-freq").val("0");
            }

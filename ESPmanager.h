@@ -102,6 +102,9 @@ public:
         size_t event_printf(const char * topic, const char * format, ... );
 //        struct tm * getCompileTime();
         int save();
+        void resetManifest() {
+          _randomvalue = random(0,25000000); 
+        }
 
 private:
 
@@ -152,10 +155,7 @@ private:
         uint32_t _updateFreq = 0;
         uint32_t _updateTimer = 0;
 
-
-#ifdef RANDOM_MANIFEST_ON_BOOT
         uint32_t _randomvalue;
-#endif
 
 #ifdef Debug_ESPManager
         void _dumpSettings();

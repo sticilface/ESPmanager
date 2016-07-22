@@ -34,6 +34,8 @@ V2.0.0-rc1
 
 # ToDo
 
+- Sort out buildmanifest directory structure... 
+
 - Create alert with link for successful STA connection.
 - Add Authentication
 

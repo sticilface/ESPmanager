@@ -1363,6 +1363,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         root[F("chipid_var")] = ESP.getChipId();
                         root[F("cpu_var")] = ESP.getCpuFreqMHz();
                         root[F("sdk_var")] = ESP.getSdkVersion();
+                        root[F("core_var")] = ESP.getCoreVersion();
                         root[F("bootverion_var")] =  ESP.getBootVersion();
                         root[F("bootmode_var")] =  ESP.getBootMode();
 
@@ -1425,6 +1426,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         UMMobject[F("usedBlocks")] = ummHeapInfo.usedBlocks;
                         UMMobject[F("freeBlocks")] = ummHeapInfo.freeBlocks;
                         UMMobject[F("maxFreeContiguousBlocks")] = ummHeapInfo.maxFreeContiguousBlocks;
+
+                        JsonObject& Resetobject = root.createNestedObject("reset");
+
+                        Resetobject[F("reason")] = ESP.getResetReason();
+                        Resetobject[F("info")] = ESP.getResetInfo();
 
                 }
 
@@ -2281,6 +2287,11 @@ void ESPmanager::_handleManifest(AsyncWebServerRequest *request)
         response->addHeader(ESPMAN::string_CACHE_CONTROL,F( "must-revalidate"));
         response->print(F("CACHE MANIFEST\n"));
         response->printf( "# %s\n", __DATE__ " " __TIME__ );
+
+        if (_randomvalue) {
+          response->printf(  "# %u\n", _randomvalue );
+        }
+
         response->print(F("CACHE:\n"));
         response->print(F("../jquery/jqm1.4.5.css\n"));
         response->print(F("../jquery/jq1.11.1.js\n"));
