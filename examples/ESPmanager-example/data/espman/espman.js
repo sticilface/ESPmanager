@@ -807,6 +807,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
                 $("#aboutvars").append("<br>VCC = " + results.vcc_var);
                 $("#aboutvars").append("<br>RSSI = " + results.rssi_var);
+                $("#aboutvars").append("<br>");
 
                 $("#aboutvars").append("<br>Reset Reason = " + results.reset.resaon);
                 $("#aboutvars").append("<br>Reset info = " + results.reset.info);
@@ -1354,5 +1355,6 @@ function datatosave(json) {
             h && h.close()
         }
     }
+
     return a.prototype.onopen = function() {}, a.prototype.onclose = function() {}, a.prototype.onconnecting = function() {}, a.prototype.onmessage = function() {}, a.prototype.onerror = function() {}, a.debugAll = !1, a.CONNECTING = WebSocket.CONNECTING, a.OPEN = WebSocket.OPEN, a.CLOSING = WebSocket.CLOSING, a.CLOSED = WebSocket.CLOSED, a
 });

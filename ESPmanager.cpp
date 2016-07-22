@@ -30,23 +30,23 @@ extern UMM_HEAP_INFO ummHeapInfo;
 // //String buildTag = ESCAPEQUOTE(BUILD_TAG);
 // String commitTag = ESCAPEQUOTE(TRAVIS_COMMIT);
 
-#ifndef BUILD_TAG
-#define BUILD_TAG Not Set
-#endif
-#ifndef COMMIT_TAG
-#define COMMIT_TAG Not Set
-#endif
-#ifndef BRANCH_TAG
-#define BRANCH_TAG Not Set
-#endif
-#ifndef SLUG_TAG
-#define SLUG_TAG Not Set
-#endif
-
-const char * buildTag = ESCAPEQUOTE(BUILD_TAG);
-const char * commitTag = ESCAPEQUOTE(COMMIT_TAG);
-const char * branchTag = ESCAPEQUOTE(BRANCH_TAG);
-const char * slugTag = ESCAPEQUOTE(SLUG_TAG);
+// #ifndef BUILD_TAG
+// #define BUILD_TAG Not Set
+// #endif
+// #ifndef COMMIT_TAG
+// #define COMMIT_TAG Not Set
+// #endif
+// #ifndef BRANCH_TAG
+// #define BRANCH_TAG Not Set
+// #endif
+// #ifndef SLUG_TAG
+// #define SLUG_TAG Not Set
+// #endif
+//
+// const char * buildTag = ESCAPEQUOTE(BUILD_TAG);
+// const char * commitTag = ESCAPEQUOTE(COMMIT_TAG);
+// const char * branchTag = ESCAPEQUOTE(BRANCH_TAG);
+// const char * slugTag = ESCAPEQUOTE(SLUG_TAG);
 
 ESPmanager::ESPmanager(
         AsyncWebServer & HTTP, FS & fs, const char* host, const char* ssid, const char* pass)
@@ -668,6 +668,8 @@ void ESPmanager::upgrade(const char * path)
                 if (ret == 0) {
                         DEBUG_ESP_PORT.printf("SUCCESS \n");
                         //files_recieved++;
+                } else if (ret == FILE_NOT_CHANGED){
+                        DEBUG_ESP_PORT.printf("FILE NOT CHANGED \n");
                 } else {
                         DEBUG_ESP_PORT.printf("FAILED [%i]\n", ret  );
                 }
@@ -1444,12 +1446,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                         //      root[string_changed] = (set.changed) ? true : false;
 
-                        root[F( "REPO")] =  slugTag;
-                        root[F("BRANCH")] = branchTag;
+                        // root[F( "REPO")] =  slugTag;
+                        // root[F("BRANCH")] = branchTag;
 
-                        char shortcommit[8] = {0};
-                        strncpy(shortcommit, commitTag, 7);
-                        root[F( "COMMIT")] = shortcommit;
+                        // char shortcommit[8] = {0};
+                        // strncpy(shortcommit, commitTag, 7);
+                        // root[F( "COMMIT")] = shortcommit;
                         root[string_updateURL] = set.GEN.updateURL();
                         root[string_updateFreq] = set.GEN.updateFreq;
                         //sendJsontoHTTP(root, request);
@@ -2213,6 +2215,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                         upgrade(path());
                                         return true;
                                 };
+
         }
 
         // DynamicJsonBuffer jsonbuffer;
