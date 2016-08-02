@@ -84,15 +84,12 @@ int ESPmanager::begin()
         // ESPMan_Debugf("BRANCH: %s\n",  branchTag );
         // ESPMan_Debugf("BuildTag: %s\n",  buildTag );
         // ESPMan_Debugf("commitTag: %s\n",  commitTag );
-
+        //
         ESPMan_Debugf("True Sketch Size: %u\n",  trueSketchSize() );
         ESPMan_Debugf("Sketch MD5: %s\n",  getSketchMD5().c_str() );
         ESPMan_Debugf("Device MAC: %s\n", WiFi.macAddress().c_str() );
 
         wifi_set_sleep_type(NONE_SLEEP_T); // workaround no modem sleep.
-
-
-
 
         if (!_fs.begin()) {
                 return ERROR_SPIFFS_MOUNT;
@@ -2111,11 +2108,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 save_flag = true;
 
-                bool command = ( request->getParam(string_mDNS, true)->value() == "on") ? true : false;
+                bool command = request->getParam(string_mDNS, true)->value().equals("on");
 
                 if (command != set.GEN.mDNSenabled ) {
                         set.GEN.mDNSenabled = command;
                         set.changed = true;
+                        ESPMan_Debugf("mDNS set to : %s\n", (command)? "on": "off");
                         //  _events.send(string_saveandreboot);
                         //  InitialiseFeatures();
                 }
@@ -2143,11 +2141,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (request->hasParam(string_ap_boot_mode, true) ) {
 
                 int rebootvar = request->getParam(string_ap_boot_mode, true)->value().toInt();
-                ESPMan_Debugf("Recieved AP behaviour request: %i\n", rebootvar);
+
 
                 ap_boot_mode_t value = (ap_boot_mode_t)rebootvar;
 
                 if (value!= set.GEN.ap_boot_mode) {
+                        ESPMan_Debugf("Recieved AP behaviour set to: %i\n", rebootvar);
                         set.GEN.ap_boot_mode = value;
                         _ap_boot_mode = value;
                         set.changed = true;
@@ -2158,13 +2157,28 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (request->hasParam(string_no_sta_mode, true) ) {
 
                 int var = request->getParam(string_no_sta_mode, true)->value().toInt();
-                ESPMan_Debugf("Recieved WiFi Disconnect behaviour request: %i\n", var);
 
                 no_sta_mode_t value = (no_sta_mode_t)var;
 
                 if (value!= set.GEN.no_sta_mode) {
+
+                        ESPMan_Debugf("Recieved WiFi Disconnect behaviour set to: %i\n", var);
                         set.GEN.no_sta_mode = value;
                         _no_sta_mode = value;
+                        set.changed = true;
+
+                }
+        }
+
+
+
+        if (request->hasParam(string_usePerminantSettings, true) ) {
+
+                bool var = request->getParam(string_usePerminantSettings, true)->value().equals("on");
+
+                if (var!= set.GEN.usePerminantSettings) {
+                ESPMan_Debugf("Recieved usePerminantSettings Set To: %s\n", (var)? "on": "off");
+                        set.GEN.usePerminantSettings = var;
                         set.changed = true;
 
                 }
@@ -2792,6 +2806,10 @@ int ESPmanager::_getAllSettings(settings_t & set) {
 
                 if (settingsJSON.containsKey(string_usePerminantSettings)) {
                         set.GEN.usePerminantSettings = settingsJSON[string_usePerminantSettings];
+                } else if ( _perminant_host || _perminant_ssid || _perminant_pass ){
+                        set.GEN.usePerminantSettings = true;
+                } else {
+                        set.GEN.usePerminantSettings = false;
                 }
 
                 if (settingsJSON.containsKey(string_ap_boot_mode)) {
