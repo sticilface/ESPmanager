@@ -524,8 +524,10 @@ String ESPmanager::getHostname() {
         int ERROR = _getAllSettings(set);
 
         ESPMan_Debugf("[ESPmanager::_updateUrl()] error = %i\n", ERROR);
-        if (!ERROR && set.GEN.host() ) {
+        if (!ERROR && set.GEN.host() && strlen(set.GEN.host()) > 0 ) {
                 return String(set.GEN.host());
+        } else if (_perminant_host ) {
+                return String(_perminant_host); 
         } else {
           char tmp[33] = {'\0'};
           snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
