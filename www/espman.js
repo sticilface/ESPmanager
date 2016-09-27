@@ -1,3 +1,13 @@
+function getBaseUrl() {
+    var re = new RegExp(/^.*\//);
+    return re.exec(window.location.href);
+}
+
+var _currentdevice
+
+var _home_device = getBaseUrl();
+console.log(_home_device);
+
 /****************************************************
  *                    Events
  *
@@ -11,7 +21,7 @@ function startEvents() {
     if (!!window.EventSource) {
 
       if (source == null || source.readyState == 2) {
-        source = new EventSource('events');
+        source = new EventSource( _home_device + 'events');
          var abc;
 
         source.onopen = function(e) {
@@ -229,7 +239,7 @@ $("#wsalert").on("popupafterclose", function(event, ui) {
  ****************************************************/
 $("#upgradepopup").on("popupcreate", function(event, ui) {
     console.log("upgradepopup called");
-    $("input").remove();
+    $(this).filter(":input").remove();
     $(".ui-slider-handle").remove();
     $('.ui-slider-track').css('margin', '0 15px 0 15px').css('pointer-events', 'none');
 
@@ -255,7 +265,7 @@ $(function() {
 
 function getGenvars() {
 
-    $.post("data.esp", "WiFiDetails", function(result) {
+    $.post(_home_device + "data.esp", "WiFiDetails", function(result) {
 
       console.log(result);
 
@@ -326,11 +336,11 @@ $(document).on("panelcreate", function(event, ui) {
 // });
 
 $(document).off('click', '#rebootbutton').on('click', '#rebootbutton', function(e) {
-    $.post("data.esp", "reboot");
+    $.post(_home_device + "data.esp", "reboot");
 });
 
 $(document).on('vclick', '.upgradebutton', function(e) {
-    $.post("data.esp", "PerformUpdate=true");
+    $.post(_home_device + "data.esp", "PerformUpdate=true");
 });
 
 $(document).on('touchstart click', '.myheader', function(e) {
@@ -362,6 +372,47 @@ $(document).on('touchstart click', '.myheader', function(e) {
     //ws.send($.mobile.activePage.attr('id'));
 });
 
+$(document).on('taphold dblclick', '.myheader', function(e) {
+    e.preventDefault();
+
+    $("#set_host").popup("open");
+    $("#text_home_device").val(_home_device);
+
+
+});
+
+function sethost(e) {
+
+
+    if (_home_device != $("#text_home_device").val()) {
+
+    _home_device = $("#text_home_device").val();
+
+      var currentpage = $.mobile.activePage.attr('id');
+
+    if (currentpage == "generalpage") {
+      getGenvars();
+    } else if (currentpage == "wifipage") {
+      getWiFiVars(false);
+    } else if (currentpage == "aboutpage") {
+      GetAboutVars();
+    } else if (currentpage == "appage") {
+      getAPvars();
+    } else if (currentpage == "otapage") {
+      getOTAvars();
+    } else if (currentpage == "upgradepage"){
+      getUpgradeVars();
+    }
+
+    source = null;
+    startEvents();
+
+    }
+
+
+}
+
+
 /****************************************************
  *                   General Page
  *
@@ -388,13 +439,13 @@ $(document).on("pagecreate", "#generalpage", function() {
 });
 
 $("#general-1-submit").bind("click", function(event, ui) {
-    $.post("data.esp", $(this.form).serialize(), function(e) {
+    $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
       datatosave(e);
     });
 });
 
 $(document).off('click', '#savebutton').on('click', '#savebutton', function(e) {
-    $.post("data.esp", "save", function(e) {
+    $.post(_home_device + "data.esp", "save", function(e) {
       datatosave(e);
     });
 });
@@ -500,7 +551,7 @@ $(document).on("pagecreate", "#wifipage", function() {
     //alert('A page with an id of "aboutPage" was just created by jQuery Mobile!');
 
     $("#general-1-submit").click(function() { // this is being used by the front page
-        $.post("data.esp", $(this.form).serialize(), function(e) {
+        $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
           console.log(e);
             datatosave(e);
         }).success(function(e) {
@@ -528,7 +579,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
 
     function refreshAPlist() {
-        $.post("data.esp", "PerformWiFiScan", function(result) {
+        $.post( _home_device + "data.esp", "PerformWiFiScan", function(result) {
           datatosave(result);
           if (result.hasOwnProperty("networks")) {
                 globalwifi = result.networks;
@@ -554,12 +605,12 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     function submitnewssid() {
 
-        $.post("data.esp", $("#wifinetworks-form,#removesaftey-1").serialize(), function(data, success) {
+        $.post(_home_device + "data.esp", $("#wifinetworks-form,#removesaftey-1").serialize(), function(data, success) {
             if (data == "accepted") {
                 var startTime = new Date().getTime();
                 $.mobile.loading('show');
                 timer = setTimeout(function() {
-                    $.post("data.esp", "WiFiresult", function(data, success2) {
+                    $.post(_home_device + "data.esp", "WiFiresult", function(data, success2) {
                         if (success2) {
                             if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied");
                             if (data == "2") alert(data + " :ERROR Reverted to previous settings");
@@ -636,7 +687,7 @@ $(document).on("pagecreate", "#wifipage", function() {
         if (!scan) {
             request = "WiFiDetails";
         }
-        $.post("data.esp", request, function(result) {
+        $.post(_home_device + "data.esp", request, function(result) {
 
               globalwifi = result;
 
@@ -743,7 +794,7 @@ $(document).on("pagecreate", "#wifipage", function() {
     //var results;
     //var staticwifi;
     function GetAboutVars() {
-        $.post("data.esp", "AboutPage", function(results) {
+        $.post(_home_device + "data.esp", "AboutPage", function(results) {
           datatosave(results);
 
                 $("#aboutvars").empty();
@@ -845,7 +896,7 @@ $(document).on("pagecreate", "#aboutpage", function() {
 
      function getAPvars() {
 
-        $.post("data.esp", "WiFiDetails", function(result) {
+        $.post(_home_device  + "data.esp", "WiFiDetails", function(result) {
 
                 datatosave(result);
 
@@ -933,7 +984,7 @@ $(document).on("pagecreate", "#appage", function() {
 
 
     $("#apply_ap").click(function() {
-        $.post("data.esp", $(this.form).serialize()).success(function(e) {
+        $.post(_home_device + "data.esp", $(this.form).serialize()).success(function(e) {
             //$("#status").empty().append("Connected").css("color", "green");
             datatosave(e);
         });
@@ -952,7 +1003,7 @@ $(document).on("pagecreate", "#appage", function() {
  ****************************************************/
 
  function getUpgradeVars() {
-   $.post("data.esp", "generalpage", function(result) {
+   $.post(_home_device + "data.esp", "generalpage", function(result) {
            // Repo : <var id="field-repo"></var> <br>
            // Branch : <var id="field-branch"></var> <br>
            // Commit : <var id="field-commit"></var> <br>
@@ -1007,7 +1058,7 @@ $(document).on("pageshow", "#upgradepage", function() {
 
 
     $("#updatesubmitbutton").click(function() {
-        $.post("data.esp", $(this).closest("form").find('input,select').filter(':visible').serialize(), function(data) {
+        $.post(_home_device + "data.esp", $(this).closest("form").find('input,select').filter(':visible').serialize(), function(data) {
             //console.log("Data Sent");
         }).success(function(e) {
           datatosave(e);
@@ -1038,7 +1089,7 @@ $(document).on("pageshow", "#upgradepage", function() {
  function getOTAvars() {
    console.log("getOTAvars");
 
-   $.post("data.esp", "generalpage", function(result) {
+   $.post(_home_device + "data.esp", "generalpage", function(result) {
 
       datatosave(result);
 
@@ -1079,7 +1130,7 @@ if (result.hasOwnProperty("General")) {
 
 
  $("#apply_ota").bind("click", function(event, ui) {
-    $.post("data.esp", $(this.form).serialize(), function(e) {
+    $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
       datatosave(e);
       getOTAvars();
     });

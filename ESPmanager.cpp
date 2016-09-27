@@ -14,18 +14,17 @@
 #include <WebAuthentication.h>
 #include <Hash.h>
 
-
 extern "C" {
 #include "user_interface.h"
 }
 
 extern UMM_HEAP_INFO ummHeapInfo;
 
-#define LAST_MODIFIED_DATE "Mon, 20 Jun 2016 14:00:00 GMT"
+//#define LAST_MODIFIED_DATE "Mon, 20 Jun 2016 14:00:00 GMT"
 
 // Stringifying the BUILD_TAG parameter
-#define TEXTIFY(A) #A
-#define ESCAPEQUOTE(A) TEXTIFY(A)
+// #define TEXTIFY(A) #A
+// #define ESCAPEQUOTE(A) TEXTIFY(A)
 
 // //String buildTag = ESCAPEQUOTE(BUILD_TAG);
 // String commitTag = ESCAPEQUOTE(TRAVIS_COMMIT);
@@ -270,10 +269,46 @@ int ESPmanager::begin()
 
         _HTTP.addHandler(&_events);
 
-        _HTTP.serveStatic("/espman", _fs, "/espman").setCacheControl("no-store");//.setLastModified(getCompileTime());
+        /*
+           <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+           <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+           <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script> -->
+           <!--<link rel="stylesheet" href="/jquery/jqm1.4.5.css">-->
+           <!--<script src="/jquery/jq1.11.1.js"></script>-->
+           <!--<script src="/jquery/jqm1.4.5.js"></script>-->
 
-        _HTTP.serveStatic("/jquery", _fs, "/jquery").setCacheControl("max-age:86400");//.setLastModified(getCompileTime());
+         */
+
+        //_HTTP.redirect("/jquery/jqm1.4.5.css", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" ).setFilter(ON_STA_FILTER);
+        //_HTTP.rewrite("/jquery/jq1.11.1.js", "http://code.jquery.com/jquery-1.11.1.min.js").setFilter(ON_STA_FILTER);
+        //_HTTP.rewrite("/jquery/jqm1.4.5.js", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js").setFilter(ON_STA_FILTER);
+        //  _HTTP.rewrite("/jquery/images/ajax-loader.gif", "")
+//  This works  but redirects do not work with appcache....
+        // _HTTP.on("/jquery/jqm1.4.5.css", HTTP_GET, [](AsyncWebServerRequest *request){
+        //         request->redirect("http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css");
+        // }).setFilter(ON_STA_FILTER);
+        //
+        // _HTTP.on("/jquery/jq1.11.1.js", HTTP_GET, [](AsyncWebServerRequest *request){
+        //         request->redirect("http://code.jquery.com/jquery-1.11.1.min.js");
+        // }).setFilter(ON_STA_FILTER);
+        //
+        // _HTTP.on("/jquery/jqm1.4.5.js", HTTP_GET, [](AsyncWebServerRequest *request){
+        //         request->redirect("http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js");
+        // }).setFilter(ON_STA_FILTER);
+
+
+        _HTTP.serveStatic("/espman/", _fs, "/espman/"); //.setLastModified(getCompileTime());
+
+        // _HTTP.serveStatic("/jquery", _fs, "/jquery/").setCacheControl("max-age:86400").setFilter(ON_AP_FILTER);
+
         _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
+
+        // _HTTP.on("/testindex.html", HTTP_GET, [](AsyncWebServerRequest *request) {
+        //   AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_htm_gz, index_htm_gz_len);
+        //   response->addHeader("Content-Encoding", "gzip");
+        //   request->send(response);
+        //
+        // } );
 
 
 }
@@ -284,8 +319,6 @@ void ESPmanager::handle()
         static uint32_t timeout = 0;
 
         if (_OTAupload) { ArduinoOTA.handle(); }
-
-
 
         //  Ony handle manager code every 500ms...
         if (millis() - timeout < 500) {
@@ -518,7 +551,7 @@ String ESPmanager::getHostname() {
         settings_t set;
 
         if (settings) {
-          set = *settings;
+                set = *settings;
         }
 
         int ERROR = _getAllSettings(set);
@@ -527,11 +560,11 @@ String ESPmanager::getHostname() {
         if (!ERROR && set.GEN.host() && strlen(set.GEN.host()) > 0 ) {
                 return String(set.GEN.host());
         } else if (_perminant_host ) {
-                return String(_perminant_host); 
+                return String(_perminant_host);
         } else {
-          char tmp[33] = {'\0'};
-          snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
-          return String(tmp);
+                char tmp[33] = {'\0'};
+                snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
+                return String(tmp);
         }
 }
 
@@ -667,7 +700,7 @@ void ESPmanager::upgrade(const char * path)
                 if (ret == 0) {
                         DEBUG_ESP_PORT.printf("SUCCESS \n");
                         //files_recieved++;
-                } else if (ret == FILE_NOT_CHANGED){
+                } else if (ret == FILE_NOT_CHANGED) {
                         DEBUG_ESP_PORT.printf("FILE NOT CHANGED \n");
                 } else {
                         DEBUG_ESP_PORT.printf("FAILED [%i]\n", ret  );
@@ -1275,7 +1308,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         generalobject[string_mDNS] = (set.GEN.mDNSenabled) ? true : false;
                         generalobject[string_usePerminantSettings] = (set.GEN.usePerminantSettings) ? true : false;
                         generalobject[string_OTAupload] = (set.GEN.OTAupload) ? true : false;
-                        generalobject[string_updateURL] = (set.GEN.updateURL) ? set.GEN.updateURL() : "" ;
+                        generalobject[string_updateURL] = (set.GEN.updateURL) ? set.GEN.updateURL() : "";
                         generalobject[string_updateFreq] = set.GEN.updateFreq;
 
 
@@ -1352,7 +1385,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         int Vcc = analogRead(A0);
 
                         char Up_time[bufsize];
-                        snprintf(Up_time, bufsize, "%02d days %02d hours (%02d:%02d) m:s", (uint32_t)day , uint32_t(hr % 24), uint32_t(min % 60), uint32_t(sec % 60));
+                        snprintf(Up_time, bufsize, "%02d days %02d hours (%02d:%02d) m:s", (uint32_t)day, uint32_t(hr % 24), uint32_t(min % 60), uint32_t(sec % 60));
 
                         //const int BUFFER_SIZE = JSON_OBJECT_SIZE(30); // + JSON_ARRAY_SIZE(temphx.items);
 
@@ -2115,7 +2148,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if (command != set.GEN.mDNSenabled ) {
                         set.GEN.mDNSenabled = command;
                         set.changed = true;
-                        ESPMan_Debugf("mDNS set to : %s\n", (command)? "on": "off");
+                        ESPMan_Debugf("mDNS set to : %s\n", (command) ? "on" : "off");
                         //  _events.send(string_saveandreboot);
                         //  InitialiseFeatures();
                 }
@@ -2179,7 +2212,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 bool var = request->getParam(string_usePerminantSettings, true)->value().equals("on");
 
                 if (var!= set.GEN.usePerminantSettings) {
-                ESPMan_Debugf("Recieved usePerminantSettings Set To: %s\n", (var)? "on": "off");
+                        ESPMan_Debugf("Recieved usePerminantSettings Set To: %s\n", (var) ? "on" : "off");
                         set.GEN.usePerminantSettings = var;
                         set.changed = true;
 
@@ -2298,6 +2331,7 @@ void ESPmanager::_handleManifest(AsyncWebServerRequest *request)
 {
 
 #ifdef DISABLE_MANIFEST
+#pragma message MANIFEST DISABLED
         request->send(404);
         return;
 #endif
@@ -2308,7 +2342,7 @@ void ESPmanager::_handleManifest(AsyncWebServerRequest *request)
         response->printf( "# %s\n", __DATE__ " " __TIME__ );
 
         if (_randomvalue) {
-          response->printf(  "# %u\n", _randomvalue );
+                response->printf(  "# %u\n", _randomvalue );
         }
 
         response->print(F("CACHE:\n"));
@@ -2732,9 +2766,9 @@ int ESPmanager::_getAllSettings() {
         _applyPermenent(*settings);
 
         if (!settings->GEN.host()) {
-          char tmp[33] = {'\0'};
-          snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
-          settings->GEN.host = tmp;
+                char tmp[33] = {'\0'};
+                snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
+                settings->GEN.host = tmp;
         }
 
         return ERROR;
@@ -2808,7 +2842,7 @@ int ESPmanager::_getAllSettings(settings_t & set) {
 
                 if (settingsJSON.containsKey(string_usePerminantSettings)) {
                         set.GEN.usePerminantSettings = settingsJSON[string_usePerminantSettings];
-                } else if ( _perminant_host || _perminant_ssid || _perminant_pass ){
+                } else if ( _perminant_host || _perminant_ssid || _perminant_pass ) {
                         set.GEN.usePerminantSettings = true;
                 } else {
                         set.GEN.usePerminantSettings = false;
@@ -2955,8 +2989,8 @@ int ESPmanager::_getAllSettings(settings_t & set) {
         }
 
         if (settingsversion != SETTINGS_FILE_VERSION) {
-          ESPMan_Debugf("[ESPmanager::_getAllSettings(settings_t & set)] Settings File Version Wrong expecting:%u got:%u\n", SETTINGS_FILE_VERSION, settingsversion);
-          return WRONG_SETTINGS_FILE_VERSION;
+                ESPMan_Debugf("[ESPmanager::_getAllSettings(settings_t & set)] Settings File Version Wrong expecting:%u got:%u\n", SETTINGS_FILE_VERSION, settingsversion);
+                return WRONG_SETTINGS_FILE_VERSION;
         }
 
 }

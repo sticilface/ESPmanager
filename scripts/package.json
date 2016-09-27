@@ -1,0 +1,29 @@
+{
+  "name": "esp8266-filesystem-builder",
+  "version": "0.1.0",
+  "description": "Gulp based build script for ESP8266 file system files",
+  "main": "gulpfile.js",
+  "author": "Xose Pérez &lt;xose.perez@gmail.com&gt;",
+  "license": "MIT",
+  "devDependencies": {
+    "browser-sync": "^2.16.0",
+    "del": "^2.2.1",
+    "gulp": "^3.9.1",
+    "gulp-clean-css": "^2.0.10",
+    "gulp-concat": "^2.6.0",
+    "gulp-gzip": "^1.4.0",
+    "gulp-htmlmin": "^2.0.0",
+    "gulp-if": "^2.0.1",
+    "gulp-inline": "^0.1.1",
+    "gulp-inline-source": "^3.0.0",
+    "gulp-plumber": "^1.1.0",
+    "gulp-uglify": "^1.5.3",
+    "gulp-uncss": "^1.0.6",
+    "gulp-useref": "^3.1.2",
+    "gulp-webserver": "^0.9.1",
+    "yargs": "^5.0.0"
+  },
+  "dependencies": {
+    "lodash": "^4.15.0"
+  }
+}

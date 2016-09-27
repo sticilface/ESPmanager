@@ -54,14 +54,14 @@
 #define SETTINGS_FILE_VERSION 2
 #define USE_WEB_UPDATER
 
- // #define Debug_ESPManager
+//#define Debug_ESPManager Serial
 
-#if defined(DEBUG_ESP_PORT) && defined(Debug_ESPManager)
- #define ESPMan_Debug(x)    DEBUG_ESP_PORT.print(x)
- #define ESPMan_Debugln(x)  DEBUG_ESP_PORT.println(x)
- #define ESPMan_Debugf(...) DEBUG_ESP_PORT.printf(__VA_ARGS__)
+#if defined(Debug_ESPManager)
+ #define ESPMan_Debug(x)    Debug_ESPManager.print(x)
+ #define ESPMan_Debugln(x)  Debug_ESPManager.println(x)
+ #define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__)
 
- //#define ESPMan_Debugf(_1, ...) DEBUG_ESP_PORT.printf_P( PSTR(_1), ##__VA_ARGS__) //  this saves around 5K RAM...
+ //#define ESPMan_Debugf(_1, ...) Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__) //  this saves around 5K RAM...
 
  //#define ESPMan_Debugf_P(...) DEBUG_ESP_PORT.printf_P(__VA_ARGS__)
    #pragma message("DEBUG enabled for ESPManager.")

@@ -1,7 +1,7 @@
 <!-- Version 0.02-->
 <!DOCTYPE html>
-<html manifest="site.appcache">
-<!-- <html> -->
+<!-- <html manifest="site.appcache"> -->
+<html>
 
 <head>
  <title>ESP Manager</title>
@@ -10,6 +10,25 @@
  <meta name="apple-mobile-web-app-capable" content="yes" />
  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
 
+
+ <!--  HERE IS CSS -->
+  <!-- <link rel="stylesheet" href="/main.css" inline> -->
+  <link rel="stylesheet" href="/jquery.mobile-1.4.5.min.css" inline>
+
+
+<!--  HERE IS /jq1.11.1.js -->
+  <script src="/jquery-1.11.1.min.js" inline></script>
+<!--  HERE IS jqm1.4.5.js -->
+  <script src="/jquery.mobile-1.4.5.min.js" inline></script>
+<!--  HERE IS /jqColorPicker.min.js -->
+  <!-- <script src="/colors.js" inline></script> -->
+  <!-- <script src="/jqColorPicker.min.js" inline></script> -->
+
+
+<!--  HERE IS /PRE SCRIPT -->
+
+
+  <script src="/onload.js" inline inline-compress> </script>
 
 
  <!--
@@ -75,7 +94,7 @@ $(function() {
 
  <style type="text/css">
   body {
-   visibility: hidden
+   /*visibility: hidden*/
   }
 
  </style>
@@ -87,18 +106,18 @@ $(function() {
  ****************************************************/
 
 function handleAppCache() {
-    if (applicationCache === undefined) {
-        return;
-    }
-
-    if (applicationCache.status == applicationCache.UPDATEREADY) {
-        popUpMessage("Refreshing AppCache");
-        applicationCache.swapCache();
-        location.reload();
-        return;
-    }
-
-    applicationCache.addEventListener('updateready', handleAppCache, false);
+    // if (applicationCache === undefined) {
+    //     return;
+    // }
+    //
+    // if (applicationCache.status == applicationCache.UPDATEREADY) {
+    //     popUpMessage("Refreshing AppCache");
+    //     applicationCache.swapCache();
+    //     location.reload();
+    //     return;
+    // }
+    //
+    // applicationCache.addEventListener('updateready', handleAppCache, false);
 }
 </script>
 
@@ -139,6 +158,25 @@ function handleAppCache() {
    <div class="centerwrapper" id="upgrade_message"></div>
   </div>
 
+<!-- HOST POP_UP
+ --> 
+ <div data-role="popup" id="set_host" data-theme="a" data-dismissible="true" style="max-width:400px;">
+  <div data-role="header">
+   <h2>Set Host</h2>
+  </div>
+  <div role="main" class="ui-content">
+  <form>
+        <input type="text" data-mini="true" name="deviceid" id="text_home_device" value="">
+        <a id="submithost" onclick=sethost() class="ui-btn ui-corner-all ui-shadow ui-btn-a" data-rel="back" data-transition="flow">Submit</a>
+  </form>
+
+<!--    <h3 class="ui-title">Are you sure you want to Format SPIFFS?</h3>
+   <p>This action cannot be undone, and will require all javascript files to be uploaded to SPIFFs.</p>
+   <p>It will BREAK settings manager</p>
+   <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+   <a id="formatspiffsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a> -->
+  </div>
+ </div>
 
  </div>
 
@@ -235,13 +273,17 @@ function handleAppCache() {
   <div role="main" class="ui-content">
    <div id="gen-page-status"></div>
    <form id="general-form">
+     <div>
     <label for="device-name">
       <a href="#device-name-help" data-rel="popup" data-transition="pop" class="myToolTip" title="help">Device Name:</a>
       <div data-role="popup" id="device-name-help" class="ui-content" data-theme="a" style="max-width:350px;">
       <p><strong>Device Name</strong><br> This is a unique name for your device. Accessable from devicename.local on your LAN</p>
       </div>
     </label>
-    <input type="text" name="deviceid" id="device-name" value="">
+    <input type="text" data-mini="true" name="deviceid" id="device-name" value="">
+    <!-- <input type="text" data-mini="true" name="SN" id="text-STA-set-sn" value=""> -->
+    </div>
+
 
     <div>
      <label for="select-AP-behav">
@@ -673,67 +715,11 @@ function handleAppCache() {
  <!--  PAGE BOUNDARY -->
 
  <!-- /page -->
- <script>
-  function loadcss(url, callback) {
-   var link = document.createElement("link");
-   link.setAttribute("rel", "stylesheet");
-   link.setAttribute("href", url);
-   link.addEventListener('load', function () {
-    var script = document.createElement("script");
-    script.textContent = "(" + callback.toString() + ")();";
-    document.body.appendChild(script);
-   }, false);
-   document.body.appendChild(link);
-  }
 
-  function loadjs(url, callback) {
-   var script = document.createElement("script");
-   script.setAttribute("src", url);
-   script.addEventListener('load', function () {
-    var script = document.createElement("script");
-    script.textContent = "(" + callback.toString() + ")();";
-    document.body.appendChild(script);
-   }, false);
-   document.body.appendChild(script);
-  }
+ <script src="/espman.js" inline inline-compress></script>
 
 
 
-  loadcss("/jquery/jqm1.4.5.css", function() {
-    loadjs("/jquery/jq1.11.1.js", function() {
-      loadjs("/jquery/jqm1.4.5.js", function() {
-
-  $(function () {
-
-   $("[data-role='header']").toolbar();
-   $("body>[data-role='panel']").panel();
-   $("#popupDialogSPIFFS").enhanceWithin().popup();
-   $("#popupDialogDeleteSettings").enhanceWithin().popup();
-   $("#popupDialogClearWiFi").enhanceWithin().popup();
-
-   $("#clearwifibutton").click(function () {
-    $.post("/espman/data.esp", "resetwifi");
-   });
-
-   $("#formatspiffsbutton").click(function () {
-    $.post("/espman/data.esp", "formatSPIFFS");
-   });
-   $("#deletesettingsbutton").click(function () {
-    $.post("/espman/data.esp", "deletesettings");
-   });
-
-  });
-
-  loadjs("/espman/espman.js", function () {
-  startEvents();
-   getGenvars();
-   $("body").css("visibility", "visible");
-  });
-
-      });
-    });
-  });
- </script>
 
  <style>
  .myToolTip:link  {

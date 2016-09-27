@@ -62,6 +62,7 @@ int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs) {
                         char * buf = &_data.get()[position];
                         // read data
                         int bytesread = f.readBytes(_data.get(), readBytes);
+                        if (readBytes && bytesread == 0) { break; } //  this fixes a corrupt file that has size but can't be read. 
                         bytesleft -= bytesread;
                         position += bytesread;
 

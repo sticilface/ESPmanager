@@ -1,0 +1,513 @@
+/*!
+* jQuery Mobile 1.4.5
+* Git HEAD hash: 68e55e78b292634d3991c795f06f5e37a512decc <> Date: Fri Oct 31 2014 17:33:30 UTC
+* http://jquerymobile.com
+*
+* Copyright 2010, 2014 jQuery Foundation, Inc. and othercontributors
+* Released under the MIT license.
+* http://jquery.org/license
+*
+*/
+
+
+/* SVG icons */
+.ui-icon-check:after {
+	background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%3Csvg%20version%3D%221.1%22%20id%3D%22Layer_1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%20%20width%3D%2214px%22%20height%3D%2214px%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22enable-background%3Anew%200%200%2014%2014%3B%22%20xml%3Aspace%3D%22preserve%22%3E%3Cpolygon%20style%3D%22fill%3A%23FFFFFF%3B%22%20points%3D%2214%2C4%2011%2C1%205.003%2C6.997%203%2C5%200%2C8%204.966%2C13%204.983%2C12.982%205%2C13%20%22%2F%3E%3C%2Fsvg%3E");
+}
+/* Alt icons */
+/* PNG icons */
+/* Alt icons */
+/* Globals */
+/* Font
+-----------------------------------------------------------------------------------------------------------*/
+html {
+	font-size: 100%;
+}
+body,
+input,
+select,
+button,
+.ui-btn {
+	font-size: 1em;
+	line-height: 1.3;
+	font-family: sans-serif /*{global-font-family}*/;
+}
+/* Form labels (overrides font-weight bold in bars, and mini font-size) */
+/* Separators
+-----------------------------------------------------------------------------------------------------------*/
+/* Field contain separator (< 28em) */
+.ui-field-contain {
+	border-bottom-color: #828282;
+	border-bottom-color: rgba(0,0,0,.15);
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+/* Table opt-in classes: strokes between each row, and alternating row stripes */
+/* Classes table-stroke and table-stripe are deprecated in 1.4. */
+/* Buttons
+-----------------------------------------------------------------------------------------------------------*/
+.ui-btn {
+	font-weight: bold;
+	border-width: 1px;
+	border-style: solid;
+}
+.ui-btn {
+	text-decoration: none !important;
+}
+/* Corner rounding
+-----------------------------------------------------------------------------------------------------------*/
+/* Class ui-btn-corner-all deprecated in 1.4 */
+.ui-corner-all {
+	-webkit-border-radius: 				.3125em /*{global-radii-blocks}*/;
+	border-radius: 						.3125em /*{global-radii-blocks}*/;
+}
+/* Buttons */
+.ui-btn.ui-corner-all {
+	-webkit-border-radius: 				.3125em /*{global-radii-buttons}*/;
+	border-radius: 						.3125em /*{global-radii-buttons}*/;
+}
+/* Icon-only buttons */
+.ui-btn-icon-notext.ui-corner-all {
+	-webkit-border-radius: 1em;
+	border-radius: 1em;
+}
+/* Radius clip workaround for cleaning up corner trapping */
+.ui-corner-all {
+	-webkit-background-clip: padding;
+	background-clip: padding-box;
+}
+/* Popup arrow */
+/* Shadow
+-----------------------------------------------------------------------------------------------------------*/
+.ui-shadow {
+	-webkit-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ 		rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+	-moz-box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ 		rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+	box-shadow: 0 1px 3px /*{global-box-shadow-size}*/ 				rgba(0,0,0,.15) /*{global-box-shadow-color}*/;
+}
+/* Icons
+-----------------------------------------------------------------------------------------------------------*/
+.ui-btn-icon-left:after,
+.ui-btn-icon-notext:after {
+	background-color: 					#666 /*{global-icon-color}*/;
+	background-color: 					rgba(0,0,0,.3) /*{global-icon-disc}*/;
+	background-position: center center;
+	background-repeat: no-repeat;
+	-webkit-border-radius: 1em;
+	border-radius: 1em;
+}
+/* Alt icons */
+.ui-alt-icon.ui-btn:after,
+.ui-alt-icon .ui-btn:after {
+	background-color: 					#666 /*{global-icon-color}*/;
+	background-color: 					rgba(0,0,0,.15) /*{global-icon-disc}*/;
+}
+/* No disc */
+.ui-nodisc-icon.ui-btn:after,
+.ui-nodisc-icon .ui-btn:after {
+	background-color: transparent;
+}
+/* Icon shadow */
+/* Checkbox and radio */
+/* Loader */
+/* Swatches */
+/* A
+-----------------------------------------------------------------------------------------------------------*/
+/* Bar: Toolbars, dividers, slider track */
+/* Page and overlay */
+/* Body: Read-only lists, text inputs, collapsible content */
+/* Links */
+/* Button up */
+/* Button hover */
+/* Button down */
+/* Active button */
+/* Active radio button icon */
+/* Focus */
+/* B
+-----------------------------------------------------------------------------------------------------------*/
+/* Bar: Toolbars, dividers, slider track */
+/* Page and overlay */
+/* Body: Read-only lists, text inputs, collapsible content */
+/* Links */
+/* Button up */
+html head + body .ui-btn.ui-btn-b,
+html head + body .ui-btn.ui-btn-b:visited {
+	background-color: 			#333 /*{b-bup-background-color}*/;
+	border-color:	 		#1f1f1f /*{b-bup-border}*/;
+	color: 					#fff /*{b-bup-color}*/;
+	text-shadow: 0 /*{b-bup-shadow-x}*/ 1px /*{b-bup-shadow-y}*/ 0 /*{b-bup-shadow-radius}*/ #111 /*{b-bup-shadow-color}*/;
+}
+/* Button hover */
+html head + body .ui-btn.ui-btn-b:hover {
+	background-color: 			#373737 /*{b-bhover-background-color}*/;
+	border-color:	 		#1f1f1f /*{b-bhover-border}*/;
+	color: 					#fff /*{b-bhover-color}*/;
+	text-shadow: 0 /*{b-bhover-shadow-x}*/ 1px /*{b-bhover-shadow-y}*/ 0 /*{b-bhover-shadow-radius}*/ #111 /*{b-bhover-shadow-color}*/;
+}
+/* Button down */
+html head + body .ui-btn.ui-btn-b:active {
+	background-color: 			#404040 /*{b-bdown-background-color}*/;
+	border-color:	 		#1f1f1f /*{b-bdown-border}*/;
+	color: 					#fff /*{b-bdown-color}*/;
+	text-shadow: 0 /*{b-bdown-shadow-x}*/ 1px /*{b-bdown-shadow-y}*/ 0 /*{b-bdown-shadow-radius}*/ #111 /*{b-bdown-shadow-color}*/;
+}
+/* Active button */
+/* Active radio button icon */
+/* Focus */
+html head + body .ui-btn.ui-btn-b:focus {
+	-webkit-box-shadow: 0 0 12px 	#22aadd /*{b-active-background-color}*/;
+	-moz-box-shadow: 0 0 12px 		#22aadd /*{b-active-background-color}*/;
+	box-shadow: 0 0 12px 			#22aadd /*{b-active-background-color}*/;
+}
+/* Structure */
+/* Disabled
+-----------------------------------------------------------------------------------------------------------*/
+/* Class ui-disabled deprecated in 1.4. :disabled not supported by IE8 so we use [disabled] */
+/* Focus state outline
+-----------------------------------------------------------------------------------------------------------*/
+.ui-btn:focus {
+	outline: 0;
+}
+/* Unset box-shadow in browsers that don't do it right */
+/* Some unsets */
+/* Fixes for fieldset issues on IE10 and FF (see #6077) */
+@-moz-document url-prefix() {
+}
+/* Viewport */
+/* Issue #2066 */
+/* "page" containers - full-screen views, one should always be in view post-pageload */
+/* On ios4, setting focus on the page element causes flashing during transitions when there is an outline, so we turn off outlines */
+/* Fouc */
+/* Non-js content hiding */
+/* Loading screen */
+/* Headers, content panels */
+.ui-content {
+	border-width: 0;
+	overflow: visible;
+	overflow-x: hidden;
+	padding: 1em;
+}
+/* Corner styling for dialogs and popups */
+/* Buttons and icons */
+.ui-btn {
+	font-size: 16px;
+	margin: .5em 0;
+	padding: .7em 1em;
+	display: block;
+	position: relative;
+	text-align: center;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	white-space: nowrap;
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+.ui-btn-icon-notext {
+	padding: 0;
+	width: 1.75em;
+	height: 1.75em;
+	text-indent: -9999px;
+	white-space: nowrap !important;
+}
+/* Make buttons in toolbars default to mini and inline. */
+/* To ensure same top and left/right position when ui-btn-left/right are added to something other than buttons. */
+.ui-btn-inline {
+	display: inline-block;
+	vertical-align: middle;
+	margin-right: .625em;
+}
+.ui-btn-icon-left {
+	padding-left: 2.5em;
+}
+.ui-btn-icon-left:after,
+.ui-btn-icon-notext:after {
+	content: "";
+	position: absolute;
+	display: block;
+	width: 22px;
+	height: 22px;
+}
+.ui-btn-icon-notext:after,
+.ui-btn-icon-left:after {
+	top: 50%;
+	margin-top: -11px;
+}
+.ui-btn-icon-left:after {
+	left: .5625em;
+}
+.ui-btn-icon-notext:after {
+	left: 50%;
+	margin-left: -11px;
+}
+/* Buttons in header position classes */
+.ui-btn-right > [class*="ui-"] {
+	margin: 0;
+}
+.ui-btn-right {
+	position: absolute;
+	top: .24em;
+}
+.ui-btn-right {
+	right: .4em;
+}
+/* Button elements */
+button.ui-btn {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	width: 100%;
+}
+/* Firefox adds a 1px border in a button element. We negate this to make sure they have the same height as other buttons in controlgroups. */
+button.ui-btn::-moz-focus-inner {
+	border: 0;
+}
+/* Form labels */
+/* Accessible content hiding */
+/* ui-hide-label deprecated in 1.4. TODO: Remove in 1.5 */
+/* Used for hiding elements by the filterable widget. You can also use this class to hide list items or buttons in controlgroups; this ensures correct corner styling. */
+/* Transitions originally inspired by those from jQtouch, nice work, folks */
+/* keyframes for slidein from sides */
+/* keyframes for slideout to sides */
+/* slide down */
+/* slide up */
+/* The properties in this rule are only necessary for the 'flip' transition.
+ * We need specify the perspective to create a projection matrix. This will add
+ * some depth as the element flips. The depth number represents the distance of
+ * the viewer from the z-plane. According to the CSS3 spec, 1000 is a moderate
+ * value.
+ */
+/* The properties in this rule are only necessary for the 'flip' transition.
+ * We need specify the perspective to create a projection matrix. This will add
+ * some depth as the element flips. The depth number represents the distance of
+ * the viewer from the z-plane. According to the CSS3 spec, 1000 is a moderate
+ * value.
+ */
+/* flow transition */
+.ui-field-contain {
+	display: block;
+	position: relative;
+	overflow: visible;
+	clear: both;
+	padding: .8em 0;
+}
+.ui-field-contain:last-child {
+	border-bottom-width: 0;
+}
+@media (min-width: 28em) {
+	.ui-field-contain {
+		padding: 0;
+		margin: 1em 0;
+		border-bottom-width: 0;
+	}
+	.ui-field-contain:before,
+	.ui-field-contain:after {
+		content: "";
+		display: table;
+	}
+	.ui-field-contain:after {
+		clear: both;
+	}
+	.ui-field-contain > label {
+		float: left;
+		width: 20%;
+		margin: .5em 2% 0 0;
+	}
+	/* ui-hide-label deprecated in 1.4. TODO: Remove in 1.5 */
+}
+/* content configurations. */
+.ui-grid-a {
+	overflow: hidden;
+}
+.ui-block-a,
+.ui-block-b {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	float: left;
+	min-height: 1px;
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+}
+/* force new row */
+.ui-block-a {
+	clear: left;
+}
+/* No margin in grids for 100% width button elements until we can use max-width: fill-available; */
+.ui-grid-a > .ui-block-a,
+.ui-grid-a > .ui-block-b {
+	/* width: 49.95%; IE7 */
+	/* margin-right: -.5px; BB5 */
+	width: 50%;
+}
+/* preset breakpoint to switch to stacked grid styles below 35em (560px) */
+/* fixed page header & footer configuration */
+/* updatePagePadding() will update the padding to actual height of header and footer. */
+/* Tap toggle: hide external fixed footer. See issue #6604 */
+/* workarounds for other widgets */
+/* fixes gaps caused by subpixel problem */
+/* Hide the native input element */
+/* Fixes IE/WP filter alpha opacity bugs */
+.ui-controlgroup-controls a.ui-shadow:not(:focus),
+.ui-controlgroup-controls button.ui-shadow:not(:focus) {
+	-moz-box-shadow: none;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+}
+/* Fixes legend not wrapping on IE10 */
+/* Dimensions related to the popup arrow
+-----------------------------------------------------------------------------------------------------------*/
+/* desired triangle height: 10px */
+/**
+ * guide for the arrow - its width, height, and offset are theme-dependent and
+ * should be expessed as left, right, top, bottom, so that the element bearing
+ * such a class becomes stretched inside its parent position: relative element.
+ * The left/top/right/bottom specified below should reflect the corresponding
+ * border radii and so it leaves room for the shadow:
+ *     ..--------------------..
+ *   ."        ^ top           ".
+ *  /          v                 \
+ * |     +------------------+     |
+ * |     |                  |     |
+ * | left|                  |right|
+ * |<--->|                  |<--->|
+ * |     +------------------+     |
+ *  \          ^                 /
+ *   `.        v bottom        .'
+ *     ""--------------------""
+ * The idea is that the top/left of the arrow container box does not move to a
+ * coordinate smaller than the top/left of the guide and the right/bottom of
+ * the arrow container box does not move to a coordinate larger than the
+ * bottom/right of the guide. This will help us avoid the following situation:
+ *        ..--------------------..
+ *      ."        ^ top           ".
+ *   /|/          v                 \
+ *  / |     +------------------+     |
+ *  \ |     |                  |     |
+ *   \| left|                  |right|
+ *    |<--->|                  |<--->|
+ *    |     +------------------+     |
+ *     \          ^                 /
+ *      `.        v bottom        .'
+ *        ""--------------------""
+ * The arrow should not receive a top/left coordinate such that it is too close
+ * to one of the corners, because then at first the shadow of the arrow and,
+ * given a coordinate even closer to the corner, even the body of the arrow will
+ * "stick out" of the corner of the popup. The guide provides a hint to the
+ * arrow positioning code as to which range of values is acceptable for the
+ * arrow container's top/left coordinate.
+ **/
+/* aside from the "infinities" (-1000,2000), triangle height is used */
+/**
+ * For each side, the arrow is twice the desired size and its corner is aligned
+ * with the edge of the container:
+ *                                           
+ *           /\         /\                +----+       /\
+ *          /  \       /  \               | /\ |top   /  \
+ *      +----+  \     /  +----+       +-->|/  \|     /    \
+ *  left| /  |   \   /   |  \ |right  |   |    |    /      \
+ *      |/   |    \ /    |   \|       |  /|    |\  /        \
+ *      |\   |    / \    |   /|       | / +----+ \ \ +----+ /
+ *      | \  |   /   \   |  / |       | \        /  \|    |/
+ *      +----+  /     \  +----+       |  \      /    |    |
+ *       ^  \  /       \  /  ^        |   \    /  +->|\  /|
+ *       |   \/         \/   |        |    \  /   |  | \/ |bottom
+ *       |                   |        |     \/    |  +----+
+ *       +-------------------+--------+-----------+
+ *                           |
+ *                    arrow container
+ *                     (clips arrow)
+ **/
+/* Fix rotation center for oldIE - see http://www.useragentman.com/IETransformsTranslator/ */
+/* structure */
+/* Native input positioning */
+@-moz-document url-prefix() {
+}
+/* Display none because of issues with IE/WP's filter alpha opacity */
+/* Because we add all classes of the select and option elements to the span... */
+/* ui-li-count is styled in the listview CSS. We set padding and offset here because select supports icon position while listview doesn't. */
+/* We set the rules for the span as well to fix an issue on Chrome with text-overflow ellipsis for the button in combination with text-align center. */
+/* when no placeholder is defined in a multiple select, the header height doesn't even extend past the close button.  this shim's content in there */
+/* ui-li-has-icon deprecated in 1.4. TODO: remove in 1.5 */
+/* Used by both listview and custom multiple select button */
+/* ui-li-has-icon deprecated in 1.4. TODO: remove in 1.5 */
+/* High level of specificity to override button margins in grids */
+/* reset the clearfix */
+/* The corner radii for ui-slider-switch/track can be specified in theme CSS. The bg and handle inherits. */
+/* ui-hide-label deprecated in 1.4. TODO: Remove in 1.5 */
+/* slider tooltip
+-----------------------------------------------------------------------------------------------------------*/
+/* this makes ie6 and ie7 set height to 0 to fix z-index problem */
+/* Hide the second label (the first is moved outside the div) */
+/* Same margin for mini textareas as other mini sized widgets (12.5/14 * 0.5em) */
+/* Padding on the div instead of input because of browser spinners etc. */
+/* Search icon */
+/* Resolves issue #5166: Added to support issue introduced in Firefox 15. We can likely remove this in the future. */
+/* Same for IE10 */
+/* Resolves issue #5131: Width of textinput depends on its type,
+for Android 4.1 */
+/* Resolves issue #5756: Textinput in IE10 has a default clear button */
+/* Override field container CSS to prevent the flipswitch from becomming full width */
+/*
+ Styles for the table columntoggle mode
+*/
+/* Remove top/bottom margins around the fieldcontain on check list */
+/* Hide all prioritized columns by default */
+/* Preset breakpoints if ".ui-responsive" class added to table */
+/* Show priority 1 at 320px (20em x 16px) */
+/* Show priority 2 at 480px (30em x 16px) */
+/* Show priority 3 at 640px (40em x 16px) */
+/* Show priority 4 at 800px (50em x 16px) */
+/* Show priority 5 at 960px (60em x 16px) */
+/* Show priority 6 at 1,120px (70em x 16px) */
+/* Unchecked manually: Always hide */
+/* Checked manually: Always show */
+/*
+ Styles for the table columntoggle mode
+*/
+/* Mobile first styles: Begin with the stacked presentation at narrow widths */ 
+@media only all {
+	/* Hide the table headers */
+	/* Show the table cells as a block level element */
+	/* Add a fair amount of top margin to visually separate each row when stacked */
+	/* Make the label elements a percentage width */
+	/* For grouped headers, have a different style to visually separate the levels by classing the first label in each col group */
+}
+/* Breakpoint to show as a standard table at 560px (35em x 16px) or wider */ 
+@media ( min-width: 35em ) {
+	/* Show the table header rows */
+	/* Hide the labels in each cell */
+}
+/* Hack to make IE9 and WP7.5 treat cells like block level elements, scoped to ui-responsive class */ 
+/* Applied in a max-width media query up to the table layout breakpoint so we don't need to negate this*/
+/* Panel */
+/* Container, page and wrapper */
+/* Fixed toolbars */
+/* Dismiss */
+/* Animate class is added to panel, wrapper and fixed toolbars */
+/* Fix for Windows Phone issue #6349: unset the transition for transforms in case of fixed toolbars. */
+@media screen and ( max-device-width: 768px ) {
+	/* We need a transitionend event ... */
+}
+/* Hardware acceleration for smoother transitions on WebKit browsers */
+/* Panel positioning (for overlay and push) */
+/* Panel left closed */
+/* Panel left closed animated */
+/* Panel left open */
+/* Panel left open animated */
+/* Panel right closed */
+/* Panel right closed animated */
+/* Panel right open */
+/* Panel right open animated */
+/* Wrapper and fixed toolbars positioning (for reveal and push) */
+/* Panel left open */
+/* Panel left open animated */
+/* Panel right open */
+/* Panel right open animated */
+/* Dismiss model open */
+/* Shadows and borders */
+/* Responsive: wrap on wide viewports once open */
