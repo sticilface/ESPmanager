@@ -98,11 +98,12 @@ public:
         static String file_md5 (File& f);
         template <class T> static void sendJsontoHTTP( const T& root, AsyncWebServerRequest *request);
         String getHostname();
-        void upgrade(const char * path);
         uint32_t trueSketchSize();
         String getSketchMD5();
         AsyncEventSource & getEvent();
         size_t event_printf(const char * topic, const char * format, ... );
+        void upgrade(String path = String());
+
 //        struct tm * getCompileTime();
         int save();
         void resetManifest() {
@@ -114,6 +115,7 @@ private:
         void _HandleDataRequest(AsyncWebServerRequest *request);
         void _handleManifest(AsyncWebServerRequest *request);
         void _handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final);
+        void _upgrade(const char * path);
 
 #ifdef USE_WEB_UPDATER
         int   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr);

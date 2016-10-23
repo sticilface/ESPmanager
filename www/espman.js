@@ -381,14 +381,35 @@ $(document).on('taphold dblclick', '.myheader', function(e) {
 
 });
 
-function sethost(e) {
+function extractDomain(url) {
+    var domain;
+    //find & remove protocol (http, ftp, etc.) and get domain
+    if (url.indexOf("://") > -1) {
+        domain = url.split('/')[2];
+    }
+    else {
+        domain = url.split('/')[0];
+    }
 
+    //find & remove port number
+    domain = domain.split(':')[0];
+
+    return domain;
+}
+
+
+function sethost(e) {
 
     if (_home_device != $("#text_home_device").val()) {
 
     _home_device = $("#text_home_device").val();
 
-      var currentpage = $.mobile.activePage.attr('id');
+    var temp_domain = extractDomain(_home_device);
+    console.log("home_href_link = " + temp_domain);
+
+    $("#home_href_link").attr("href", temp_domain )
+
+    var currentpage = $.mobile.activePage.attr('id');
 
     if (currentpage == "generalpage") {
       getGenvars();

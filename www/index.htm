@@ -159,7 +159,7 @@ function handleAppCache() {
   </div>
 
 <!-- HOST POP_UP
- --> 
+ -->
  <div data-role="popup" id="set_host" data-theme="a" data-dismissible="true" style="max-width:400px;">
   <div data-role="header">
    <h2>Set Host</h2>
@@ -187,7 +187,7 @@ function handleAppCache() {
    <h1 class="center">Menu</h1>
   </div>
   <div>
-   <a href="/" data-ajax="false" data-role="button" class="ui-btn">Home</a>
+   <a href="/" id="home_href_link" data-ajax="false" data-role="button" class="ui-btn">Home</a>
    <a href="#generalpage" data-role="button" class="ui-btn">ESPMAN</a>
    <a href="#wifipage" data-role="button" class="ui-btn">WiFi - STA</a>
    <a href="#appage" data-role="button" class="ui-btn">WiFi - AP</a>
@@ -211,6 +211,7 @@ function handleAppCache() {
    <a href="#popupDialogSPIFFS" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Format SPIFFS</a>
    <a href="#my-header" data-rel="close" class="ui-btn upgradebutton">Upgrade</a>
    <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
+
 
    <!--             <label for="removesaftey-1">Disable Checks:</label>
             <select id="removesaftey-1" name="removesaftey" data-role="flipswitch" class="onesend">

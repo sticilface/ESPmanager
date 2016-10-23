@@ -256,18 +256,24 @@ int ESPmanager::begin()
                 MDNS.addService("http", "tcp", 80);
         }
 
+        _HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
+        _HTTP.rewrite("/espman/", "/espman/index.htm");
+
         _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
         _HTTP.on("/espman/site.appcache", HTTP_ANY, std::bind (&ESPmanager::_handleManifest, this, _1));
         _HTTP.on("/espman/upload", HTTP_POST, [this](AsyncWebServerRequest *request) {
                 request->send(200);
         }, std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6)  );
 
+        _HTTP.serveStatic("/espman/index.htm", SPIFFS, "/espman/index.htm" );
 
         _events.onConnect([](AsyncEventSourceClient *client){
                 client->send(NULL,NULL,0,1000);
         });
 
         _HTTP.addHandler(&_events);
+
+
 
         /*
            <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
@@ -418,7 +424,7 @@ void ESPmanager::handle()
                 _getAllSettings();
 
                 if (settings) {
-                        upgrade(settings->GEN.updateURL());
+                        _upgrade(settings->GEN.updateURL());
                 }
 
         }
@@ -556,7 +562,8 @@ String ESPmanager::getHostname() {
 
         int ERROR = _getAllSettings(set);
 
-        ESPMan_Debugf("[ESPmanager::_updateUrl()] error = %i\n", ERROR);
+        ESPMan_Debugf("[ESPmanager::getHostname()] error = %i\n", ERROR);
+
         if (!ERROR && set.GEN.host() && strlen(set.GEN.host()) > 0 ) {
                 return String(set.GEN.host());
         } else if (_perminant_host ) {
@@ -568,19 +575,61 @@ String ESPmanager::getHostname() {
         }
 }
 
-void ESPmanager::upgrade(const char * path)
+void ESPmanager::upgrade(String path) {
+
+  using namespace ESPMAN;
+
+  _getAllSettings();
+
+   myString newpath;
+
+  if (!settings) {
+          return;
+  }
+
+  if (path.length() == 0) {
+
+    if (settings->GEN.updateURL() && strlen(settings->GEN.updateURL()) > 0 ) {
+          newpath = settings->GEN.updateURL();
+    } else {
+      event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
+      return;
+    }
+
+  } else {
+    newpath = path.c_str();
+  }
+
+  _syncCallback = [ newpath, this ]() {
+
+                          this->_upgrade(newpath());
+                          return true;
+
+                  };
+
+}
+
+void ESPmanager::_upgrade(const char * path)
 {
         using namespace ESPMAN;
-        if (!path) {
-                event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
-                return;
-        }
 
         _getAllSettings();
 
         if (!settings) {
                 return;
         }
+
+        if (!path) {
+
+          if (settings->GEN.updateURL() && strlen(settings->GEN.updateURL()) > 0 ) {
+                path = settings->GEN.updateURL();
+          } else {
+            event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
+            return;
+          }
+
+        }
+
 
         int files_expected = 0;
         int files_recieved = 0;
@@ -1021,7 +1070,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
                 _syncCallback = [ = ]() {
 
-                                        upgrade(path.c_str());
+                                        _upgrade(path.c_str());
                                         return true;
 
                                 };
@@ -2261,7 +2310,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                 _syncCallback = [this, path ]() {
-                                        upgrade(path());
+                                        _upgrade(path());
                                         return true;
                                 };
 

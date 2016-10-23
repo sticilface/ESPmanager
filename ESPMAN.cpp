@@ -62,7 +62,7 @@ int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs) {
                         char * buf = &_data.get()[position];
                         // read data
                         int bytesread = f.readBytes(_data.get(), readBytes);
-                        if (readBytes && bytesread == 0) { break; } //  this fixes a corrupt file that has size but can't be read. 
+                        if (readBytes && bytesread == 0) { break; } //  this fixes a corrupt file that has size but can't be read.
                         bytesleft -= bytesread;
                         position += bytesread;
 
@@ -86,6 +86,27 @@ int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs) {
         return 0;
 
 }
+
+void ESPMAN::JSONpackage::mergejson(JsonObject& dest, JsonObject& src) {
+   for (auto kvp : src) {
+     dest[kvp.key] = kvp.value;
+   }
+}
+
+bool ESPMAN::JSONpackage::save(const char * file) {
+  File f = SPIFFS.open(file, "w");
+
+  if (!f) {
+          return -1;
+  }
+
+  _root.prettyPrintTo(f);
+
+  f.close();
+
+  return 0;
+}
+
 
 ESPMAN::myString::myString(const char *cstr)
 {

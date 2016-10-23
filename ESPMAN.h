@@ -163,6 +163,8 @@ public:
 
                 int parseSPIFS(const char * file, FS & fs = SPIFFS);
                 int parse(char * data, int size);
+                static void mergejson(JsonObject& dest, JsonObject& src);
+                bool save(const char * file); 
 
         };
 
