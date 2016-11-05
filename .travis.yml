@@ -15,7 +15,7 @@ env:
   - PLATFORMIO_CI_SRC="$TRAVIS_BUILD_DIR/examples/ESPmanager-example/ESPmanager-example.ino" PLATFORMIO_BUILD_FLAGS="-D Debug_ESPManager -D DEBUG_ESP_PORT=Serial"
 install:
   - pip install -U platformio
-  - platformio platforms install espressif --with-package framework-arduinoespressif
+  #- platformio platforms install espressif --with-package framework-arduinoespressif
   # - rm -rf ~/.platformio/packages/framework-arduinoespressif
   # - git clone --branch 2.3.0 --depth 1 https://github.com/esp8266/Arduino ~/.platformio/packages/framework-arduinoespressif
   # - export PATH="$HOME/.platformio/packages/toolchain-xtensa/bin:$PATH"
