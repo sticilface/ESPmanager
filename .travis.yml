@@ -34,13 +34,9 @@ install:
   - cd $TRAVIS_BUILD_DIR
   # - echo "10606" > ~/.platformio/packages/framework-arduinoespressif/version.txt
   - mkdir /tmp/build
-  - mkdir $TRAVIS_BUILD_DIR/libs
-  - git clone https://github.com/me-no-dev/ESPAsyncTCP                $TRAVIS_BUILD_DIR/libs/ESPAsyncTCP
-  - git clone https://github.com/me-no-dev/ESPAsyncWebServer          $TRAVIS_BUILD_DIR/libs/ESPAsyncWebServer
-  - platformio lib install 64
+  - platformio lib -g install "ESPAsyncTCP" "ESPAsyncWebServer" "ArduinoJson"
 
 script:
   - platformio ci --board="esp12e" --build-dir="/tmp/build" 
     --lib="$TRAVIS_BUILD_DIR" 
-    --lib="$TRAVIS_BUILD_DIR/libs/ESPAsyncTCP" 
-    --lib="$TRAVIS_BUILD_DIR/libs/ESPAsyncWebServer"
+
