@@ -103,7 +103,7 @@ public:
         AsyncEventSource & getEvent();
         size_t event_printf(const char * topic, const char * format, ... );
         void upgrade(String path = String());
-
+        void factoryReset(); 
 //        struct tm * getCompileTime();
         int save();
         void resetManifest() {
