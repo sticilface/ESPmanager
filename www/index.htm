@@ -99,33 +99,11 @@ $(function() {
 
  </style>
 
-<script>
-/****************************************************
- *                    Appcache
- *
- ****************************************************/
-
-function handleAppCache() {
-    // if (applicationCache === undefined) {
-    //     return;
-    // }
-    //
-    // if (applicationCache.status == applicationCache.UPDATEREADY) {
-    //     popUpMessage("Refreshing AppCache");
-    //     applicationCache.swapCache();
-    //     location.reload();
-    //     return;
-    // }
-    //
-    // applicationCache.addEventListener('updateready', handleAppCache, false);
-}
-</script>
 
 </head>
 
+<body id="body">
 
-
-<body id="body" onload="handleAppCache();">
 
  <div class='ui-helper-hidden'></div>
 
@@ -340,7 +318,7 @@ function handleAppCache() {
 
     <div class="ui-block-b">
     <!--<div class="ui-field-contain">-->
-     <label for="flip-usePerminantSettings">
+<!--      <label for="flip-usePerminantSettings">
         <a href="#flip-usePerminantSettings-help" data-rel="popup" data-transition="pop" class="myToolTip" title="help">Use Sketch Credentials:</a>
         <div data-role="popup" id="flip-usePerminantSettings-help" class="ui-content" data-theme="a" style="max-width:350px;">
         <p><strong>Use Sketch Credentials:</strong><br> devicename, ssid and passphase can be hardcoded in the sketch.  If this is set to true, these values will override any settings in config file.</p>
@@ -349,7 +327,7 @@ function handleAppCache() {
      <select id="flip-usePerminantSettings" name="usePerminantSettings" data-role="flipswitch">
       <option>off</option>
       <option>on</option>
-     </select>
+     </select> -->
     <!--</div>-->
     </div>
     </fieldset>

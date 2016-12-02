@@ -3,9 +3,14 @@ function getBaseUrl() {
     return re.exec(window.location.href);
 }
 
-var _currentdevice
+var _currentdevice;
+var globalwifi;
+
 
 var _home_device = getBaseUrl();
+
+//_home_device = "http://192.168.1.214/espman/";
+
 console.log(_home_device);
 
 /****************************************************
@@ -20,127 +25,127 @@ var source;
 function startEvents() {
     if (!!window.EventSource) {
 
-      if (source == null || source.readyState == 2) {
-        source = new EventSource( _home_device + 'events');
-         var abc;
+        if (source == null || source.readyState == 2) {
+            source = new EventSource(_home_device + 'events');
+            var abc;
 
-        source.onopen = function(e) {
-            console.log("Events Opened", e);
-            addMessage("Connected");
-            if (_waiting_reboot) {
-                $("#upgrade_message").empty().append("<h4>Done</h4>");
-                clearTimeout(_upgrade_failed);
-                _waiting_reboot = false;
-                setTimeout(function() {
-                    $("#upgradepopup").popup("close");
-                }, 2000);
-
-            }
-        };
-
-        source.onerror = function(e) {
-            console.log("Events ERROR", e);
-            if (e.target.readyState != EventSource.OPEN) {
-                console.log("Disconnected");
-                addMessage("Disconnected");
-            }
-        };
-
-        source.addEventListener('message', function(e) {
-            console.log("message", e.data);
-            popUpMessage(e.data);
-        }, false);
-
-        source.addEventListener('console', function(e) {
-            //console.log("message", e.data);
-            addMessage(e.data);
-        }, false);
-
-        // source.addEventListener('myevent', function(e) {
-        //   console.log("myevent", e.data);
-        // }, false);
-        //  upgrade is via JSON package
-        source.addEventListener('upgrade', function(e) {
-            //console.log("upgrade event", e.data);
-            if (e.data == "begin") {
-                $("#upgrade_message").empty();
-                $("#updatebanner").empty().append("Upgrade Started");
-                $("#upgrade-slider").val(0);
-                $("#upgradepopup").popup("open");
-                addMessage("Upgrade Started");
-            } else if (e.data == "end") {
-                addMessage("Upgrade Finished");
-                setTimeout(function() {
-                    $("#upgradepopup").popup("close");
-                }, 1000);
-            } else if ($.isNumeric(e.data) && e.data >= 0 && e.data <= 100) {
-                //console.log(e.data);
-                $("#upgrade-slider").val(e.data);
-                $("#upgradepopup").popup("open");
-                $("#upgradepopup").enhanceWithin().popup();
-            } else if (e.data == "firmware") {
-                $("#upgrade_message").empty().append("<h4>Updating Firmware...</h4>");
-                _upgrade_failed = setTimeout(function() {
-                    $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
-                    setTimeout(function() {
-                        $("#upgradepopup").popup("close");
-                        location.reload();
-                    }, 1000);
-                }, 90000);
-            } else if (e.data == "firmware-end") {
-                $("#upgrade_message").empty().append("<h4>Rebooting...</h4>");
-                _waiting_reboot = true;
-                clearTimeout(_upgrade_failed);
-                _upgrade_failed = setTimeout(function() {
-                    $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
-                    setTimeout(function() {
-                        $("#upgradepopup").popup("close");
-                        location.reload();
-                    }, 1000);
-                }, 60000);
-
-            } else {
-                $("#upgrade_message").empty().append("<h4>" + e.data + "</h4>");
-                $("#upgradepopup").enhanceWithin().popup();
-                $('#upgradepopup').popup({ dismissible: true });
-
-                //$('#upgradepopup').popup('open', { dismissible: true });
-                addMessage(e.data);
-
-            }
-        });
-
-        // OTA update
-        source.addEventListener('update', function(e) {
-
-            if (e.data == "begin") {
-                $("#upgrade_message").empty();
-                $("#updatebanner").empty().append("OTA Update Started");
-                $("#upgrade-slider").val(0);
-                $("#upgradepopup").popup("open");
-                addMessage("OTA upgrade Started");
-            } else if (e.data == "end") {
-                addMessage("OTA Finished");
-                $("#upgrade_message").empty().append("<h4>Rebooting...</h4>");
-                _waiting_reboot = true;
-                _upgrade_failed = setTimeout(function() {
-                    $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
+            source.onopen = function(e) {
+                console.log("Events Opened", e);
+                addMessage("Connected");
+                if (_waiting_reboot) {
+                    $("#upgrade_message").empty().append("<h4>Done</h4>");
+                    clearTimeout(_upgrade_failed);
+                    _waiting_reboot = false;
                     setTimeout(function() {
                         $("#upgradepopup").popup("close");
                     }, 2000);
-                }, 60000);
-            } else if ($.isNumeric(e.data) && e.data >= 0 && e.data <= 100) {
-                $("#upgrade-slider").val(e.data);
-                $("#upgradepopup").enhanceWithin().popup();
-            } else {
-                $("#upgrade_message").empty().append("<h4>" + e.data + "</h4>");
-                $("#upgradepopup").enhanceWithin().popup();
+
+                }
+            };
+
+            source.onerror = function(e) {
+                console.log("Events ERROR", e);
+                if (e.target.readyState != EventSource.OPEN) {
+                    console.log("Disconnected");
+                    addMessage("Disconnected");
+                }
+            };
+
+            source.addEventListener('message', function(e) {
+                console.log("message", e.data);
+                popUpMessage(e.data);
+            }, false);
+
+            source.addEventListener('console', function(e) {
+                //console.log("message", e.data);
                 addMessage(e.data);
-            }
+            }, false);
 
-        }, false);
+            // source.addEventListener('myevent', function(e) {
+            //   console.log("myevent", e.data);
+            // }, false);
+            //  upgrade is via JSON package
+            source.addEventListener('upgrade', function(e) {
+                //console.log("upgrade event", e.data);
+                if (e.data == "begin") {
+                    $("#upgrade_message").empty();
+                    $("#updatebanner").empty().append("Upgrade Started");
+                    $("#upgrade-slider").val(0);
+                    $("#upgradepopup").popup("open");
+                    addMessage("Upgrade Started");
+                } else if (e.data == "end") {
+                    addMessage("Upgrade Finished");
+                    setTimeout(function() {
+                        $("#upgradepopup").popup("close");
+                    }, 1000);
+                } else if ($.isNumeric(e.data) && e.data >= 0 && e.data <= 100) {
+                    //console.log(e.data);
+                    $("#upgrade-slider").val(e.data);
+                    $("#upgradepopup").popup("open");
+                    $("#upgradepopup").enhanceWithin().popup();
+                } else if (e.data == "firmware") {
+                    $("#upgrade_message").empty().append("<h4>Updating Firmware...</h4>");
+                    _upgrade_failed = setTimeout(function() {
+                        $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
+                        setTimeout(function() {
+                            $("#upgradepopup").popup("close");
+                            location.reload();
+                        }, 1000);
+                    }, 90000);
+                } else if (e.data == "firmware-end") {
+                    $("#upgrade_message").empty().append("<h4>Rebooting...</h4>");
+                    _waiting_reboot = true;
+                    clearTimeout(_upgrade_failed);
+                    _upgrade_failed = setTimeout(function() {
+                        $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
+                        setTimeout(function() {
+                            $("#upgradepopup").popup("close");
+                            location.reload();
+                        }, 1000);
+                    }, 60000);
 
-    }
+                } else {
+                    $("#upgrade_message").empty().append("<h4>" + e.data + "</h4>");
+                    $("#upgradepopup").enhanceWithin().popup();
+                    $('#upgradepopup').popup({ dismissible: true });
+
+                    //$('#upgradepopup').popup('open', { dismissible: true });
+                    addMessage(e.data);
+
+                }
+            });
+
+            // OTA update
+            source.addEventListener('update', function(e) {
+
+                if (e.data == "begin") {
+                    $("#upgrade_message").empty();
+                    $("#updatebanner").empty().append("OTA Update Started");
+                    $("#upgrade-slider").val(0);
+                    $("#upgradepopup").popup("open");
+                    addMessage("OTA upgrade Started");
+                } else if (e.data == "end") {
+                    addMessage("OTA Finished");
+                    $("#upgrade_message").empty().append("<h4>Rebooting...</h4>");
+                    _waiting_reboot = true;
+                    _upgrade_failed = setTimeout(function() {
+                        $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
+                        setTimeout(function() {
+                            $("#upgradepopup").popup("close");
+                        }, 2000);
+                    }, 60000);
+                } else if ($.isNumeric(e.data) && e.data >= 0 && e.data <= 100) {
+                    $("#upgrade-slider").val(e.data);
+                    $("#upgradepopup").enhanceWithin().popup();
+                } else {
+                    $("#upgrade_message").empty().append("<h4>" + e.data + "</h4>");
+                    $("#upgradepopup").enhanceWithin().popup();
+                    addMessage(e.data);
+                }
+
+            }, false);
+
+        }
     }
 }
 
@@ -267,47 +272,47 @@ function getGenvars() {
 
     $.post(_home_device + "data.esp", "WiFiDetails", function(result) {
 
-      console.log(result);
+        console.log(result);
 
-      datatosave(result);
+        datatosave(result);
 
-      if (result.hasOwnProperty("STA")) {
+        if (result.hasOwnProperty("STA")) {
 
-      if (result.STA.hasOwnProperty("state")) {
-        if (result.STA.state) {
-            $("#gen-page-status").empty().append(" <p> Connected to " + result.STA.connectedssid + " (<a href=\"http://"+ result.STA.IP + " \" rel=\"external\", data-ajax=\"false\">" + result.STA.IP + "</a>)</p>");
-        } else {
-           $("#gen-page-status").empty().append(" <p> WiFi Not Connected to " + result.STA.connectedssid + "</p>");
+            if (result.STA.hasOwnProperty("state")) {
+                if (result.STA.state) {
+                    $("#gen-page-status").empty().append(" <p> Connected to " + result.STA.connectedssid + " (<a href=\"http://" + result.STA.IP + " \" rel=\"external\", data-ajax=\"false\">" + result.STA.IP + "</a>)</p>");
+                } else {
+                    $("#gen-page-status").empty().append(" <p> WiFi Not Connected to " + result.STA.connectedssid + "</p>");
+                }
+            }
+
         }
-      }
 
-      }
+        if (result.hasOwnProperty("General")) {
 
-    if (result.hasOwnProperty("General")) {
+            if (result.General.hasOwnProperty("deviceid")) {
+                $("#device-name").val(result.General.deviceid);
+            }
 
-      if (result.General.hasOwnProperty("deviceid")) {
-       $("#device-name").val(result.General.deviceid);
-      }
+            if (result.General.hasOwnProperty("ap_boot_mode")) {
+                console.log("ap_boot_mode: " + result.General.ap_boot_mode);
+                $("#select-AP-behav").val(result.General.ap_boot_mode).selectmenu("refresh");
+            }
 
-      if (result.General.hasOwnProperty("ap_boot_mode")) {
-        console.log("ap_boot_mode: "+ result.General.ap_boot_mode);
-        $("#select-AP-behav").val(result.General.ap_boot_mode).selectmenu("refresh");
-      }
+            if (result.General.hasOwnProperty("no_sta_mode")) {
+                console.log("no_sta_mode: " + result.General.no_sta_mode);
+                $("#select-STA-behav").val(result.General.no_sta_mode).selectmenu("refresh");
+            }
 
-      if (result.General.hasOwnProperty("no_sta_mode")) {
-        console.log("no_sta_mode: "+ result.General.no_sta_mode);
-        $("#select-STA-behav").val(result.General.no_sta_mode).selectmenu("refresh");
-      }
+            if (result.General.hasOwnProperty("mDNS")) {
+                $("#flip-mdnsenable").val((result.General.mDNS) ? "on" : "off").flipswitch('refresh');
+            }
 
-      if (result.General.hasOwnProperty("mDNS")) {
-        $("#flip-mdnsenable").val((result.General.mDNS) ? "on" : "off").flipswitch('refresh');
-      }
+            // if (result.General.hasOwnProperty("usePerminantSettings")) {
+            //     $("#flip-usePerminantSettings").val((result.General.usePerminantSettings) ? "on" : "off").flipswitch('refresh');
+            // }
 
-      if (result.General.hasOwnProperty("usePerminantSettings")) {
-        $("#flip-usePerminantSettings").val((result.General.usePerminantSettings) ? "on" : "off").flipswitch('refresh');
-      }
-
-      }
+        }
 
     });
 } // end of getgenvars func
@@ -353,17 +358,17 @@ $(document).on('touchstart click', '.myheader', function(e) {
     var currentpage = $.mobile.activePage.attr('id');
 
     if (currentpage == "generalpage") {
-      getGenvars();
+        getGenvars();
     } else if (currentpage == "wifipage") {
-      getWiFiVars(false);
+        getWiFiVars(false);
     } else if (currentpage == "aboutpage") {
-      GetAboutVars();
+        GetAboutVars();
     } else if (currentpage == "appage") {
-      getAPvars();
+        getAPvars();
     } else if (currentpage == "otapage") {
-      getOTAvars();
-    } else if (currentpage == "upgradepage"){
-      getUpgradeVars();
+        getOTAvars();
+    } else if (currentpage == "upgradepage") {
+        getUpgradeVars();
     }
     //startEvents();
     //console.log(source);
@@ -386,8 +391,7 @@ function extractDomain(url) {
     //find & remove protocol (http, ftp, etc.) and get domain
     if (url.indexOf("://") > -1) {
         domain = url.split('/')[2];
-    }
-    else {
+    } else {
         domain = url.split('/')[0];
     }
 
@@ -402,31 +406,31 @@ function sethost(e) {
 
     if (_home_device != $("#text_home_device").val()) {
 
-    _home_device = $("#text_home_device").val();
+        _home_device = $("#text_home_device").val();
 
-    var temp_domain = extractDomain(_home_device);
-    console.log("home_href_link = " + temp_domain);
+        var temp_domain = extractDomain(_home_device);
+        console.log("home_href_link = " + temp_domain);
 
-    $("#home_href_link").attr("href", temp_domain )
+        $("#home_href_link").attr("href", temp_domain)
 
-    var currentpage = $.mobile.activePage.attr('id');
+        var currentpage = $.mobile.activePage.attr('id');
 
-    if (currentpage == "generalpage") {
-      getGenvars();
-    } else if (currentpage == "wifipage") {
-      getWiFiVars(false);
-    } else if (currentpage == "aboutpage") {
-      GetAboutVars();
-    } else if (currentpage == "appage") {
-      getAPvars();
-    } else if (currentpage == "otapage") {
-      getOTAvars();
-    } else if (currentpage == "upgradepage"){
-      getUpgradeVars();
-    }
+        if (currentpage == "generalpage") {
+            getGenvars();
+        } else if (currentpage == "wifipage") {
+            getWiFiVars(false);
+        } else if (currentpage == "aboutpage") {
+            GetAboutVars();
+        } else if (currentpage == "appage") {
+            getAPvars();
+        } else if (currentpage == "otapage") {
+            getOTAvars();
+        } else if (currentpage == "upgradepage") {
+            getUpgradeVars();
+        }
 
-    source = null;
-    startEvents();
+        source = null;
+        startEvents();
 
     }
 
@@ -461,13 +465,13 @@ $(document).on("pagecreate", "#generalpage", function() {
 
 $("#general-1-submit").bind("click", function(event, ui) {
     $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
-      datatosave(e);
+        datatosave(e);
     });
 });
 
 $(document).off('click', '#savebutton').on('click', '#savebutton', function(e) {
     $.post(_home_device + "data.esp", "save", function(e) {
-      datatosave(e);
+        datatosave(e);
     });
 });
 
@@ -523,7 +527,6 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     // Variables
     var staticwifi;
-    var globalwifi;
 
     getWiFiVars(false);
 
@@ -573,7 +576,7 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     $("#general-1-submit").click(function() { // this is being used by the front page
         $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
-          console.log(e);
+            console.log(e);
             datatosave(e);
         }).success(function(e) {
             //$("#status").empty().append("Connected").css("color", "green");
@@ -600,21 +603,21 @@ $(document).on("pagecreate", "#wifipage", function() {
 
 
     function refreshAPlist() {
-        $.post( _home_device + "data.esp", "PerformWiFiScan", function(result) {
-          datatosave(result);
-          if (result.hasOwnProperty("networks")) {
-                globalwifi = result.networks;
-                $("#wifinetworks-data").empty();
-                $("#wifinetworks-data").append("<div>");
-                $.each(result.networks, function(i, object) {
-                    var isconnected = "";
-                    if (object.connected == "true") isconnected = "checked=\"checked\"";
-                    $("#wifinetworks-data").append("<input type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
-                        object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
-                });
-                $("#wifinetworks-data").append("</div>");
-                $("#wifinetworks-data").enhanceWithin();
-          }
+        $.post(_home_device + "data.esp", "PerformWiFiScan", function(result) {
+                datatosave(result);
+                if (result.hasOwnProperty("networks")) {
+                    globalwifi = result.networks;
+                    $("#wifinetworks-data").empty();
+                    $("#wifinetworks-data").append("<div>");
+                    $.each(result.networks, function(i, object) {
+                        var isconnected = "";
+                        if (object.connected == "true") isconnected = "checked=\"checked\"";
+                        $("#wifinetworks-data").append("<input type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
+                            object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
+                    });
+                    $("#wifinetworks-data").append("</div>");
+                    $("#wifinetworks-data").enhanceWithin();
+                }
             }).success(function() {
                 //$("#status").empty().append("Connected").css("color", "green");
             })
@@ -624,23 +627,68 @@ $(document).on("pagecreate", "#wifipage", function() {
             .complete(function() {});
     }
 
+
+    /*
+                  globalwifi = result;
+
+                  datatosave(result);
+
+
+                    if ("networks" in result) {
+                        staticwifi = result.networks;
+                        $("#wifinetworks-data").empty();
+                        $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
+                        $.each(result.networks, function(i, object) {
+                            var isconnected = " ";
+                            if (object.connected === true) isconnected = "checked=\"checked\"";
+                            $("#wifinetworks-data").append("<input class = \"wifiradio\" type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
+                                object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
+                        });
+
+                        */
     function submitnewssid() {
 
-        $.post(_home_device + "data.esp", $("#wifinetworks-form,#removesaftey-1").serialize(), function(data, success) {
+        var data = $("#wifinetworks-form,#removesaftey-1").serializeArray(); // convert form to array
+
+        if (globalwifi) {
+
+            if ("networks" in globalwifi) {
+
+                $.each(globalwifi.networks, function(i, object) {
+
+                    if ($('.wifiradio:checked').val() === object.ssid) {
+                        data.push({ name: "STAchannel_desired", value: object.channel });
+                        console.log("channel match found");
+                        return;
+                    }
+
+                });
+            }
+
+        } else {
+            console.log("globalwifi = null");
+        }
+
+        console.log("data = ", data);
+
+        $.post(_home_device + "data.esp", data, function(data, success) {
             if (data == "accepted") {
                 var startTime = new Date().getTime();
                 $.mobile.loading('show');
-                timer = setTimeout(function() {
+                timer = setInterval(function() {
                     $.post(_home_device + "data.esp", "WiFiresult", function(data, success2) {
-                        if (success2) {
-                            if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied");
+                        if (data > 1) {
+                            //if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied");
                             if (data == "2") alert(data + " :ERROR Reverted to previous settings");
                             if (data == "3") alert(data + " :Settings applied: NOT CONNECTED");
                             $.mobile.loading('hide');
                             clearTimeout(timer);
-                            refreshAPlist();
+                            if (data == "4") {
+                                getWiFiVars(false);
+
+                            }
                         }
-                        setTimeout(5000);
+                        //setTimeout(5000);
                     }, "text");
                     if (new Date().getTime() - startTime > 65000) {
                         $.mobile.loading('hide');
@@ -648,7 +696,7 @@ $(document).on("pagecreate", "#wifipage", function() {
                         clearInterval(timer);
                         return;
                     }
-                }, 5000);
+                }, 1000);
             }
         }, "text");
         $("#pass-1").val(""); // clear the password field after submit
@@ -699,60 +747,60 @@ $(document).on("pagecreate", "#wifipage", function() {
 }); // end of wifipage create..
 
 
-    function getWiFiVars(scan) {
+function getWiFiVars(scan) {
 
-        var request;
-        if (scan) {
-            request = "PerformWiFiScan";
-        }
-        if (!scan) {
-            request = "WiFiDetails";
-        }
-        $.post(_home_device + "data.esp", request, function(result) {
+    var request;
+    if (scan) {
+        request = "PerformWiFiScan";
+    }
+    if (!scan) {
+        request = "WiFiDetails";
+    }
+    $.post(_home_device + "data.esp", request, function(result) {
 
-              globalwifi = result;
+            globalwifi = result;
 
-              datatosave(result);
+            datatosave(result);
 
 
-                if ("networks" in result) {
-                    staticwifi = result.networks;
-                    $("#wifinetworks-data").empty();
-                    $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
-                    $.each(result.networks, function(i, object) {
-                        var isconnected = " ";
-                        if (object.connected === true) isconnected = "checked=\"checked\"";
-                        $("#wifinetworks-data").append("<input class = \"wifiradio\" type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
-                            object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
-                    });
-                    $("#wifinetworks-data").enhanceWithin();
+            if ("networks" in result) {
+                staticwifi = result.networks;
+                $("#wifinetworks-data").empty();
+                $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
+                $.each(result.networks, function(i, object) {
+                    var isconnected = " ";
+                    if (object.connected === true) isconnected = "checked=\"checked\"";
+                    $("#wifinetworks-data").append("<input class = \"wifiradio\" type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
+                        object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
+                });
+                $("#wifinetworks-data").enhanceWithin();
+            }
+            //};  / end of if for data test
+            if (result.hasOwnProperty("STA")) {
+                if (result.STA.hasOwnProperty("dhcp")) {
+                    if (result.STA.dhcp === true) {
+                        $('#flip-dhcp').val('on').flipswitch('refresh');
+                        $("#STA_dhcp").empty().append("DHCP: Enabled");
+                    }
+                    if (result.STA.dhcp === false) {
+                        $('#flip-dhcp').val('off').flipswitch('refresh');
+                        $("#STA_dhcp").empty().append("DHCP: Disabled");
+                    }
                 }
-                //};  / end of if for data test
-                if (result.hasOwnProperty("STA")) {
-                    if (result.STA.hasOwnProperty("dhcp")) {
-                        if (result.STA.dhcp === true) {
-                            $('#flip-dhcp').val('on').flipswitch('refresh');
-                            $("#STA_dhcp").empty().append("DHCP: Enabled");
-                        }
-                        if (result.STA.dhcp === false) {
-                            $('#flip-dhcp').val('off').flipswitch('refresh');
-                            $("#STA_dhcp").empty().append("DHCP: Disabled");
-                        }
+                if (result.STA.hasOwnProperty("state")) {
+                    if (result.STA.state === true) {
+                        $("#flip-STA").val('on').flipswitch('refresh');
                     }
-                    if (result.STA.hasOwnProperty("state")) {
-                        if (result.STA.state === true) {
-                            $("#flip-STA").val('on').flipswitch('refresh');
-                        }
-                        if (result.STA.state === false) {
-                            $("#flip-STA").val('off').flipswitch('refresh');
-                        }
-
-                        $("#STA_state").empty().append((result.STA.state) ? "State: Enabled" : "State: Disabled");
-
-                        if (result.STA.state) {
-                            $("#STA_connectedto").empty().append("Connected to: " + result.STA.connectedssid);
-                        }
+                    if (result.STA.state === false) {
+                        $("#flip-STA").val('off').flipswitch('refresh');
                     }
+
+                    $("#STA_state").empty().append((result.STA.state) ? "State: Enabled" : "State: Disabled");
+
+                    if (result.STA.state) {
+                        $("#STA_connectedto").empty().append("Connected to: " + result.STA.connectedssid);
+                    }
+                }
 
 
 
@@ -777,121 +825,121 @@ $(document).on("pagecreate", "#wifipage", function() {
                 $("#STA_mac").empty().append("MAC: " + result.STA.MAC);
                 $("#text-STA-set-mac").val(result.STA.MAC);
 
-                }
-                // DNS.. no functions in espWiFi lib to store it yet...
-                // $("#STA_dns").empty().append("DNS: " + result.DNS.subnet);
-                // $("#text-DNS-set-sn").val(result.DNS.subnet);
+            }
+            // DNS.. no functions in espWiFi lib to store it yet...
+            // $("#STA_dns").empty().append("DNS: " + result.DNS.subnet);
+            // $("#text-DNS-set-sn").val(result.DNS.subnet);
 
-                if ($("#flip-dhcp").val() == "on") {
-                    $("#STAform :text").not("#text-STA-set-mac").textinput('disable');
-                }
-                if ($("#flip-dhcp").val() == "off") {
-                    $("#STAform :text").textinput('enable');
-                }
-                if ($("flip-STA").val() == "on") {
-                    $("#flip-dhcp").flipswitch('enable');
-                }
-                if ($("flip-STA").val() == "off") {
-                    $("#flip-dhcp").flipswitch('disable');
-                } //.slider('disable');
+            if ($("#flip-dhcp").val() == "on") {
+                $("#STAform :text").not("#text-STA-set-mac").textinput('disable');
+            }
+            if ($("#flip-dhcp").val() == "off") {
+                $("#STAform :text").textinput('enable');
+            }
+            if ($("flip-STA").val() == "on") {
+                $("#flip-dhcp").flipswitch('enable');
+            }
+            if ($("flip-STA").val() == "off") {
+                $("#flip-dhcp").flipswitch('disable');
+            } //.slider('disable');
 
-                $("#wifipage").enhanceWithin();
+            $("#wifipage").enhanceWithin();
 
-            }).success(function() {
-                $("#status").empty().append("Connected").css("color", "green");
-            })
-            .error(function() {
-                $("#status").empty().append("Not Connected").css("color", "red");
-            })
-            .complete(function() {});
-    }
+        }).success(function() {
+            $("#status").empty().append("Connected").css("color", "green");
+        })
+        .error(function() {
+            $("#status").empty().append("Not Connected").css("color", "red");
+        })
+        .complete(function() {});
+}
 
 
 /****************************************************
  *                    About Page
  *
  ****************************************************/
-    //<!-- About page -->
-    //var results;
-    //var staticwifi;
-    function GetAboutVars() {
-        $.post(_home_device + "data.esp", "AboutPage", function(results) {
-          datatosave(results);
+//<!-- About page -->
+//var results;
+//var staticwifi;
+function GetAboutVars() {
+    $.post(_home_device + "data.esp", "AboutPage", function(results) {
+            datatosave(results);
 
-                $("#aboutvars").empty();
-                $("#aboutvars").append("<br>Version = " + results.version_var);
-                $("#aboutvars").append("<br>Compile Date = " + results.compiletime_var);
+            $("#aboutvars").empty();
+            $("#aboutvars").append("<br>Version = " + results.version_var);
+            $("#aboutvars").append("<br>Compile Date = " + results.compiletime_var);
 
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>");
 
-                $("#aboutvars").append("<br>Heap = " + results.heap_var);
-                $("#aboutvars").append("<br>Millis = " + results.millis_var);
-                $("#aboutvars").append("<br>UpTime = " + results.uptime_var);
+            $("#aboutvars").append("<br>Heap = " + results.heap_var);
+            $("#aboutvars").append("<br>Millis = " + results.millis_var);
+            $("#aboutvars").append("<br>UpTime = " + results.uptime_var);
 
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>");
 
-                $("#aboutvars").append("<br>Chip ID = " + results.chipid_var);
-                $("#aboutvars").append("<br>Core Version = " + results.core_var);
-                $("#aboutvars").append("<br>SDK Version = " + results.sdk_var);
-                $("#aboutvars").append("<br>Boot Version = " + results.bootverion_var);
-                $("#aboutvars").append("<br>Boot Mode = " + results.bootmode_var);
-                $("#aboutvars").append("<br> CPU Speed = " + results.cpu_var + "Mhz");
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>Chip ID = " + results.chipid_var);
+            $("#aboutvars").append("<br>Core Version = " + results.core_var);
+            $("#aboutvars").append("<br>SDK Version = " + results.sdk_var);
+            $("#aboutvars").append("<br>Boot Version = " + results.bootverion_var);
+            $("#aboutvars").append("<br>Boot Mode = " + results.bootmode_var);
+            $("#aboutvars").append("<br> CPU Speed = " + results.cpu_var + "Mhz");
+            $("#aboutvars").append("<br>");
 
-                $("#aboutvars").append("<br>SPIFFS Size = " + results.SPIFFS.totalBytes);
-                $("#aboutvars").append("<br>SPIFFS Used = " + results.SPIFFS.usedBytes);
-                $("#aboutvars").append("<br>SPIFFS Blocksize = " + results.SPIFFS.blockSize);
-                $("#aboutvars").append("<br>SPIFFS Pagesize = " + results.SPIFFS.pageSize);
-                $("#aboutvars").append("<br>SPIFFS Max Open Files = " + results.SPIFFS.maxOpenFiles);
-                $("#aboutvars").append("<br>SPIFFS Max Path Length = " + results.SPIFFS.maxPathLength);
+            $("#aboutvars").append("<br>SPIFFS Size = " + results.SPIFFS.totalBytes);
+            $("#aboutvars").append("<br>SPIFFS Used = " + results.SPIFFS.usedBytes);
+            $("#aboutvars").append("<br>SPIFFS Blocksize = " + results.SPIFFS.blockSize);
+            $("#aboutvars").append("<br>SPIFFS Pagesize = " + results.SPIFFS.pageSize);
+            $("#aboutvars").append("<br>SPIFFS Max Open Files = " + results.SPIFFS.maxOpenFiles);
+            $("#aboutvars").append("<br>SPIFFS Max Path Length = " + results.SPIFFS.maxPathLength);
 
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>");
 
-                $("#aboutvars").append("<br>Flash ID = " + results.flashid_var);
-                $("#aboutvars").append("<br>Flash Size = " + results.flashsize_var);
-                $("#aboutvars").append("<br>Flash Real Size = " + results.flashRealSize_var);
-                $("#aboutvars").append("<br>Flash Size by ID = " + results.flashchipsizebyid_var);
-                $("#aboutvars").append("<br>Flash Chip Mode = " + results.flashchipmode_var);
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>Flash ID = " + results.flashid_var);
+            $("#aboutvars").append("<br>Flash Size = " + results.flashsize_var);
+            $("#aboutvars").append("<br>Flash Real Size = " + results.flashRealSize_var);
+            $("#aboutvars").append("<br>Flash Size by ID = " + results.flashchipsizebyid_var);
+            $("#aboutvars").append("<br>Flash Chip Mode = " + results.flashchipmode_var);
+            $("#aboutvars").append("<br>");
 
-                //  UMN MALLOC
-                // UMMobject[F("totalEntries")] = ummHeapInfo.totalEntries;
-                // UMMobject[F("usedEntries")] = ummHeapInfo.usedEntries;
-                // UMMobject[F("freeEntries")] = ummHeapInfo.freeEntries;
-                // UMMobject[F("totalBlocks")] = ummHeapInfo.totalBlocks;
-                // UMMobject[F("usedBlocks")] = ummHeapInfo.usedBlocks;
-                // UMMobject[F("freeBlocks")] = ummHeapInfo.freeBlocks;
-                // UMMobject[F("maxFreeContiguousBlocks")] = ummHeapInfo.maxFreeContiguousBlocks;
+            //  UMN MALLOC
+            // UMMobject[F("totalEntries")] = ummHeapInfo.totalEntries;
+            // UMMobject[F("usedEntries")] = ummHeapInfo.usedEntries;
+            // UMMobject[F("freeEntries")] = ummHeapInfo.freeEntries;
+            // UMMobject[F("totalBlocks")] = ummHeapInfo.totalBlocks;
+            // UMMobject[F("usedBlocks")] = ummHeapInfo.usedBlocks;
+            // UMMobject[F("freeBlocks")] = ummHeapInfo.freeBlocks;
+            // UMMobject[F("maxFreeContiguousBlocks")] = ummHeapInfo.maxFreeContiguousBlocks;
 
-                $("#aboutvars").append("<br>UMM HEAP INFO ");
-                $("#aboutvars").append("<br>Total Entries = " + results.UMM.totalEntries);
-                $("#aboutvars").append("<br>Used Entries = " + results.UMM.usedEntries);
-                $("#aboutvars").append("<br>Free Entries = " + results.UMM.freeEntries);
-                $("#aboutvars").append("<br>Total Blocks = " + results.UMM.totalBlocks);
-                $("#aboutvars").append("<br>Used Blocks = " + results.UMM.usedBlocks);
-                $("#aboutvars").append("<br>Free Blocks = " + results.UMM.freeBlocks);
-                $("#aboutvars").append("<br>Max Free Contiguous Blocks = " + results.UMM.maxFreeContiguousBlocks);
+            $("#aboutvars").append("<br>UMM HEAP INFO ");
+            $("#aboutvars").append("<br>Total Entries = " + results.UMM.totalEntries);
+            $("#aboutvars").append("<br>Used Entries = " + results.UMM.usedEntries);
+            $("#aboutvars").append("<br>Free Entries = " + results.UMM.freeEntries);
+            $("#aboutvars").append("<br>Total Blocks = " + results.UMM.totalBlocks);
+            $("#aboutvars").append("<br>Used Blocks = " + results.UMM.usedBlocks);
+            $("#aboutvars").append("<br>Free Blocks = " + results.UMM.freeBlocks);
+            $("#aboutvars").append("<br>Max Free Contiguous Blocks = " + results.UMM.maxFreeContiguousBlocks);
 
-                $("#aboutvars").append("<br>");
-                $("#aboutvars").append("<br>Sketch Size = " + results.sketchsize_var);
-                $("#aboutvars").append("<br>Free Space = " + results.freespace_var);
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>Sketch Size = " + results.sketchsize_var);
+            $("#aboutvars").append("<br>Free Space = " + results.freespace_var);
+            $("#aboutvars").append("<br>");
 
-                $("#aboutvars").append("<br>VCC = " + results.vcc_var);
-                $("#aboutvars").append("<br>RSSI = " + results.rssi_var);
-                $("#aboutvars").append("<br>");
+            $("#aboutvars").append("<br>VCC = " + results.vcc_var);
+            $("#aboutvars").append("<br>RSSI = " + results.rssi_var);
+            $("#aboutvars").append("<br>");
 
-                $("#aboutvars").append("<br>Reset Reason = " + results.reset.resaon);
-                $("#aboutvars").append("<br>Reset info = " + results.reset.info);
+            $("#aboutvars").append("<br>Reset Reason = " + results.reset.resaon);
+            $("#aboutvars").append("<br>Reset info = " + results.reset.info);
 
-            }).success(function() {
-                //$("#status").empty().append("Connected").css("color", "green");
-            })
-            .error(function() {
-                //$("#status").empty().append("Not Connected").css("color", "red");
-            })
-            .complete(function() {});
-    }
+        }).success(function() {
+            //$("#status").empty().append("Connected").css("color", "green");
+        })
+        .error(function() {
+            //$("#status").empty().append("Not Connected").css("color", "red");
+        })
+        .complete(function() {});
+}
 
 $(document).on("pagecreate", "#aboutpage", function() {
 
@@ -915,13 +963,13 @@ $(document).on("pagecreate", "#aboutpage", function() {
  *
  ****************************************************/
 
-     function getAPvars() {
+function getAPvars() {
 
-        $.post(_home_device  + "data.esp", "WiFiDetails", function(result) {
+    $.post(_home_device + "data.esp", "WiFiDetails", function(result) {
 
-                datatosave(result);
+            datatosave(result);
 
-        if (result.hasOwnProperty("AP")) {
+            if (result.hasOwnProperty("AP")) {
 
                 if (result.AP.state === true) {
                     $('#flip-AP').val('on').flipswitch('refresh');
@@ -958,27 +1006,27 @@ $(document).on("pagecreate", "#aboutpage", function() {
 
                 $("#AP_mac").empty().append("MAC: " + result.AP.MAC);
                 //$("#text-AP-set-mac").val(result.AP.MAC);
-        }
-                //  Update slider elements etc..
+            }
+            //  Update slider elements etc..
 
-                if ($("#flip-AP").val() == "on") {
-                    $("#APform :text").textinput('enable');
-                    $("#flip-AP-hidden").flipswitch('enable');
-                }
-                if ($("#flip-AP").val() == "off") {
-                    $("#APform :text").textinput('disable');
-                    $("#flip-AP-hidden").flipswitch('disable');
-                }
+            if ($("#flip-AP").val() == "on") {
+                $("#APform :text").textinput('enable');
+                $("#flip-AP-hidden").flipswitch('enable');
+            }
+            if ($("#flip-AP").val() == "off") {
+                $("#APform :text").textinput('disable');
+                $("#flip-AP-hidden").flipswitch('disable');
+            }
 
-            }).success(function(e) {
+        }).success(function(e) {
             //$("#status").empty().append("Connected").css("color", "green");
             datatosave(e);
         }).error(function() {
-                //$("#status").empty().append("Not Connected").css("color", "red");
-            })
-            .complete(function() {});
+            //$("#status").empty().append("Not Connected").css("color", "red");
+        })
+        .complete(function() {});
 
-    }
+}
 
 
 $(document).on("pagecreate", "#appage", function() {
@@ -1023,57 +1071,57 @@ $(document).on("pagecreate", "#appage", function() {
  *
  ****************************************************/
 
- function getUpgradeVars() {
-   $.post(_home_device + "data.esp", "generalpage", function(result) {
-           // Repo : <var id="field-repo"></var> <br>
-           // Branch : <var id="field-branch"></var> <br>
-           // Commit : <var id="field-commit"></var> <br>
-           // id="text-UpgradeURL"
-           // id="text-Upgrade-freq"
+function getUpgradeVars() {
+    $.post(_home_device + "data.esp", "generalpage", function(result) {
+            // Repo : <var id="field-repo"></var> <br>
+            // Branch : <var id="field-branch"></var> <br>
+            // Commit : <var id="field-commit"></var> <br>
+            // id="text-UpgradeURL"
+            // id="text-Upgrade-freq"
 
-           console.log(result);
+            console.log(result);
 
-          datatosave(result);
+            datatosave(result);
 
-       if (result.hasOwnProperty("General")) {
-
-
-           // $("#field-repo").empty().append(result.REPO);
-           // $("#field-branch").empty().append(result.BRANCH);
-           // $("#field-commit").empty().append(result.COMMIT);
+            if (result.hasOwnProperty("General")) {
 
 
-
-           if (result.General.hasOwnProperty("updateURL")) {
-             $("#text-UpgradeURL").val(result.General.updateURL);
-           }
-           if (result.General.hasOwnProperty("updateFreq")) {
-             $("#text-Upgrade-freq").val(result.General.updateFreq);
-           } else {
-             $("#text-Upgrade-freq").val("0");
-           }
+                // $("#field-repo").empty().append(result.REPO);
+                // $("#field-branch").empty().append(result.BRANCH);
+                // $("#field-commit").empty().append(result.COMMIT);
 
 
 
+                if (result.General.hasOwnProperty("updateURL")) {
+                    $("#text-UpgradeURL").val(result.General.updateURL);
+                }
+                if (result.General.hasOwnProperty("updateFreq")) {
+                    $("#text-Upgrade-freq").val(result.General.updateFreq);
+                } else {
+                    $("#text-Upgrade-freq").val("0");
+                }
 
-         }
 
 
-       }).success(function(e) {
-           //$("#status").empty().append("Connected").css("color", "green");
-           datatosave(e);
-       })
-       .error(function() {
-           //$("#status").empty().append("Not Connected").css("color", "red");
-       })
-       .complete(function() {});
 
- }
+            }
+
+
+        }).success(function(e) {
+            //$("#status").empty().append("Connected").css("color", "green");
+            datatosave(e);
+        })
+        .error(function() {
+            //$("#status").empty().append("Not Connected").css("color", "red");
+        })
+        .complete(function() {});
+
+}
 
 
 $(document).on("pageshow", "#upgradepage", function() {
 
-  getUpgradeVars();
+    getUpgradeVars();
 
 
 
@@ -1082,7 +1130,7 @@ $(document).on("pageshow", "#upgradepage", function() {
         $.post(_home_device + "data.esp", $(this).closest("form").find('input,select').filter(':visible').serialize(), function(data) {
             //console.log("Data Sent");
         }).success(function(e) {
-          datatosave(e);
+            datatosave(e);
         });
     });
 
@@ -1098,62 +1146,62 @@ $(document).on("pageshow", "#upgradepage", function() {
  *                    OTA Page
  *
  ****************************************************/
- $(document).on("pageshow", "#otapage", function() {
+$(document).on("pageshow", "#otapage", function() {
 
-   getOTAvars();
-
-
-
- });
+    getOTAvars();
 
 
- function getOTAvars() {
-   console.log("getOTAvars");
 
-   $.post(_home_device + "data.esp", "generalpage", function(result) {
+});
 
-      datatosave(result);
 
-if (result.hasOwnProperty("General")) {
+function getOTAvars() {
+    console.log("getOTAvars");
 
-        if (result.General.hasOwnProperty("OTAupload")) {
+    $.post(_home_device + "data.esp", "generalpage", function(result) {
 
-            if (result.General.OTAupload === true) {
-               $('#flip-otaenable').val('on').flipswitch('refresh');
-            } else {
-              $('#flip-otaenable').val('off').flipswitch('refresh');
+        datatosave(result);
+
+        if (result.hasOwnProperty("General")) {
+
+            if (result.General.hasOwnProperty("OTAupload")) {
+
+                if (result.General.OTAupload === true) {
+                    $('#flip-otaenable').val('on').flipswitch('refresh');
+                } else {
+                    $('#flip-otaenable').val('off').flipswitch('refresh');
+                }
             }
+
+            if (result.General.hasOwnProperty("OTAport")) {
+
+                $("#text-OTA-set-port").val(result.General.OTAport);
+
+            }
+
+            if (result.General.hasOwnProperty("OTApassword")) {
+
+                //$("#text-OTA-set-pass").val(result.General.OTApassword);
+                if (result.General.OTApassword) {
+                    $("#hasOTApassword").empty().append("OTA Password Set");
+                } else {
+                    $("#hasOTApassword").empty().append("NO OTA Password Set");
+                }
+
+            }
+
         }
 
-        if (result.General.hasOwnProperty("OTAport")) {
+    });
 
-          $("#text-OTA-set-port").val(result.General.OTAport);
-
-        }
-
-        if (result.General.hasOwnProperty("OTApassword")) {
-
-          //$("#text-OTA-set-pass").val(result.General.OTApassword);
-          if (result.General.OTApassword) {
-            $("#hasOTApassword").empty().append("OTA Password Set");
-          } else {
-            $("#hasOTApassword").empty().append("NO OTA Password Set");
-          }
-
-        }
 
 }
 
-   });
 
-
- }
-
-
- $("#apply_ota").bind("click", function(event, ui) {
+$("#apply_ota").bind("click", function(event, ui) {
     $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
-      datatosave(e);
-      getOTAvars();
+        datatosave(e);
+        getOTAvars();
     });
 });
 
@@ -1161,13 +1209,13 @@ if (result.hasOwnProperty("General")) {
 //}); // page init
 
 function datatosave(json) {
-  if (json.hasOwnProperty("changed")) {
-    if (json.changed === true) {
-      $('#savebutton').show();
-    } else {
-      $('#savebutton').hide();
+    if (json.hasOwnProperty("changed")) {
+        if (json.changed === true) {
+            $('#savebutton').show();
+        } else {
+            $('#savebutton').hide();
+        }
     }
-  }
 }
 
 /**

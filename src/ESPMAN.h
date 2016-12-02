@@ -190,7 +190,7 @@ public:
                         return !(*this == cstr);
                 }
                 const char * operator()() const {
-                        return buffer;
+                        return static_cast<const char *>(buffer);
                 };
                 operator bool() const;
 
@@ -248,10 +248,11 @@ protected:
                         uint16_t OTAport {8266};
                         myString OTApassword;
                         myString GUIhash;
-                        bool usePerminantSettings {true};
+                        //bool usePerminantSettings {true};
                         ESPMAN::ap_boot_mode_t ap_boot_mode {ESPMAN::NO_STA_BOOT};
                         ESPMAN::no_sta_mode_t no_sta_mode {ESPMAN::NO_STA_NOTHING};
                         bool OTAupload {true};
+                        bool portal{true}; 
                 } GEN;
 
         };
