@@ -178,8 +178,10 @@ int ESPmanager::begin()
             ap.channel = WiFi.channel();
             if (!_initialiseAP(ap)) {
                 ESPMan_Debugf("AP re started\n");
+                if (_settings->GEN.portal) {
+                    enablePortal();
 
-
+                }
             }
         }
 
@@ -205,7 +207,7 @@ int ESPmanager::begin()
         _emergencyMode(true);
 
         if (_settings->GEN.portal) {
-                 enablePortal();
+            enablePortal();
         } else {
             ESPMan_Debugf("[ESPmanager::enablePortal] Portal DISABLED\n");
 
@@ -309,8 +311,24 @@ int ESPmanager::begin()
         request->send(200);
     }, std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6)  );
 
+    
+
+
+
     _HTTP.serveStatic("/espman/index.htm", SPIFFS, "/espman/index.htm" );
-    _HTTP.serveStatic("/espman/setup.htm", SPIFFS, "/espman/setup.htm" );
+
+    //_HTTP.serveStatic("/espman/setup.htm", SPIFFS, "/espman/setup.htm" );
+
+    _HTTP.on("/espman/setup.htm", [](AsyncWebServerRequest * request) {
+
+        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/espman/setup.htm");
+        //response->addHeader("Server","ESP Async Web Server");
+        response->addHeader(ESPMAN::string_CORS, "*");
+        request->send(response); 
+
+    });
+
+    
 
     _events.onConnect([](AsyncEventSourceClient * client) {
         client->send(NULL, NULL, 0, 1000);
@@ -642,23 +660,16 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
 
     Debug_ESPManager.println("Begin:");
     root.prettyPrintTo(Serial);
-    Debug_ESPManager.println("End");
+    Debug_ESPManager.println("\nEnd");
 
 #endif
 
     if (len < 4000) {
 
         AsyncResponseStream *response = request->beginResponseStream("text/json");
-        Serial.println("1");
         response->addHeader(ESPMAN::string_CORS, "*");
-        Serial.println("2");
-
         response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-        Serial.println("3");
-
         root.printTo(*response);
-        Serial.println("4");
-
         request->send(response);
 
     } else {
@@ -1413,111 +1424,79 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 //************************
             if (plainCommand == F("PerformWiFiScan")) {
 
-                if (_wifinetworksfound != WIFI_SCAN_RUNNING) { //  don't scan if already scanning....
 
-                    ESPMan_Debug(F("Performing Wifi Network Scan..."));
+                int wifiScanState = WiFi.scanComplete();
 
-                    _wifinetworksfound = WiFi.scanNetworks(true);
-                    _events.send("WiFi Scan Running", nullptr, 0, 5000);
+                DynamicJsonBuffer jsonBuffer;
+                JsonObject& root = jsonBuffer.createObject();
 
-                    _syncCallback = [request, this]() {
+                if (wifiScanState == -2) {
+                    WiFi.scanNetworks(true);
+                    //_sendTextResponse(request, 200, "started");
+                    root["scan"] = "started";
+                } else if (wifiScanState == -1) {
+                    root["scan"] = "running";
+                } else if (wifiScanState > 0) {
 
-                        if (_wifinetworksfound == WIFI_SCAN_RUNNING) {
-                            //ESPMan_Debug("SCANNING: ");
-                            static uint32_t last_check = 0;
+                    _wifinetworksfound = wifiScanState;
 
-                            if (millis() - last_check > 500) {
+                    JsonArray& Networkarray = root.createNestedArray("networks");
 
-                                ESPMan_Debug("Checking WiFiScan State: ");
+                    /*
+                    This only returns first 15 entries... to save memory...
+                    Will work on sort func later...s
+                    */
 
-                                _wifinetworksfound = WiFi.scanComplete();
-
-
-                                last_check = millis();
-
-                                if (_wifinetworksfound < 0) {
-                                    ESPMan_Debugln("in progress.....");
-                                }
-
-                            }
-
-                            if (_wifinetworksfound > 0) {
-
-                                //_events.send("WiFi Scan Complete");
+                    if (_wifinetworksfound > 10) {
+                        _wifinetworksfound = 10;
+                    }
 
 
-                                ESPMan_Debug("Done : Found ");
-                                ESPMan_Debug(_wifinetworksfound);
-                                ESPMan_Debugln(" networks");
-
-                                DynamicJsonBuffer jsonBuffer;
-                                JsonObject& root = jsonBuffer.createObject();
-
-                                JsonArray& Networkarray = root.createNestedArray("networks");
-
-                                /*
-                                This only returns first 15 entries... to save memory...
-                                Will work on sort func later...s
-                                */
-
-                                if (_wifinetworksfound > 10) {
-                                    _wifinetworksfound = 10;
-                                }
+                    event_printf(NULL, "%u Networks Found", _wifinetworksfound);
 
 
-                                event_printf(NULL, "%u Networks Found", _wifinetworksfound);
+                    for (int i = 0; i < _wifinetworksfound; ++i) {
+                        JsonObject& ssidobject = Networkarray.createNestedObject();
 
-
-                                for (int i = 0; i < _wifinetworksfound; ++i) {
-                                    JsonObject& ssidobject = Networkarray.createNestedObject();
-
-                                    bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) ? true : false;
-                                    uint8_t encryptiontype = WiFi.encryptionType(i);
-                                    ssidobject[F("ssid")] = WiFi.SSID(i);
-                                    ssidobject[F("rssi")] = WiFi.RSSI(i);
-                                    ssidobject[F("connected")] = connectedbool;
-                                    ssidobject[F("channel")] = WiFi.channel(i);
-                                    switch (encryptiontype) {
-                                    case ENC_TYPE_NONE:
-                                        ssidobject[F("encyrpted")] = "OPEN";
-                                        break;
-                                    case ENC_TYPE_WEP:
-                                        break;
-                                    case ENC_TYPE_TKIP:
-                                        ssidobject[F("encyrpted")] = "WPA_PSK";
-                                        break;
-                                    case ENC_TYPE_CCMP:
-                                        ssidobject[F("encyrpted")] = "WPA2_PSK";
-                                        break;
-                                    case ENC_TYPE_AUTO:
-                                        ssidobject[F("encyrpted")] = "AUTO";
-                                        break;
-                                    }
-
-                                    ssidobject[F("BSSID")] = WiFi.BSSIDstr(i);
-                                }
-
-                                if (request) {
-                                    sendJsontoHTTP<JsonObject>(root, request);
-
-                                    Serial.println("SENT");
-                                    //_syncCallback = nullptr;
-                                    WiFi.scanDelete();
-                                    Serial.println("DELETING SCAN");
-
-                                    _wifinetworksfound = 0;
-                                    return true;
-                                }
-                            }
-
-                            return false; //  scan not complete yet..
-
+                        bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) ? true : false;
+                        uint8_t encryptiontype = WiFi.encryptionType(i);
+                        ssidobject[F("ssid")] = WiFi.SSID(i);
+                        ssidobject[F("rssi")] = WiFi.RSSI(i);
+                        ssidobject[F("connected")] = connectedbool;
+                        ssidobject[F("channel")] = WiFi.channel(i);
+                        switch (encryptiontype) {
+                        case ENC_TYPE_NONE:
+                            ssidobject[F("enc")] = "OPEN";
+                            break;
+                        case ENC_TYPE_WEP:
+                            break;
+                        case ENC_TYPE_TKIP:
+                            ssidobject[F("enc")] = "WPA_PSK";
+                            break;
+                        case ENC_TYPE_CCMP:
+                            ssidobject[F("enc")] = "WPA2_PSK";
+                            break;
+                        case ENC_TYPE_AUTO:
+                            ssidobject[F("enc")] = "AUTO";
+                            break;
                         }
-                    };
+
+                        ssidobject[F("BSSID")] = WiFi.BSSIDstr(i);
+                    }
 
 
-                    return;  //  this is needed to KEEP THE REQUEST OPEN... otherwise it is lost...
+
                 }
+
+                sendJsontoHTTP<JsonObject>(root, request);
+
+                if (wifiScanState > 0) {
+                    WiFi.scanDelete();
+                }
+
+                _wifinetworksfound = 0;
+                return;
+
             }
 //*************************
 
@@ -1840,7 +1819,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 factoryReset();
                 delay(100);
                 ESP.restart();
-                while(1);
+                while (1);
                 return true;
             };
             return;
@@ -1993,9 +1972,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                             if (_settings && newsettings) {
-                                Serial.print("\n\n\nsettings->STA = *newsettings;\n\n");
+                                //Serial.print("\n\n\nsettings->STA = *newsettings;\n\n");
                                 _settings->STA = *newsettings;
-                                Serial.print("\ndone\n\n");
+                                //Serial.print("\ndone\n\n");
                                 _settings->changed = true;
                                 ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] CALLBACK: Settings Applied\n");
                                 save_flag = true;
@@ -2964,10 +2943,10 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 {
     using namespace ESPMAN;
     int ERROR = 0;
-    bool portal_enabled = _dns; 
+    bool portal_enabled = _dns;
 
     if (portal_enabled) {
-        disablePortal(); 
+        disablePortal();
     }
 
 #ifdef Debug_ESPManager
@@ -3129,7 +3108,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
     // }
 
     if (portal_enabled) {
-        enablePortal(); 
+        enablePortal();
     }
 
     ESPMan_Debugf("[ESPmanager::_initialiseSTA] connRes = %u, time = %ums\n", result, millis() - start_time);

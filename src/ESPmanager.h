@@ -55,7 +55,7 @@
 #define SETTINGS_FILE_VERSION 2
 #define ESPMAN_USE_UPDATER 1 
 
-#define Debug_ESPManager Serial
+//#define Debug_ESPManager Serial
 
 #if defined(Debug_ESPManager)
  #define ESPMan_Debug(x)    Debug_ESPManager.print(x)

@@ -87,19 +87,42 @@ $("#next_namepage").on("click", function(event) {
 
 });
 
+$("#ssid-1-rescan").on("click", function(event) {
+    event.preventDefault();
+    $('#wifi_status').empty().append("Please Wait. ");
+    StartWifiScan();
+
+
+});
 
 
 
-$("#wifipage").on("pagebeforeshow", function() {
+
+
+
+function StartWifiScan() {
     $('#wifinetworks-form').hide();
-    $('#wifi_status').empty().append("Please wait. Scanning for WiFi Networks");
+
 
     $.post(_home_device + "data.esp", "PerformWiFiScan", function(result) {
-            $('#wifi_status').empty();
-            $('#wifinetworks-form').show();
-            //datatosave(result);
-            console.log(result);
-            if (result.hasOwnProperty("networks")) {
+
+
+            if (result.hasOwnProperty("scan")) {
+
+                if (result.scan == "started") {
+                    $('#wifi_status').append("Scanning for WiFi Networks");
+                } else if (result.scan == "scanning") {
+                    $('#wifi_status').append(".");
+                }
+
+                setTimeout(StartWifiScan, 500);
+
+            } else if (result.hasOwnProperty("networks")) {
+
+                console.log("wifiScanResults", result);
+                $('#wifi_status').empty();
+                $('#wifinetworks-form').show();
+
                 _networks = result.networks;
                 $("#wifinetworks-data").empty();
                 $("#wifinetworks-data").append("<div>");
@@ -111,7 +134,11 @@ $("#wifipage").on("pagebeforeshow", function() {
                 });
                 $("#wifinetworks-data").append("</div>");
                 $("#wifinetworks-data").enhanceWithin();
+
+
             }
+
+
         }).success(function() {
             //$("#status").empty().append("Connected").css("color", "green");
         })
@@ -119,7 +146,15 @@ $("#wifipage").on("pagebeforeshow", function() {
             //$("#status").empty().append("Not Connected").css("color", "red");
         })
         .complete(function() {});
+}
 
+
+
+
+$("#wifipage").on("pagebeforeshow", function() {
+
+    $('#wifi_status').empty().append("Please Wait. ");
+    StartWifiScan();
 
 });
 
@@ -171,7 +206,7 @@ function WiFiMoreinfo() {
                 "<br>Connected: " + ((object.connected) ? "Yes" : "No") +
                 "<br>RSSI: " + object.rssi +
                 "<br>Channel: " + object.channel +
-                "<br>Security: " + object.encyrpted +
+                "<br>Security: " + object.enc +
                 "<br>BSSID: " + object.BSSID +
                 "</div>"
             );
@@ -186,16 +221,37 @@ $("#ssid-1-moreinfo").click(function() {
 
 
 
+function checkForReboot() {
+
+    $.post("http://" + _data.STA.IP + "/espman/" + "data.esp", "generalpage", function(data) {
+
+            $("#launch_buttons").show();
+
+
+        }).success(function() {
+            //$("#status").empty().append("Connected").css("color", "green");
+        })
+        .error(function() {
+            //$("#status").empty().append("Not Connected").css("color", "red");
+        })
+        .complete(function() {});
+
+}
+
 $("#save_finalpage").click(function() {
-    console.log("Save"); 
+    console.log("Save");
     $("#final_message").empty().append("Saving Data... ");
     $.post(_home_device + "data.esp", "save", function(data) {
 
         if (data == "OK") {
-            $("#final_message").append("Done.<br> Rebooting.  Please wait 1 min, then reconnect to Home WiFi and use URL above.");
+            $("#final_message").append("Done.<br>Please Reconnect to your WiFi and wait for the Launch Button to appear.");
             $("#edit_butons").hide();
-            $("#launch_buttons").show();
-            $("#launch_finalpage").attr("href", "http://" + _data.STA.IP + "/espman/" );
+            $("#launch_finalpage").attr("href", "http://" + _data.STA.IP + "/");
+
+            setTimeout(function() {
+                setInterval(checkForReboot, 1000);
+            }, 5000);
+
         }
 
         console.log("Done");
@@ -204,8 +260,7 @@ $("#save_finalpage").click(function() {
 
 function cancel_func() {
     console.log("Cancel");
-    $.post(_home_device + "data.esp", "cancelWizard", function(e) {
-    });
+    $.post(_home_device + "data.esp", "cancelWizard", function(e) {});
     $.mobile.navigate("#mainpage");
 };
 
@@ -219,12 +274,66 @@ $("#confirmpage").on("pagebeforeshow", function() {
 
 });
 
+function sendSettings() {
+
+    $.post(_home_device + "data.esp", { "deviceid": devicename }, function(result) {
+
+        console.log("Devicename Set");
+
+        $.post(_home_device + "data.esp", { "ssid": ssid, "pass": password, "STAchannel_desired": channel }, function(data, success) {
+
+            console.log("Setting Wifi Networks");
+
+            if (data == "accepted") {
+                console.log("WiFi Data Accepted Applying");
+                var startTime = new Date().getTime();
+                $.mobile.loading('show');
+                var timer = setInterval(function() {
+                    console.log("checking");
+
+                    $.post(_home_device + "data.esp", "WiFiresult", function(data) {
+                        console.log("WiFiResult", data);
+
+                        if (data > 1) {
+                            //if (data == "1") alert(data + " :Waiting for IP Address");
+                            if (data == "2") alert(data + " :ERROR Reverted to previous settings");
+                            if (data == "3") alert(data + " :Settings applied: NOT CONNECTED");
+                            $.mobile.loading('hide');
+                            clearInterval(timer);
+
+                            if (data == "4") {
+                                $.post(_home_device + "data.esp", "generalpage", function(data) {
+                                    _data = data;
+                                    console.log("data", data);
+                                    $.mobile.navigate("#finalpage");
+                                });
+                            }
+                        }
+                        //refreshAPlist();
+                    }, "text").error(function(e) {
+                        console.log("ERROR", e);
+                    });
+
+                    if (new Date().getTime() - startTime > 65000) {
+                        $.mobile.loading('hide');
+                        alert("TIMEOUT: NO RESPONSE FROM ESP");
+                        clearInterval(timer);
+                        return;
+                    }
+
+                }, 5000);
+            }
+        }, "text");
+
+    });
+}
 
 
 $("#confirm_endpage").on("click", function(event) {
     event.preventDefault();
     var send = { "deviceid": devicename, "ssid": ssid, "pass": password };
     var wizard = false;
+    var waiting = false;
     console.log("data", send);
 
     $.post(_home_device + "data.esp", "enterWizard", function(result) {
@@ -234,66 +343,24 @@ $("#confirm_endpage").on("click", function(event) {
             wizard = true;
 
 
-            $.post(_home_device + "data.esp", { "deviceid": devicename }, function(result) {
+            if (_data) {
 
-                console.log("Devicename Set");
+                if (_data.STA.channel != channel) {
+                    waiting = true;
+                    //alert("Reconnect to : " + _data.AP.ssid);
 
+                    //("#proceedButton").hide(); 
+                    $("#popuppara").append(_data.AP.ssid);
+                    $("#popupWiFiChannel").popup("open");
 
-
-                $.post(_home_device + "data.esp", { "ssid": ssid, "pass": password, "STAchannel_desired": channel }, function(data, success) {
-
-
-                if (_data) {
-
-                    if (_data.STA.channel != channel) {
-                        alert("Reconnect to : " + _data.AP.ssid);
-                    }
                 }
+            }
 
-                    console.log("Setting Wifi Networks");
+            if (waiting == false) {
+                sendSettings(); 
+            }
 
-                    if (data == "accepted") {
-                        console.log("WiFi Data Accepted Applying");
-                        var startTime = new Date().getTime();
-                        $.mobile.loading('show');
-                        var timer = setInterval(function() {
-                            console.log("checking");
 
-                            $.post(_home_device + "data.esp", "WiFiresult", function(data) {
-                                console.log("WiFiResult", data);
-
-                                if (data > 1) {
-                                    //if (data == "1") alert(data + " :Waiting for IP Address");
-                                    if (data == "2") alert(data + " :ERROR Reverted to previous settings");
-                                    if (data == "3") alert(data + " :Settings applied: NOT CONNECTED");
-                                    $.mobile.loading('hide');
-                                    clearInterval(timer);
-
-                                    if (data == "4") {
-                                        $.post(_home_device + "data.esp", "generalpage", function(data) {
-                                            _data = data;
-                                            console.log("data", data);
-                                            $.mobile.navigate("#finalpage");
-                                        });
-                                    }
-                                }
-                                //refreshAPlist();
-                            }, "text").error(function(e) {
-                                console.log("ERROR", e);
-                            });
-
-                            if (new Date().getTime() - startTime > 65000) {
-                                $.mobile.loading('hide');
-                                alert("TIMEOUT: NO RESPONSE FROM ESP");
-                                clearInterval(timer);
-                                return;
-                            }
-
-                        }, 5000);
-                    }
-                }, "text");
-
-            });
 
         } else {
             console.log("Wizard Error: " + result);

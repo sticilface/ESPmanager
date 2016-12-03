@@ -52,6 +52,21 @@ void setup()
 
 	settings.begin();
 
+
+
+	//  This rewrite is active when the captive portal is working, and redirects the root / to the setup wizard. 
+	//  This has to go in the main sketch to allow your project to control the root when using ESPManager. 
+	HTTP.rewrite("/", "/espman/setup.htm").setFilter( [](AsyncWebServerRequest * request) {
+		return settings.portal();
+	});
+
+
+	//  then use this rewrite and serve static to serve your index file(s)
+	HTTP.rewrite("/", "/index.htm");
+	HTTP.serveStatic("/index.htm", SPIFFS, "/index.htm");
+
+
+
 	HTTP.begin();
 
 	Serial.print(F("Free Heap: "));

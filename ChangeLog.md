@@ -1,3 +1,21 @@
+V2.1
+
+# New Features
+- Added Captive Portal mode when device has not been configured previously.  Not active normally, just for the first config of the device to aid setup.
+- New wizard to make device set up easier
+- The Site is now just one file, which makes it a lot faster to load.  Does not require appCache now. 
+
+# Breaking changes
+- Sketch credentials has been removed.  It is now no longer possible to specify a network to join from the sketch.  This just made things too complicated, with the wifi logic.
+- autoConnect() has also been removed.  This does not really change things except that now you must configure the device first, even if it has a successfull config stored in the memory.  Now no matter what, when you flash ESPManager for the first time, you get the config wizard. 
+
+# Bug fixes
+- WifiScan now works fully async.  previously it held the request open so this would lead to crashes if the request was closed by lwip. 
+- When joinging an WiFi network if the network is on a different channel the ESP waits for the client to reconnect to the AP.  This makes the process a lot smoother, as previosly the computer or the phone would loose the connection to the ESP, as it can only function on one channel.  For example if the AP on the ESP was channel 1, and you wanted to join a WiFi network on channel 3.  The ESP would change its AP channel to 3, and you would drop the AP connection to the ESP.  Now it waits for reconnect before proceeding. 
+-Appcache has been removed.  No longer needed with single site files. 
+
+
+
 V2.0.0-rc1
 
 # Breaking changes

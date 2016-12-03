@@ -523,6 +523,57 @@ $(document).on("pagecreate", "#otapage", function() {
  *                    WiFi Page
  *
  ****************************************************/
+
+
+ function StartWifiScan() {
+    $('#wifinetworks-form').hide();
+
+
+    $.post(_home_device + "data.esp", "PerformWiFiScan", function(result) {
+
+            
+            if (result.hasOwnProperty("scan")) {
+
+                if (result.scan == "started") {
+                    $('#wifi_status').append("Scanning for WiFi Networks");
+                } else if (result.scan == "scanning") {
+                    $('#wifi_status').append(".");
+                }
+
+                setTimeout(StartWifiScan, 500);
+
+            } else if (result.hasOwnProperty("networks")) {
+
+                console.log("wifiScanResults", result);
+                $('#wifi_status').empty();
+                $('#wifinetworks-form').show();
+
+                _networks = result.networks;
+                $("#wifinetworks-data").empty();
+                $("#wifinetworks-data").append("<div>");
+                $.each(_networks, function(i, object) {
+                    var isconnected = "";
+                    if (object.connected == "true") isconnected = "checked=\"checked\"";
+                    $("#wifinetworks-data").append("<input oncontextmenu=\"WiFiMoreinfo()\"  type=\"radio\" name=\"ssid\" class=\"wifiradio\" id=\"radio-choice-v-" + i + "a\" value=\"" +
+                        object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
+                });
+                $("#wifinetworks-data").append("</div>");
+                $("#wifinetworks-data").enhanceWithin();
+
+
+            }
+
+
+        }).success(function() {
+            //$("#status").empty().append("Connected").css("color", "green");
+        })
+        .error(function() {
+            //$("#status").empty().append("Not Connected").css("color", "red");
+        })
+        .complete(function() {});
+}
+
+
 $(document).on("pagecreate", "#wifipage", function() {
 
     // Variables
@@ -531,7 +582,8 @@ $(document).on("pagecreate", "#wifipage", function() {
     getWiFiVars(false);
 
     setTimeout(function() {
-        getWiFiVars(true);
+        StartWifiScan(); 
+        //getWiFiVars(true);
     }, 1000);
 
     $("#flip-dhcp").change(function() {
@@ -602,30 +654,30 @@ $(document).on("pagecreate", "#wifipage", function() {
     });
 
 
-    function refreshAPlist() {
-        $.post(_home_device + "data.esp", "PerformWiFiScan", function(result) {
-                datatosave(result);
-                if (result.hasOwnProperty("networks")) {
-                    globalwifi = result.networks;
-                    $("#wifinetworks-data").empty();
-                    $("#wifinetworks-data").append("<div>");
-                    $.each(result.networks, function(i, object) {
-                        var isconnected = "";
-                        if (object.connected == "true") isconnected = "checked=\"checked\"";
-                        $("#wifinetworks-data").append("<input type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
-                            object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
-                    });
-                    $("#wifinetworks-data").append("</div>");
-                    $("#wifinetworks-data").enhanceWithin();
-                }
-            }).success(function() {
-                //$("#status").empty().append("Connected").css("color", "green");
-            })
-            .error(function() {
-                //$("#status").empty().append("Not Connected").css("color", "red");
-            })
-            .complete(function() {});
-    }
+    // function refreshAPlist() {
+    //     $.post(_home_device + "data.esp", "PerformWiFiScan", function(result) {
+    //             datatosave(result);
+    //             if (result.hasOwnProperty("networks")) {
+    //                 globalwifi = result.networks;
+    //                 $("#wifinetworks-data").empty();
+    //                 $("#wifinetworks-data").append("<div>");
+    //                 $.each(result.networks, function(i, object) {
+    //                     var isconnected = "";
+    //                     if (object.connected == "true") isconnected = "checked=\"checked\"";
+    //                     $("#wifinetworks-data").append("<input type=\"radio\" name=\"ssid\" id=\"radio-choice-v-" + i + "a\" value=\"" +
+    //                         object.ssid + "\"" + isconnected + "><label for=\"radio-choice-v-" + i + "a\">" + object.ssid + "</label>");
+    //                 });
+    //                 $("#wifinetworks-data").append("</div>");
+    //                 $("#wifinetworks-data").enhanceWithin();
+    //             }
+    //         }).success(function() {
+    //             //$("#status").empty().append("Connected").css("color", "green");
+    //         })
+    //         .error(function() {
+    //             //$("#status").empty().append("Not Connected").css("color", "red");
+    //         })
+    //         .complete(function() {});
+    // }
 
 
     /*
@@ -715,7 +767,7 @@ $(document).on("pagecreate", "#wifipage", function() {
                     "<br>Connected: " + ((object.connected) ? "Yes" : "No") +
                     "<br>RSSI: " + object.rssi +
                     "<br>Channel: " + object.channel +
-                    "<br>Security: " + object.encyrpted +
+                    "<br>Security: " + object.enc +
                     "<br>BSSID: " + object.BSSID +
                     "</div>"
                 );
@@ -751,7 +803,8 @@ function getWiFiVars(scan) {
 
     var request;
     if (scan) {
-        request = "PerformWiFiScan";
+        StartWifiScan();
+        return; 
     }
     if (!scan) {
         request = "WiFiDetails";

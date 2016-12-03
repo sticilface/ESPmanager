@@ -30,7 +30,7 @@
                 <var id="intro"></var>
             </p>
             <div data-role="controlgroup" data-type="horizontal" align="center">
-            <a id="beginconfig_btn" href="#namepage" class="ui-btn  ui-btn-b" align="center" data-transition="flow">START</a>
+                <a id="beginconfig_btn" href="#namepage" class="ui-btn  ui-btn-b" align="center" data-transition="flow">START</a>
             </div>
         </div>
         <!-- /content -->
@@ -69,14 +69,14 @@
         </div>
         <!-- /header -->
         <div role="main" class="ui-content">
-        <div id="wifi_status"></div>
-        <form id="wifinetworks-form">
-      <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
-      <label for="pass-1">Password:</label>
-      <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">
-      <input type="button" value="More Info" id="ssid-1-moreinfo">
-      <input type="button" value="Rescan" id="ssid-1-rescan">
-     </form>
+            <div id="wifi_status"></div>
+            <form id="wifinetworks-form">
+                <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
+                <label for="pass-1">Password:</label>
+                <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">
+                <input type="button" value="More Info" id="ssid-1-moreinfo">
+                <input type="button" value="Rescan" id="ssid-1-rescan">
+            </form>
             <br>
             <div data-role="controlgroup" data-type="horizontal" align="center">
                 <a href="#namepage" class="ui-btn ui-btn-b" data-transition="flow">BACK</a>
@@ -86,8 +86,8 @@
         </div>
         <div id="wifiinsert" data-role="popup" data-theme="a" class="ui-content"> </div>
         <!-- /content -->
-    </div>  <!-- /page -->
-
+    </div>
+    <!-- /page -->
     <!-- ***********************************************************************
 
          Options Page
@@ -99,8 +99,6 @@
         </div>
         <!-- /header -->
         <div role="main" class="ui-content">
-
-
             <div data-role="controlgroup" data-type="horizontal" align="center">
                 <a href="#wifipage" class="ui-btn ui-btn-b" data-transition="flow">BACK</a>
                 <a onclick="cancel_func()" class="ui-btn ui-btn-b" data-transition="flow">CANCEL</a>
@@ -121,8 +119,8 @@
         </div>
         <!-- /header -->
         <div role="main" class="ui-content">
-        <div>This will submit all the settings, and may take some time as the ESP might have to reboot several times.  Ensure that you stay connected to the ESP access point and do not get reconnected to home WiFi.</div>
-        <div id="summary"></div>
+            <div>This will submit all the settings, and may take some time as the ESP might have to reboot several times. Ensure that you stay connected to the ESP access point and do not get reconnected to home WiFi.</div>
+            <div id="summary"></div>
             <div data-role="controlgroup" data-type="horizontal" align="center">
                 <a href="#wifipage" class="ui-btn  ui-btn-b" data-transition="flow">BACK</a>
                 <a onclick="cancel_func()" class="ui-btn  ui-btn-b" data-transition="flow">CANCEL</a>
@@ -130,10 +128,22 @@
             </div>
         </div>
         <!-- /content -->
+        <div data-role="popup" id="popupWiFiChannel" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+        
+            <div data-role="header" data-theme="a">
+            
+                <h1>Warning!</h1>
+            </div>
+        
+            <div role="main" class="ui-content">
+            
+                
+                <p id="popuppara">To connect to this network the ESP WiFi Channel must change. Click proceed, then ensure that you reconnect to </p>
+                <a id="proceedButton" onclick="sendSettings()" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">Proceed</a>
+            </div>
+        </div>
     </div>
     <!-- /page -->
-
-
     <!-- ***********************************************************************
 
          Final Page
@@ -145,8 +155,8 @@
         </div>
         <!-- /header -->
         <div role="main" class="ui-content">
-        <div id="final_data"></div>
-        <div id="final_message"></div>
+            <div id="final_data"></div>
+            <div id="final_message"></div>
             <div data-role="controlgroup" data-type="horizontal" align="center" id="edit_butons">
                 <a href="#confirmpage" class="ui-btn ui-btn-b" data-transition="flow">BACK</a>
                 <a onclick="cancel_func()" class="ui-btn ui-btn-b" data-transition="flow">CANCEL</a>
@@ -159,7 +169,5 @@
         <!-- /content -->
     </div>
     <!-- /page -->
-
-
     <script src="/setup.js" inline inline-compress></script>
 </body>
