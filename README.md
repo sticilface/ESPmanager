@@ -22,7 +22,7 @@ This project uses SPIFFS, JqueryMobile, AJAX, ArduinoJson and handles lots of as
 - Download to your libraries Folder for Arduino.  As per normal lib. 
 - Open the example sketch located in the examples folder - ESPmanager-example.ino.   
 - Upload sketch data directory as shown [here](http://esp8266.github.io/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system)   
-- Upload the sketch via serial, and upload the sketch Data folder.  
+- Upload the sketch via serial.  
 - Reboot the ESP.  
 - Join the ESP AP. 
 - Now visit any URL (www.a.com) and it should redirect you to the setup wizard.  Follow the iunstruction. 
