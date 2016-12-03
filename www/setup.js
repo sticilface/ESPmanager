@@ -20,7 +20,7 @@ var password = "";
 
 //_home_device = "http://192.168.1.240/espman/"; // tvlights
 
-_home_device = "http://192.168.4.1/espman/";
+//_home_device = "http://192.168.4.1/espman/";
 
 // $( ".wifiradio" ).contextmenu(function(event) {
 //   event.preventDefault();
@@ -350,7 +350,7 @@ $("#confirm_endpage").on("click", function(event) {
                     //alert("Reconnect to : " + _data.AP.ssid);
 
                     //("#proceedButton").hide(); 
-                    $("#popuppara").append(_data.AP.ssid);
+                    $("#popuppara").empty().append(_data.AP.ssid);
                     $("#popupWiFiChannel").popup("open");
 
                 }
