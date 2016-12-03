@@ -1,14 +1,12 @@
 [![Build Status](https://travis-ci.org/sticilface/ESPmanager.svg?branch=master)](https://travis-ci.org/sticilface/ESPmanager)
 
 ## ESPmanager
-Full wifi and OTA manager for ESP8266 Arduino IDE
+Full wifi and OTA manager for ESP8266 Arduino IDE, with integrated update manager to perform autoupdating over HTTP. 
 
-Uses Jquerymobile and AJAX to run everything, with AppCache should mean fairly snappy handling. 
+Uses Jquerymobile and AJAX to run everything. 
 
 V2.1 Released please see [Changelog](https://github.com/sticilface/ESPmanager/blob/master/ChangeLog.md)  
-There are several changes that are breaking, and it is quite different. 
-Many new feature, including single URL updating of sketch and SPIFFS. 
-
+ 
 ## Dependancies
 + [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 + [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) 
