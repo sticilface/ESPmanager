@@ -12,7 +12,7 @@ Many new feature, including single URL updating of sketch and SPIFFS.
 ## Dependancies
 + [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
 + [ESPAsyncTCP](https://github.com/me-no-dev/ESPAsyncTCP) 
-+ [ArduinoJson](https://github.com/bblanchon/ArduinoJson)  ( Version 5.6.7 only )
++ [ArduinoJson](https://github.com/bblanchon/ArduinoJson)
 
 ## Features 
 This project uses SPIFFS, JqueryMobile, AJAX, ArduinoJson and handles lots of aspects of ESP8266 management. Including OTA, WiFi Networks, Setting device name, enabling mDNS, you can upload files to SPIFFS, format SPIFFS, reboot the device, enable/disable the AP, enable/disable Station mode, set AP password, channel (if not in station mode), set the MAC address of STA. There is an About page that gives loads of variables regarding WiFi, SPIFFS, uptime, etc etc.  Captive Portal now works on first boot. 
