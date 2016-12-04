@@ -318,16 +318,16 @@ int ESPmanager::begin()
 
     _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" );
 
-    //_HTTP.serveStatic("/espman/setup.htm", SPIFFS, "/espman/setup.htm" );
+    _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" );
 
-    _HTTP.on("/espman/setup.htm", [this](AsyncWebServerRequest * request) {
+    // _HTTP.on("/espman/setup.htm", [this](AsyncWebServerRequest * request) {
 
-        AsyncWebServerResponse *response = request->beginResponse(_fs, "/espman/setup.htm");
-        //response->addHeader("Server","ESP Async Web Server");
-        response->addHeader(ESPMAN::string_CORS, "*");
-        request->send(response);
+    //     AsyncWebServerResponse *response = request->beginResponse(_fs, "/espman/setup.htm");
+    //     //response->addHeader("Server","ESP Async Web Server");
+    //     response->addHeader(ESPMAN::string_CORS, "*");
+    //     request->send(response);
 
-    });
+    // });
 
 
 
@@ -367,7 +367,7 @@ int ESPmanager::begin()
     // }).setFilter(ON_STA_FILTER);
 
 
-    _HTTP.serveStatic("/espman/", _fs, "/espman/"); //.setLastModified(getCompileTime());
+    //_HTTP.serveStatic("/espman/", _fs, "/espman/"); //.setLastModified(getCompileTime());
 
     // _HTTP.serveStatic("/jquery", _fs, "/jquery/").setCacheControl("max-age:86400").setFilter(ON_AP_FILTER);
 
