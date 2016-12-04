@@ -305,25 +305,16 @@ int ESPmanager::begin()
 
     _HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
     _HTTP.rewrite("/espman/", "/espman/index.htm");
-
-
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
-
 
     //  kept to allow cached sites to refresh...
     _HTTP.on("/espman/site.appcache", HTTP_ANY, [](AsyncWebServerRequest * request) {
         request->send(200, "text/cache-manifest", "CACHE MANIFEST\nNETWORK:\n*\n\n");
     });
 
-
-
     _HTTP.on("/espman/upload", HTTP_POST, [this](AsyncWebServerRequest * request) {
         request->send(200);
     }, std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6)  );
-
-
-
-
 
     _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" );
 

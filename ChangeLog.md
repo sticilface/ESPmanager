@@ -4,6 +4,7 @@
 - Added Captive Portal mode when device has not been configured previously.  Not active normally, just for the first config of the device to aid setup.
 - New wizard to make device set up easier
 - The Site is now just one file, which makes it a lot faster to load.  Does not require appCache now. 
+- On upgrade it will automatically delete files from SPIFFS that contain a zipped .gz equivilent.  This is to stop the webserver from serving them instead of the .gz file which now is the default file.  This might bork your site if you depend on files that have the same name ie.. index.htm and index.htm.gz.  So I advise against that... let me know if this is a problem...
 
 ## Breaking changes
 - Sketch credentials has been removed.  It is now no longer possible to specify a network to join from the sketch.  This just made things too complicated, with the wifi logic.

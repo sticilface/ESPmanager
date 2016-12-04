@@ -23,7 +23,8 @@ This project uses SPIFFS, JqueryMobile, AJAX, ArduinoJson and handles lots of as
 - Upload the sketch via serial.  
 - Reboot the ESP.  
 - Join the ESP AP. 
-- Now visit any URL (www.a.com) and it should redirect you to the setup wizard.  Follow the iunstruction. 
+- Now visit any URL (www.a.com) and it will redirect you to the setup wizard.  Follow the instructions....... then click launch. 
+- One gotya might be if the wifi channel you are joining is different to the wifi channel the AP is in.  In which case a warning will popup, and after 10 seconds or so your computer will disconnect and most likely reconnect to your home wifi.  You need to reconnect to the ESP access point, for the config to continue.  This is expected behaviour!  
 - Visit http://x.x.x.x/espman/ if you want to change further settings. 
 
 Feedback welcome... 
