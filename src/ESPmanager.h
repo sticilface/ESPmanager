@@ -143,6 +143,7 @@ private:
         //void _applyPermenent(settings_t & set);
         void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text); 
 
+        void _removePreGzFiles(); 
 
         // String _hash(const char * pass);
         // bool _hashCheck(const char * password, const char * hash) ;

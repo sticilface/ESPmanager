@@ -97,7 +97,7 @@ int ESPmanager::begin()
 
     Debug_ESPManager.println("SPIFFS FILES:");
     {
-        Dir dir = SPIFFS.openDir("/");
+        Dir dir = _fs.openDir("/");
         while (dir.next()) {
             String fileName = dir.fileName();
             size_t fileSize = dir.fileSize();
@@ -106,7 +106,7 @@ int ESPmanager::begin()
         Debug_ESPManager.printf("\n");
     }
 
-    File f = SPIFFS.open(SETTINGS_FILE, "r");
+    File f = _fs.open(SETTINGS_FILE, "r");
     Debug_ESPManager.printf("ESP MANAGER Settings [%u]B:\n", f.size());
     if (f) {
         for (int i = 0; i < f.size(); i++) {
@@ -117,6 +117,8 @@ int ESPmanager::begin()
     }
 
 #endif
+
+    //_removePreGzFiles();
 
     int getallERROR = _getAllSettings();
     ESPMan_Debugf("[ESPmanager::begin()] _getAllSettings = %i \n", getallERROR);
@@ -306,29 +308,37 @@ int ESPmanager::begin()
 
 
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
-    //_HTTP.on("/espman/site.appcache", HTTP_ANY, std::bind (&ESPmanager::_handleManifest, this, _1));
+
+
+    //  kept to allow cached sites to refresh...
+    _HTTP.on("/espman/site.appcache", HTTP_ANY, [](AsyncWebServerRequest * request) {
+        request->send(200, "text/cache-manifest", "CACHE MANIFEST\nNETWORK:\n*\n\n");
+    });
+
+
+
     _HTTP.on("/espman/upload", HTTP_POST, [this](AsyncWebServerRequest * request) {
         request->send(200);
     }, std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6)  );
 
-    
 
 
 
-    _HTTP.serveStatic("/espman/index.htm", SPIFFS, "/espman/index.htm" );
+
+    _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" );
 
     //_HTTP.serveStatic("/espman/setup.htm", SPIFFS, "/espman/setup.htm" );
 
-    _HTTP.on("/espman/setup.htm", [](AsyncWebServerRequest * request) {
+    _HTTP.on("/espman/setup.htm", [this](AsyncWebServerRequest * request) {
 
-        AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/espman/setup.htm");
+        AsyncWebServerResponse *response = request->beginResponse(_fs, "/espman/setup.htm");
         //response->addHeader("Server","ESP Async Web Server");
         response->addHeader(ESPMAN::string_CORS, "*");
-        request->send(response); 
+        request->send(response);
 
     });
 
-    
+
 
     _events.onConnect([](AsyncEventSourceClient * client) {
         client->send(NULL, NULL, 0, 1000);
@@ -865,14 +875,15 @@ void ESPmanager::_upgrade(const char * path)
         if (remote_path.endsWith("bin") && filename == "sketch" ) {
             updatesketch = true;
             files_recieved++;         //  add one to keep count in order...
-#if defined(DEBUG_ESP_PORT)
-            DEBUG_ESP_PORT.printf("[%u/%u] BIN Updated pending\n", file_count, files_expected);
-#endif
+
+            ESPMan_Debugf("[%u/%u] BIN Updated pending\n", file_count, files_expected);
+
+
             continue;
         }
-#if defined(DEBUG_ESP_PORT)
-        DEBUG_ESP_PORT.printf("[%u/%u] Downloading (%s)..", file_count, files_expected, filename.c_str()  );
-#endif
+
+        ESPMan_Debugf("[%u/%u] Downloading (%s)..", file_count, files_expected, filename.c_str()  );
+
         int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5 );
 
         if (ret == 0 || ret == FILE_NOT_CHANGED) {
@@ -883,18 +894,21 @@ void ESPmanager::_upgrade(const char * path)
 
         event_printf(string_UPGRADE, "%u", (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f) );
 
-#if defined(DEBUG_ESP_PORT)
+#if defined(Debug_ESPManager)
         if (ret == 0) {
-            DEBUG_ESP_PORT.printf("SUCCESS \n");
+            Debug_ESPManager.printf("SUCCESS \n");
             //files_recieved++;
         } else if (ret == FILE_NOT_CHANGED) {
-            DEBUG_ESP_PORT.printf("FILE NOT CHANGED \n");
+            Debug_ESPManager.printf("FILE NOT CHANGED \n");
         } else {
-            DEBUG_ESP_PORT.printf("FAILED [%i]\n", ret  );
+            Debug_ESPManager.printf("FAILED [%i]\n", ret  );
         }
 #endif
         delay(20);
     }
+
+    //  this removes any duplicate files if a compressed 
+    _removePreGzFiles(); 
 
 
 
@@ -1016,9 +1030,10 @@ int ESPmanager::save()
 
 #ifdef ESPMAN_USE_UPDATER
 
-int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename, const char * md5_true )
+int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true )
 {
     using namespace ESPMAN;
+    String filename = filename_c;
     HTTPClient http;
     FSInfo _FSinfo;
     int freeBytes = 0;
@@ -1045,7 +1060,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename, const
 
     freeBytes = _FSinfo.totalBytes - _FSinfo.usedBytes;
 
-    if (strlen(filename) > _FSinfo.maxPathLength) {
+    if (filename.length() > _FSinfo.maxPathLength) {
         return SPIFFS_FILENAME_TOO_LONG;
     }
 
@@ -1106,6 +1121,20 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename, const
 
         if (_fs.exists(filename)) {
             _fs.remove(filename);
+        }
+
+        if (filename.endsWith(".gz") ) {
+            String withOutgz = filename.substring(0, filename.length() - 3);
+            ESPMan_Debugf("NEW File ends in .gz: without = %s...", withOutgz.c_str());
+            if (_fs.remove(withOutgz)) {
+                ESPMan_Debugf("%s DELETED...", withOutgz.c_str());
+            }
+        }
+
+        if (_fs.exists(filename + ".gz")) {
+            if (_fs.remove(filename + ".gz")) {
+                ESPMan_Debugf("%s.gz DELETED...", filename.c_str());
+            }
         }
 
         _fs.rename("/tempfile", filename);
@@ -1330,6 +1359,15 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
 
+    if (request->hasParam("purgeunzipped")) {
+       // if (request->getParam("body")->value() == "purgeunzipped") {
+            ESPMan_Debugf("PURGE UNZIPPED FILES\n"); 
+            _removePreGzFiles(); 
+        //}
+
+    }
+
+
     /*------------------------------------------------------------------------------------------------------------------
                                                                     Reboot command
        ------------------------------------------------------------------------------------------------------------------*/
@@ -1355,7 +1393,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 #if defined(Debug_ESPManager)
 
-                File f = SPIFFS.open(SETTINGS_FILE, "r");
+                File f = _fs.open(SETTINGS_FILE, "r");
                 Debug_ESPManager.printf("ESP MANAGER Settings [%u]B:\n", f.size());
                 if (f) {
                     for (int i = 0; i < f.size(); i++) {
@@ -1824,6 +1862,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             };
             return;
         }
+
+
+
 
     } //  end of if plaincommand
 
@@ -3998,3 +4039,24 @@ void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t cod
 //         return result;
 //
 // }
+
+void ESPmanager::_removePreGzFiles() {
+
+        Dir dir = _fs.openDir("/");
+        while (dir.next()) {
+            String fileName = dir.fileName();
+
+            if (fileName.endsWith(".gz")) {
+
+                String withOutgz = fileName.substring(0, fileName.length() - 3 );
+
+                if (_fs.exists(withOutgz)) {
+                    ESPMan_Debugf("_removePreGzFiles() : Removing unzipped file %s\n", withOutgz.c_str());
+                    _fs.remove(withOutgz);
+                }
+
+            }
+
+        }
+
+}
