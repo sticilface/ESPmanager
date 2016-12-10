@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <WebAuthentication.h>
 #include <Hash.h>
+#include <list>
 
 extern "C" {
 #include "user_interface.h"
@@ -289,6 +290,10 @@ int ESPmanager::begin()
             if (error) {
                 event_printf(string_UPDATE, string_ERROR, error);
             }
+
+            delay(1000);
+            ESP.restart(); 
+
         });
 
 
@@ -1469,22 +1474,41 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     _wifinetworksfound = wifiScanState;
 
+                    //using namespace std; 
+                    
+                    std::list < std::pair <int,int>> _container ;
+
+                    for (int i = 0; i < _wifinetworksfound; i++) {
+
+                        _container.push_back(std::pair<int,int>(i,WiFi.RSSI(i))); 
+                    }
+
+                    _container.sort([](const std::pair<int,int>& first, const std::pair<int,int>& second) {
+                        return (first.second > second.second); 
+                    });
+
                     JsonArray& Networkarray = root.createNestedArray("networks");
 
-                    /*
-                    This only returns first 15 entries... to save memory...
-                    Will work on sort func later...s
-                    */
 
-                    if (_wifinetworksfound > 10) {
-                        _wifinetworksfound = 10;
+                    if (_wifinetworksfound > 20) {
+                        _wifinetworksfound = 20;
                     }
 
 
                     event_printf(NULL, "%u Networks Found", _wifinetworksfound);
 
 
-                    for (int i = 0; i < _wifinetworksfound; ++i) {
+                    std::list<std::pair <int,int>>::iterator it;
+
+                    int counter = 0; 
+
+                    for (it = _container.begin(); it != _container.end(); it++) {
+                        if (counter == 20) {
+                            break; 
+                        }
+
+                        int i = it->first;  
+
                         JsonObject& ssidobject = Networkarray.createNestedObject();
 
                         bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) ? true : false;
@@ -1511,7 +1535,38 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         }
 
                         ssidobject[F("BSSID")] = WiFi.BSSIDstr(i);
+
+                        counter++;
                     }
+
+                    // for (int i = 0; i < _wifinetworksfound; ++i) {
+                    //     JsonObject& ssidobject = Networkarray.createNestedObject();
+
+                    //     bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) ? true : false;
+                    //     uint8_t encryptiontype = WiFi.encryptionType(i);
+                    //     ssidobject[F("ssid")] = WiFi.SSID(i);
+                    //     ssidobject[F("rssi")] = WiFi.RSSI(i);
+                    //     ssidobject[F("connected")] = connectedbool;
+                    //     ssidobject[F("channel")] = WiFi.channel(i);
+                    //     switch (encryptiontype) {
+                    //     case ENC_TYPE_NONE:
+                    //         ssidobject[F("enc")] = "OPEN";
+                    //         break;
+                    //     case ENC_TYPE_WEP:
+                    //         break;
+                    //     case ENC_TYPE_TKIP:
+                    //         ssidobject[F("enc")] = "WPA_PSK";
+                    //         break;
+                    //     case ENC_TYPE_CCMP:
+                    //         ssidobject[F("enc")] = "WPA2_PSK";
+                    //         break;
+                    //     case ENC_TYPE_AUTO:
+                    //         ssidobject[F("enc")] = "AUTO";
+                    //         break;
+                    //     }
+
+                    //     ssidobject[F("BSSID")] = WiFi.BSSIDstr(i);
+                    // }
 
 
 
@@ -3110,9 +3165,6 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
     while (result = WiFi.waitForConnectResult(), result != WL_CONNECTED) {
         delay(10);
-        // if (_dns) {
-        //     _dns->processNextRequest();
-        // }
         if (millis() - start_time > 60000) {
             ESPMan_Debugf("[ESPmanager::_initialiseSTA] ABORTING CONNECTION TIMEOUT\n");
             break;
@@ -3120,24 +3172,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
         }
     }
 
-    // Serial.print("Actual SSID = ");
-    // Serial.println(WiFi.SSID());
-    // Serial.print("Actual PASS = ");
-    // Serial.println(WiFi.psk());
 
-    // if (_dns) {
-    //     _dns->setErrorReplyCode(DNSReplyCode::NoError);
-    //     _dns->start(DNS_PORT, "*", IPAddress(192,168,4,1));
-    // }
-
-    //result = WiFi.waitForConnectResult();
-
-    // yield();
-
-    // if (result != WL_CONNECTED) {
-    //     ESPMan_Debugf("[ESPmanager::_initialiseSTA] Trying Second Time\n");
-    //     while (result = WiFi.waitForConnectResult(), result != WL_CONNECTED) { yield(); }
-    // }
 
     if (portal_enabled) {
         enablePortal();
