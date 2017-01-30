@@ -1,0 +1,3 @@
+[submodule "src/Tasker"]
+	path = src/Tasker
+	url = https://github.com/sticilface/Tasker

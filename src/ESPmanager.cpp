@@ -14,6 +14,7 @@
 #include <WebAuthentication.h>
 #include <Hash.h>
 #include <list>
+#include "Tasker/src/Tasker.h"
 
 extern "C" {
 #include "user_interface.h"
@@ -47,6 +48,9 @@ extern UMM_HEAP_INFO ummHeapInfo;
 // const char * commitTag = ESCAPEQUOTE(COMMIT_TAG);
 // const char * branchTag = ESCAPEQUOTE(BRANCH_TAG);
 // const char * slugTag = ESCAPEQUOTE(SLUG_TAG);
+#if defined(Debug_ESPManager)
+extern File _DebugFile;
+#endif
 
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs)
@@ -55,7 +59,16 @@ ESPmanager::ESPmanager(
     , _events("/espman/events")
 {
 
+
 }
+
+void ESPmanager::test(Task & t)
+{
+
+}
+
+
+
 
 ESPmanager::~ESPmanager()
 {
@@ -64,6 +77,15 @@ ESPmanager::~ESPmanager()
     if (_settings) {
         delete _settings;
     }
+
+#ifdef ESPMANAGER_SYSLOG
+    if (_syslogDeviceName) {
+        free( (char*)_syslogDeviceName);
+        _syslogDeviceName = nullptr;
+    }
+#endif
+
+
 }
 
 int ESPmanager::begin()
@@ -72,6 +94,7 @@ int ESPmanager::begin()
     using namespace ESPMAN;
 
     bool wizard = false;
+
 
 
 // #ifdef RANDOM_MANIFEST_ON_BOOT
@@ -92,6 +115,30 @@ int ESPmanager::begin()
     if (!_fs.begin()) {
         return ERROR_SPIFFS_MOUNT;
     }
+
+#ifdef Debug_ESPManager
+    _DebugFile  = _fs.open("/debugFile.txt", "a+");
+
+    _DebugFile.println("\n --------            RESTARTED DEVICE         -------- \n\n");
+
+
+    _DebugFile.println(ESP.getResetReason());
+    _DebugFile.println(ESP.getResetInfo());
+
+    _tasker.add( [this](Task & t) {
+
+        if (_DebugFile.size() > 50000) {
+            _DebugFile.close();
+            if (_fs.exists("/debugFile.old.txt")) {
+                _fs.remove("/debugFile.old.txt");
+            }
+            _fs.rename("/debugFile.txt", "/debugFile.old.txt");
+            _DebugFile  = _fs.open("/debugFile.txt", "a+");
+
+        }
+    }).setTimeout(60000).setRepeat(true);
+
+#endif
 
 
 #ifdef Debug_ESPManager
@@ -183,7 +230,6 @@ int ESPmanager::begin()
                 ESPMan_Debugf("AP re started\n");
                 if (_settings->GEN.portal) {
                     enablePortal();
-
                 }
             }
         }
@@ -228,7 +274,11 @@ int ESPmanager::begin()
     }
 
 
-    if (_OTAupload) {
+    if (_settings->GEN.OTAupload) {
+
+        _tasker.add([](Task & t) {
+            ArduinoOTA.handle();
+        }, true).setRepeat(true).setTimeout(500);
 
         ArduinoOTA.setHostname(_settings->GEN.host());
         //
@@ -292,7 +342,7 @@ int ESPmanager::begin()
             }
 
             delay(1000);
-            ESP.restart(); 
+            ESP.restart();
 
         });
 
@@ -385,71 +435,111 @@ int ESPmanager::begin()
     //
     // } );
 
+    _initialiseTasks();
+
+    if (_settings->GEN.updateFreq) {
+
+        _tasker.add([this](Task & t) {
+
+            ESPMan_Debugf("Performing update check\n");
+
+            _getAllSettings();
+
+            if (_settings) {
+                _upgrade(_settings->GEN.updateURL());
+            }
+
+        }).setRepeat(true).setTimeout(_settings->GEN.updateFreq * 60000);
+
+
+    }
+
+    /*
+
+            Add delete _settings task.  deletes the settings held in memory...
+
+    */
+
+
+    _tasker.add( [this](Task & t) {
+
+        if (_settings && !_settings->changed) {
+            if (millis() - _settings->start_time > SETTINGS_MEMORY_TIMEOUT) {
+                uint32_t startheap = ESP.getFreeHeap();
+                delete _settings;
+                _settings = nullptr;
+                ESPMan_Debugf("[ESPmanager::handle()] Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
+
+            }
+        }
+
+    }).setTimeout(10000).setRepeat(true);
+
+
+    _tasker.add( std::bind( &ESPmanager::_APlogic, this, _1 )).setRepeat(true).setTimeout(500);
+
+
+#if defined(Debug_ESPManager)
+
+    if (WiFi.isConnected()) {
+
+        configTime(0 * 3600, 0, "pool.ntp.org");
+
+        ESPMan_Debug("Boot Time: ");
+
+        uint8_t tc = 0;
+
+        while (!time(nullptr)) {
+            tc++;
+            delay(500);
+            if (tc == 60) { break; }
+        }
+
+        time_t now = time(nullptr);
+
+        ESPMan_Debug(ctime(&now));
+        //ESPMan_Debugln();
+
+    }
+
+#endif
+
+
+#if defined(ESPMANAGER_SYSLOG)
+
+    if (_settings->GEN.usesyslog) {
+        ESPMan_Debugf("Syslog = true\n"); 
+        _sysLogClient = new WiFiUDP;
+
+        if (_sysLogClient) {
+            ESPMan_Debugf("Created syslog client\n"); 
+
+
+            _syslog = new Syslog( *_sysLogClient , _settings->GEN.syslogProto );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
+
+
+            if (_syslog) {
+                ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port =%u, proto=%u\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto ); 
+                _syslog->server(_settings->GEN.syslogIP, _settings->GEN.syslogPort );
+                _syslogDeviceName = strdup(_settings->GEN.host());
+                _syslog->deviceHostname(_syslogDeviceName);
+                _syslog->appName("ESPManager");
+                _syslog->defaultPriority(LOG_KERN);
+
+                _syslog->log(LOG_INFO, F("Device Started"));
+
+            }
+        }
+    }
+
+#endif
+
 
 }
 
-
-void ESPmanager::enablePortal()
+void ESPmanager::_APlogic(Task & t)
 {
-    ESPMan_Debugf("[ESPmanager::enablePortal] Enabling Portal\n");
-
-    _dns = new DNSServer;
-    //_portalreWrite = &_HTTP.rewrite("/", "/espman/setup.htm");
-
-    IPAddress apIP(192, 168, 4, 1);
-
-    if (_dns)   {
-        /* Setup the DNS server redirecting all the domains to the apIP */
-        _dns->setErrorReplyCode(DNSReplyCode::NoError);
-        _dns->start(DNS_PORT, "*", apIP);
-        ESPMan_Debugf("[ESPmanager::enablePortal] Done\n");
-
-    }
-
-}
-
-void ESPmanager::disablePortal()
-{
-    ESPMan_Debugf("[ESPmanager::enablePortal] Disabling Portal\n");
-
-    if (_dns) {
-        delete _dns;
-        _dns = nullptr;
-    }
-
-    // if (_portalreWrite && _HTTP.removeRewrite(_portalreWrite))
-    // {
-    //     _portalreWrite = nullptr;
-    // }
-
-}
-
-void ESPmanager::handle()
-{
-    using namespace ESPMAN;
-    static uint32_t timeout = 0;
-
-    if (_OTAupload) { ArduinoOTA.handle(); }
-
-    if (_dns) {
-        _dns->processNextRequest();
-    }
-
-    //  Ony handle manager code every 500ms...
-    if (millis() - timeout < 500) {
-        return;
-    }
-
-    timeout = millis();
-
-    if (_syncCallback) {
-        if (_syncCallback()) {
-            _syncCallback = nullptr;
-        };
-    }
-
     if ( _APtimer > 0 && !WiFi.softAPgetStationNum()) {
-
 
         int32_t time_total {0};
 
@@ -528,30 +618,146 @@ void ESPmanager::handle()
         }
 
     }
+}
 
 
+void ESPmanager::enablePortal()
+{
+    ESPMan_Debugf("[ESPmanager::enablePortal] Enabling Portal\n");
 
-    if (_updateFreq && millis() - _updateTimer > _updateFreq * 60000) {
-        _updateTimer = millis();
-        ESPMan_Debugf("Performing update check\n");
-        //__events.send("Checking for updates", nullptr, 0, 5000);
-        _getAllSettings();
+    _dns = new DNSServer;
+    //_portalreWrite = &_HTTP.rewrite("/", "/espman/setup.htm");
 
-        if (_settings) {
-            _upgrade(_settings->GEN.updateURL());
-        }
+    IPAddress apIP(192, 168, 4, 1);
+
+    if (_dns)   {
+        /* Setup the DNS server redirecting all the domains to the apIP */
+        _dns->setErrorReplyCode(DNSReplyCode::NoError);
+        _dns->start(DNS_PORT, "*", apIP);
+        ESPMan_Debugf("[ESPmanager::enablePortal] Done\n");
+
+        _dnsTask = & _tasker.add([this](Task & t) {
+            this->_dns->processNextRequest();
+        }, true).setRepeat().setTimeout(500);
 
     }
 
-    if (_settings && !_settings->changed) {
-        if (millis() - _settings->start_time > SETTINGS_MEMORY_TIMEOUT) {
-            uint32_t startheap = ESP.getFreeHeap();
-            delete _settings;
-            _settings = nullptr;
-            ESPMan_Debugf("[ESPmanager::handle()] Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
+}
 
-        }
+void ESPmanager::disablePortal()
+{
+    ESPMan_Debugf("[ESPmanager::enablePortal] Disabling Portal\n");
+
+    if (_dns) {
+        delete _dns;
+        _dns = nullptr;
     }
+
+    if (_dnsTask) {
+        _tasker.remove(*_dnsTask);
+    }
+
+    // if (_portalreWrite && _HTTP.removeRewrite(_portalreWrite))
+    // {
+    //     _portalreWrite = nullptr;
+    // }
+
+}
+
+
+void ESPmanager::_initialiseTasks()
+{
+
+
+    // typedef std::function<bool(task*)> mycallbacktype;
+    // typedef default_task<mycallbacktype> mytask ;
+    using namespace std::placeholders;
+
+
+    // Task & atask_2 = _tasker.add( [this] (Task & t) {
+    //     Serial.println("task 2 run once, after 10 seconds and delete");
+    //     return false;
+    // }).setTimeout(10000);
+
+    // Task & atask_3 = _tasker.add( std::bind(&ESPmanager::test, this, _1 )  ).setTimeout(3000).setRepeat();
+
+    // task & atask_4 = _tasker.add( [this] (task & t) {
+    //     Serial.printf("task 4 run every 20 seconds and delete after 10. %u remaining\n", 10 - t.count);
+    //     if (t.count < 10) {
+    //         return false;
+    //     } else {
+    //         return true;
+    //     }
+
+    // }).setTimeout(20000);
+
+
+    // task & atask_5 = _tasker.add( [this] (task & t) {
+    //     Serial.println("task 5 run once and delete");
+    //     return false;
+    // });
+
+    // task & atask_6 = _tasker.add( [this] (task & t) {
+    //     Serial.println("task 6 run once and delete");
+    //     return false;
+    // });
+
+}
+
+
+
+void ESPmanager::handle()
+{
+    //  using namespace ESPMAN;
+//    static uint32_t timeout = 0;
+
+    _tasker.loop();
+
+    //if (_OTAupload) { ArduinoOTA.handle(); }
+
+    // if (_dns) {
+    //     _dns->processNextRequest();
+    // }
+
+    //  Ony handle manager code every 500ms...
+    // if (millis() - timeout < 500) {
+    //     return;
+    // }
+
+//   timeout = millis();
+
+    // if (_syncCallback) {
+    //     if (_syncCallback()) {
+    //         _syncCallback = nullptr;
+    //     };
+    // }
+
+
+
+
+
+    // if (_updateFreq && millis() - _updateTimer > _updateFreq * 60000) {
+    //     _updateTimer = millis();
+    //     ESPMan_Debugf("Performing update check\n");
+    //     //__events.send("Checking for updates", nullptr, 0, 5000);
+    //     _getAllSettings();
+
+    //     if (_settings) {
+    //         _upgrade(_settings->GEN.updateURL());
+    //     }
+
+    // }
+
+
+    // if (_settings && !_settings->changed) {
+    //     if (millis() - _settings->start_time > SETTINGS_MEMORY_TIMEOUT) {
+    //         uint32_t startheap = ESP.getFreeHeap();
+    //         delete _settings;
+    //         _settings = nullptr;
+    //         ESPMan_Debugf("[ESPmanager::handle()] Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
+
+    //     }
+    // }
 
 }
 
@@ -660,27 +866,33 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
 {
     int len = root.measureLength();
 
-    ESPMan_Debugf("JSON length: %u, heap = %u\n", len, ESP.getFreeHeap());
+    //Serial.printf("JSON length: %u, heap = %u\n", len, ESP.getFreeHeap());
 
-#ifdef Debug_ESPManager
+//#ifdef Debug_ESPManager
 
-    Debug_ESPManager.println("Begin:");
-    root.prettyPrintTo(Serial);
-    Debug_ESPManager.println("\nEnd");
+    // Serial.println("Begin:");
+    // root.prettyPrintTo(Serial);
+    // Serial.println("\nEnd");
 
-#endif
+//#endif
 
     if (len < 4000) {
 
         AsyncResponseStream *response = request->beginResponseStream("text/json");
-        response->addHeader(ESPMAN::string_CORS, "*");
-        response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-        root.printTo(*response);
-        request->send(response);
+
+        if (response) {
+            response->addHeader(ESPMAN::string_CORS, "*");
+            response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
+            root.printTo(*response);
+            request->send(response);
+        } else {
+            //Serial.println("ERROR: No Stream Response");
+        }
+
 
     } else {
 
-        ESPMan_Debugf("JSON to long\n");
+        ESPMan_Debugln("JSON to long\n");
 
         // AsyncJsonResponse * response = new AsyncJsonResponse();
         // response->addHeader(ESPMAN::string_CORS, "*");
@@ -744,12 +956,17 @@ void ESPmanager::upgrade(String path)
         newpath = path.c_str();
     }
 
-    _syncCallback = [ newpath, this ]() {
 
+    _tasker.add([newpath, this](Task & t) {
         this->_upgrade(newpath());
-        return true;
+    });
 
-    };
+    // _syncCallback = [ newpath, this ]() {
+
+    //     this->_upgrade(newpath());
+    //     return true;
+
+    // };
 
 }
 
@@ -903,8 +1120,8 @@ void ESPmanager::_upgrade(const char * path)
         delay(20);
     }
 
-    //  this removes any duplicate files if a compressed 
-    _removePreGzFiles(); 
+    //  this removes any duplicate files if a compressed
+    _removePreGzFiles();
 
 
 
@@ -949,7 +1166,7 @@ void ESPmanager::_upgrade(const char * path)
                         delay(100);
                         _events.close();
                         delay(1000);
-                        ESP.reset();
+                        ESP.restart();
                         break;
                     }
 
@@ -1233,12 +1450,17 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
         ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] path = %s\n", path.c_str());
 
-        _syncCallback = [ = ]() {
-
+        _tasker.add([ = ](Task & t) {
             _upgrade(path.c_str());
-            return true;
 
-        };
+        });
+
+        // _syncCallback = [ = ]() {
+
+        //_upgrade(path.c_str());
+        //     return true;
+
+        // };
 
     }
 
@@ -1320,6 +1542,16 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
 
+    static uint32_t last_handle_time = 0;
+
+    //if (millis() - last_handle_time < 50) {
+
+    Debug_ESPManager.printf("Time handle gap = %u\n", millis() - last_handle_time);
+
+    //     return;
+    // }
+
+    last_handle_time = millis();
 
     if (!_settings) {
         _getAllSettings();
@@ -1356,9 +1588,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
     if (request->hasParam("purgeunzipped")) {
-       // if (request->getParam("body")->value() == "purgeunzipped") {
-            ESPMan_Debugf("PURGE UNZIPPED FILES\n"); 
-            _removePreGzFiles(); 
+        // if (request->getParam("body")->value() == "purgeunzipped") {
+        ESPMan_Debugf("PURGE UNZIPPED FILES\n");
+        _removePreGzFiles();
         //}
 
     }
@@ -1415,12 +1647,18 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
                         // request->send(response);
 
-                        _syncCallback = [this]() {
+                        _tasker.add( [this](Task & t) {
                             ESPMan_Debugf("REBOOTING....\n");
                             delay(100);
                             ESP.restart();
-                            return true;
-                        };
+                        });
+
+                        // _syncCallback = [this]() {
+                        //     ESPMan_Debugf("REBOOTING....\n");
+                        //     delay(100);
+                        //     ESP.restart();
+                        //     return true;
+                        // };
 
                         return; //  stop request
                     }
@@ -1437,7 +1675,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // response->addHeader(ESPMAN::string_CORS, "*");
             // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
             // request->send(response);
-            _syncCallback = [this]() {
+
+            _tasker.add( [this](Task & t) {
                 _events.send("Rebooting", NULL, 0, 1000);
                 delay(100);
                 _events.close();
@@ -1445,8 +1684,18 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 delay(100);
                 ESP.restart();
                 delay(100000);
-                return true;
-            };
+            });
+
+            // _syncCallback = [this]() {
+            //     _events.send("Rebooting", NULL, 0, 1000);
+            //     delay(100);
+            //     _events.close();
+
+            //     delay(100);
+            //     ESP.restart();
+            //     delay(100000);
+            //     return true;
+            // };
 
         };
 
@@ -1474,17 +1723,17 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     _wifinetworksfound = wifiScanState;
 
-                    //using namespace std; 
-                    
-                    std::list < std::pair <int,int>> _container ;
+                    //using namespace std;
+
+                    std::list < std::pair <int, int>> _container ;
 
                     for (int i = 0; i < _wifinetworksfound; i++) {
 
-                        _container.push_back(std::pair<int,int>(i,WiFi.RSSI(i))); 
+                        _container.push_back(std::pair<int, int>(i, WiFi.RSSI(i)));
                     }
 
-                    _container.sort([](const std::pair<int,int>& first, const std::pair<int,int>& second) {
-                        return (first.second > second.second); 
+                    _container.sort([](const std::pair<int, int>& first, const std::pair<int, int>& second) {
+                        return (first.second > second.second);
                     });
 
                     JsonArray& Networkarray = root.createNestedArray("networks");
@@ -1498,16 +1747,16 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     event_printf(NULL, "%u Networks Found", _wifinetworksfound);
 
 
-                    std::list<std::pair <int,int>>::iterator it;
+                    std::list<std::pair <int, int>>::iterator it;
 
-                    int counter = 0; 
+                    int counter = 0;
 
                     for (it = _container.begin(); it != _container.end(); it++) {
                         if (counter == 20) {
-                            break; 
+                            break;
                         }
 
-                        int i = it->first;  
+                        int i = it->first;
 
                         JsonObject& ssidobject = Networkarray.createNestedObject();
 
@@ -1538,37 +1787,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                         counter++;
                     }
-
-                    // for (int i = 0; i < _wifinetworksfound; ++i) {
-                    //     JsonObject& ssidobject = Networkarray.createNestedObject();
-
-                    //     bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) ? true : false;
-                    //     uint8_t encryptiontype = WiFi.encryptionType(i);
-                    //     ssidobject[F("ssid")] = WiFi.SSID(i);
-                    //     ssidobject[F("rssi")] = WiFi.RSSI(i);
-                    //     ssidobject[F("connected")] = connectedbool;
-                    //     ssidobject[F("channel")] = WiFi.channel(i);
-                    //     switch (encryptiontype) {
-                    //     case ENC_TYPE_NONE:
-                    //         ssidobject[F("enc")] = "OPEN";
-                    //         break;
-                    //     case ENC_TYPE_WEP:
-                    //         break;
-                    //     case ENC_TYPE_TKIP:
-                    //         ssidobject[F("enc")] = "WPA_PSK";
-                    //         break;
-                    //     case ENC_TYPE_CCMP:
-                    //         ssidobject[F("enc")] = "WPA2_PSK";
-                    //         break;
-                    //     case ENC_TYPE_AUTO:
-                    //         ssidobject[F("enc")] = "AUTO";
-                    //         break;
-                    //     }
-
-                    //     ssidobject[F("BSSID")] = WiFi.BSSIDstr(i);
-                    // }
-
-
 
                 }
 
@@ -1643,7 +1861,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             JsonObject& APobject = root.createNestedObject("AP");
 
             APobject[string_ssid] = set.GEN.host();
-            APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
+
+
+            //APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
+            APobject[F("state")] = set.AP.enabled;
+
             //APobject[F("APenabled")] = (int)set.AP.mode;
             //APobject[string_mode] = (int)_ap_mode;
 
@@ -1802,13 +2024,20 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
             // request->send(response);
 
-
-            _syncCallback = [this]() {
+            _tasker.add( [this](Task & t) {
                 _fs.format();
                 ESPMan_Debugln(F(" done"));
                 _events.send("Formatting done", nullptr, 0, 5000);
-                return true;
-            };
+
+            });
+
+
+            // _syncCallback = [this]() {
+            //     _fs.format();
+            //     ESPMan_Debugln(F(" done"));
+            //     _events.send("Formatting done", nullptr, 0, 5000);
+            //     return true;
+            // };
         }
 
         if (plainCommand == "deletesettings") {
@@ -1825,8 +2054,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         if ( plainCommand == "resetwifi" ) {
 
-
-            _syncCallback = [this]() {
+            _tasker.add( [this](Task & t) {
 
                 _events.send("Reset WiFi and Reboot", NULL, 0, 1000);
                 delay(100);
@@ -1835,9 +2063,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 WiFi.disconnect();
                 ESP.eraseConfig();
-                ESP.reset();
-                return true;
-            };
+                ESP.restart();
+                //return true;
+            });
 
         }
 
@@ -1899,13 +2127,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
             // request->send(response);
 
-            _syncCallback = [this]() {
+            _tasker.add( [this](Task & t) {
                 factoryReset();
                 delay(100);
                 ESP.restart();
                 while (1);
-                return true;
-            };
+                //return true;
+            });
             return;
         }
 
@@ -1972,8 +2200,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     }
 
+                    _tasker.add( [safety, newsettings, request, this, APChannelchange, channel](Task & t) {
 
-                    _syncCallback = [safety, newsettings, request, this, APChannelchange, channel]() {
+                        //_syncCallback = [safety, newsettings, request, this, APChannelchange, channel]() {
 
                         using namespace ESPMAN;
 
@@ -2082,7 +2311,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                         return true;
 
-                    }; //  end of lambda...
+                    }); //  end of lambda...
 
                     _sendTextResponse(request, 200, "accepted");
 
@@ -2289,7 +2518,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             if (changes) {
 
-                _syncCallback = [this, newsettings] () {
+                _tasker.add( [this, newsettings](Task & t) {
+
+                    //_syncCallback = [this, newsettings] () {
 
                     using namespace ESPMAN;
 
@@ -2340,7 +2571,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     delete newsettings;
 
                     return true;
-                };
+                });
             } else {
                 event_printf(NULL, "No Changes Made");
                 ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] No changes Made\n");
@@ -2485,7 +2716,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             if (changes && !abortchanges) {
 
-                _syncCallback = [this, newsettings] () {
+                _tasker.add( [this, newsettings](Task & t) {
+
+                    //_syncCallback = [this, newsettings] () {
 
                     using namespace ESPMAN;
 
@@ -2531,7 +2764,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     delete newsettings;
 
                     return true;
-                };
+                });
             } else {
                 event_printf(NULL, "No Changes Made");
                 ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] No changes Made\n");
@@ -2585,13 +2818,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         bool command =  request->getParam(string_OTAupload, true)->value().equals( "on");
 
-        if (command != _OTAupload) {
+        if (command != set.GEN.OTAupload) {
 
-            _OTAupload = command;
+            //_OTAupload = command;
             set.GEN.OTAupload = command;
             set.changed = true;
 
-            ESPMan_Debugf("[ESPmanager::handle()] _OTAupload = %s\n", (_OTAupload) ? "enabled" : "disabled");
+            ESPMan_Debugf("[ESPmanager::handle()] _OTAupload = %s\n", (set.GEN.OTAupload) ? "enabled" : "disabled");
 
 
         }
@@ -2780,10 +3013,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         myString path = set.GEN.updateURL;
 
 
-        _syncCallback = [this, path ]() {
+        _tasker.add( [this, path](Task & t) {
+            //_syncCallback = [this, path ]() {
             _upgrade(path());
-            return true;
-        };
+            //  return true;
+        });
 
     }
 
@@ -3138,7 +3372,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
     } else {
 
         if (  set.ssid() && set.pass()  ) {
-            ESPMan_Debugf( "!!! ssid = %s, pass = %s\n", set.ssid(), set.pass());
+            ESPMan_Debugf( "ssid = %s, pass = %s\n", set.ssid(), set.pass());
             if (!WiFi.begin( set.ssid(), set.pass())) {
                 return ERROR_WIFI_BEGIN;
             }
@@ -3308,12 +3542,14 @@ int ESPmanager::_getAllSettings()
     ERROR =  _getAllSettings(*_settings);
 
     if (!ERROR) {
+
         _ap_boot_mode = _settings->GEN.ap_boot_mode;
         _no_sta_mode = _settings->GEN.no_sta_mode;
-        _updateFreq = _settings->GEN.updateFreq;
-        _OTAupload = _settings->GEN.OTAupload;
+        //_updateFreq = _settings->GEN.updateFreq;
+        //_OTAupload = _settings->GEN.OTAupload;
+
         _settings->configured = true;
-        ESPMan_Debugf("[ESPmanager::_getAllSettings()] _ap_boot_mode = %i, _no_sta_mode = %i, _updateFreq = %u, IDEupload = %s\n", (int)_ap_boot_mode, (int)_no_sta_mode, _updateFreq, (_OTAupload) ? "enabled" : "disabled" );
+        //ESPMan_Debugf("[ESPmanager::_getAllSettings()] _ap_boot_mode = %i, _no_sta_mode = %i, _updateFreq = %u, IDEupload = %s\n", (int)_ap_boot_mode, (int)_no_sta_mode, _updateFreq, (_OTAupload) ? "enabled" : "disabled" );
     } else {
         _settings->configured = false;
     }
@@ -3418,6 +3654,35 @@ int ESPmanager::_getAllSettings(settings_t & set)
         if (settingsJSON.containsKey(string_OTAupload)) {
             set.GEN.OTAupload = settingsJSON[string_OTAupload];
         }
+
+#ifdef ESPMANAGER_SYSLOG
+
+        if (settingsJSON.containsKey(string_usesyslog)) {
+
+            set.GEN.usesyslog = settingsJSON[string_usesyslog];
+
+            if (set.GEN.usesyslog) {
+
+                if (settingsJSON.containsKey(string_syslogIP) &&  settingsJSON.containsKey(string_syslogPort) ) {
+
+                    set.GEN.syslogPort = settingsJSON[string_syslogPort];
+
+                    for (uint8_t i = 0; i < 4; i++) {
+                        set.GEN.syslogIP[i] = settingsJSON[string_syslogIP][i];
+                    }
+                }
+
+                if (settingsJSON.containsKey(string_syslogProto)) {
+
+                    set.GEN.syslogProto = settingsJSON[string_syslogProto];
+                }
+
+                
+
+            }
+        }
+
+#endif
 
     }
 
@@ -3593,6 +3858,28 @@ int ESPmanager::_saveAllSettings(settings_t & set)
     if (set.GEN.GUIhash) {
         settingsJSON[string_GUIhash] = set.GEN.GUIhash();
     }
+
+    // static const char * string_usesyslog = "usesyslog";
+    // static const char * string_syslogIP = "syslogIP";
+    // static const char * string_syslogPort = "syslogPort";
+    // bool usesyslog {false};
+    // IPAddress syslogIP;
+    // uint16_t syslogPort{514};
+
+    settingsJSON[string_usesyslog] = set.GEN.usesyslog;
+
+    if (set.GEN.usesyslog) {
+        JsonArray & IP = settingsJSON.createNestedArray(string_syslogIP);
+        IP.add(set.GEN.syslogIP[0]);
+        IP.add(set.GEN.syslogIP[1]);
+        IP.add(set.GEN.syslogIP[2]);
+        IP.add(set.GEN.syslogIP[3]);
+        settingsJSON[string_syslogPort] = set.GEN.syslogPort;
+
+        settingsJSON[string_syslogProto] = set.GEN.syslogProto;
+        
+    }
+
 
 
     //settingsJSON[string_usePerminantSettings] = (set.GEN.usePerminantSettings) ? true : false;
@@ -3918,6 +4205,14 @@ void ESPmanager::_dumpGEN(settings_t::GEN_t & settings)
     ESPMan_Debugf("no_sta_mode = %i\n", (int8_t)settings.no_sta_mode );
     ESPMan_Debugf("IDEupload = %s\n", (settings.OTAupload) ? "true" : "false" );
 
+#ifdef ESPMANAGER_SYSLOG
+    ESPMan_Debugf("usesyslog = %s\n", (settings.usesyslog) ? "true" : "false" );
+    ESPMan_Debugf("syslogIP = %u.%u.%u.%u\n", settings.syslogIP[0], settings.syslogIP[1], settings.syslogIP[2], settings.syslogIP[3] );
+    ESPMan_Debugf("syslogPort = %u\n", settings.syslogPort );
+    ESPMan_Debugf("syslogProto = %u\n", settings.syslogProto );
+    
+#endif
+
 }
 
 
@@ -4066,23 +4361,24 @@ void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t cod
 //
 // }
 
-void ESPmanager::_removePreGzFiles() {
+void ESPmanager::_removePreGzFiles()
+{
 
-        Dir dir = _fs.openDir("/");
-        while (dir.next()) {
-            String fileName = dir.fileName();
+    Dir dir = _fs.openDir("/");
+    while (dir.next()) {
+        String fileName = dir.fileName();
 
-            if (fileName.endsWith(".gz")) {
+        if (fileName.endsWith(".gz")) {
 
-                String withOutgz = fileName.substring(0, fileName.length() - 3 );
+            String withOutgz = fileName.substring(0, fileName.length() - 3 );
 
-                if (_fs.exists(withOutgz)) {
-                    ESPMan_Debugf("_removePreGzFiles() : Removing unzipped file %s\n", withOutgz.c_str());
-                    _fs.remove(withOutgz);
-                }
-
+            if (_fs.exists(withOutgz)) {
+//                ESPMan_Debugf("_removePreGzFiles() : Removing unzipped file %s\n", withOutgz.c_str());
+                _fs.remove(withOutgz);
             }
 
         }
+
+    }
 
 }
