@@ -78,6 +78,28 @@ enum no_sta_mode_t : int8_t {
     NO_STA_START_AP_60 = 60
 };
 
+enum log_level_t : uint8_t {
+    LOG_EMERG =  0,
+    LOG_ALERT =  1,
+    LOG_CRIT =   2,
+    LOG_ERR =    3,
+    LOG_WARNING =4,
+    LOG_NOTICE = 5 ,
+    LOG_INFO =   6,
+    LOG_DEBUG =  7,
+};
+
+// #define LOG_EMERG 0 /* system is unusable */
+// #define LOG_ALERT 1 /* action must be taken immediately */
+// #define LOG_CRIT  2 /* critical conditions */
+// #define LOG_ERR   3 /* error conditions */
+// #define LOG_WARNING 4 /* warning conditions */
+// #define LOG_NOTICE  5 /* normal but significant condition */
+// #define LOG_INFO  6 /* informational */
+// #define LOG_DEBUG 7 /* debug-level messages */
+
+
+
 
 static const char * string_CORS = "Access-Control-Allow-Origin";
 static const char * string_CACHE_CONTROL = "Cache-Control";
@@ -125,6 +147,8 @@ static const char * string_yes = "yes";
 
 static const char * string_DNS1 = "DNS1";
 static const char * string_DNS2 = "DNS2";
+
+static const char * string_syslog = "syslog";
 static const char * string_usesyslog = "usesyslog";
 static const char * string_syslogIP = "syslogIP";
 static const char * string_syslogPort = "syslogPort";

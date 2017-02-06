@@ -50,8 +50,9 @@
 #include "Tasker/src/Tasker.h"
 #include "ESPMAN.h"   //  has to go after
 
-//#define ESPMANAGER_SYSLOG
+#define ESPMANAGER_SYSLOG
 #define ESPMANAGER_SAVESTACK
+//#define Debug_ESPManager Serial
 
 
 
@@ -70,49 +71,20 @@
 #define SETTINGS_FILE_VERSION 2
 #define ESPMAN_USE_UPDATER 1
 
-#define Debug_ESPManager _DebugFile
 
 #if defined(Debug_ESPManager)
 
 static File _DebugFile;
-#define ESPMan_Debug(x)  {  Debug_ESPManager.print(x) ;   }
-#define ESPMan_Debugln(x) {  Debug_ESPManager.println(x) ;   }
 
-
-//#define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__)
-
-//#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__) ; Serial.printf_P( PSTR(_1), ##__VA_ARGS__) ; } //  this saves around 5K RAM...
-
-#define ESPMan_Debugf(_1, ...) {\
-Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__) ;\
-Serial.printf_P( PSTR(_1), ##__VA_ARGS__) ;\
-} //  this saves around 5K RAM...
-
-//if (_syslog) { _syslog->vlogf_P( LOG_INFO , PSTR(_1), ##__VA_ARGS__ ); }
-
-
-
-//#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__) ; } //  this saves around 5K RAM...
-
-
-//#define ESPMan_Debugf_P(...) DEBUG_ESP_PORT.printf_P(__VA_ARGS__)
-#pragma message("DEBUG enabled for ESPManager.")
+//#define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__) //  33,268 K RAM left
+  #define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
+  #pragma message("DEBUG enabled for ESPManager.")
 #else
-#define ESPMan_Debug(x)    {}
-#define ESPMan_Debugln(x)  {}
-#define ESPMan_Debugf(...) {}
-//#define ESPMan_Debugf_P(...) {}
+  #define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
 #endif
 
-
-// #ifdef Debug_ESPManager
-//   #define DISABLE_MANIFEST
-// #endif
-
-
-
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
-//struct tm;
+
 
 using namespace ESPMAN;
 
@@ -161,7 +133,18 @@ public:
   {
     return _syslog;
   }
+
+ // bool log(const char * _1, const char * _2, ...) { 
+
+ // // if (_syslog) {
+ //    _syslog->vlogf_P( _1, PSTR(_2), ##__VA_ARGS__);  
+ //  //}
+  
+ //  }
+
 #endif
+
+
 
 
 private:

@@ -6,7 +6,7 @@
 void custom_crash_callback(struct rst_info * rst_info, uint32_t stack, uint32_t stack_end )
 {
 
-	File f = SPIFFS.open("/crash.log", "w");
+	File f = SPIFFS.open("/crashlog.txt", "w");
 
 	if (f) {
 
@@ -33,10 +33,7 @@ void custom_crash_callback(struct rst_info * rst_info, uint32_t stack, uint32_t 
 		}
 
 		f.print("<<<stack<<<\n");
-
 		f.close();
-
-		Serial.println("STACK SAVE DONE");
 
 	}
 

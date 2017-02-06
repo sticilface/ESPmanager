@@ -52,6 +52,12 @@ extern UMM_HEAP_INFO ummHeapInfo;
 extern File _DebugFile;
 #endif
 
+
+#ifndef ESPMANAGER_GIT_TAG
+#define ESPMANAGER_GIT_TAG "NOT DEFINED" 
+#endif
+
+
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs)
     : _HTTP(HTTP)
@@ -100,7 +106,7 @@ int ESPmanager::begin()
 // #ifdef RANDOM_MANIFEST_ON_BOOT
 //         _randomvalue = random(0,300000);
 // #endif
-    ESPMan_Debugln("Settings Manager V" ESPMANVERSION);
+    ESPMan_Debugf("Settings Manager V" ESPMANVERSION "\n");
     // ESPMan_Debugf("REPO: %s\n",  slugTag );
     // ESPMan_Debugf("BRANCH: %s\n",  branchTag );
     // ESPMan_Debugf("BuildTag: %s\n",  buildTag );
@@ -485,7 +491,7 @@ int ESPmanager::begin()
 
         configTime(0 * 3600, 0, "pool.ntp.org");
 
-        ESPMan_Debug("Boot Time: ");
+        ESPMan_Debugf("Boot Time: ");
 
         uint8_t tc = 0;
 
@@ -497,7 +503,7 @@ int ESPmanager::begin()
 
         time_t now = time(nullptr);
 
-        ESPMan_Debug(ctime(&now));
+        ESPMan_Debugf("%s", ctime(&now));
         //ESPMan_Debugln();
 
     }
@@ -508,18 +514,18 @@ int ESPmanager::begin()
 #if defined(ESPMANAGER_SYSLOG)
 
     if (_settings->GEN.usesyslog) {
-        ESPMan_Debugf("Syslog = true\n"); 
+
+        ESPMan_Debugf("Syslog = true\n");
         _sysLogClient = new WiFiUDP;
 
         if (_sysLogClient) {
-            ESPMan_Debugf("Created syslog client\n"); 
+            ESPMan_Debugf("Created syslog client\n");
 
 
-            _syslog = new Syslog( *_sysLogClient , _settings->GEN.syslogProto );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
+            _syslog = new Syslog( *_sysLogClient , (_settings->GEN.syslogProto) ? 1 : 0 );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
 
 
             if (_syslog) {
-                ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port =%u, proto=%u\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto ); 
                 _syslog->server(_settings->GEN.syslogIP, _settings->GEN.syslogPort );
                 _syslogDeviceName = strdup(_settings->GEN.host());
                 _syslog->deviceHostname(_syslogDeviceName);
@@ -527,6 +533,8 @@ int ESPmanager::begin()
                 _syslog->defaultPriority(LOG_KERN);
 
                 _syslog->log(LOG_INFO, F("Device Started"));
+                
+                ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port = %u, proto=%u, hostname =%s, appName = %s\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto, _syslogDeviceName , "ESPManager");
 
             }
         }
@@ -857,7 +865,7 @@ String ESPmanager::file_md5 (File & f)
         md5.calculate();
         return md5.toString();
     } else {
-        ESPMan_Debugln("Seek failed on file");
+        ESPMan_Debugf("Seek failed on file\n");
     }
 }
 
@@ -892,7 +900,7 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
 
     } else {
 
-        ESPMan_Debugln("JSON to long\n");
+        //ESPMan_Debugf("JSON to long\n");
 
         // AsyncJsonResponse * response = new AsyncJsonResponse();
         // response->addHeader(ESPMAN::string_CORS, "*");
@@ -1299,8 +1307,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
             http.end();
 
-            if (f.size() == len ||
-                    len == -1 ) { //  len = -1 means server did not provide length...
+            if (byteswritten > 0 && f.size() == len ||  len == -1 ) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
 
                 if (md5_true) {
                     String crc = file_md5(f);
@@ -1317,10 +1324,12 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
                 }
 
             } else {
+                ESPMan_Debugf("\n  [ERROR] Failed Download: length = %i, byteswritten = %i, f.size() = %i\n", len, byteswritten, f.size() );
                 ERROR = INCOMPLETE_DOWNLOAD;
             }
 
         } else {
+            ESPMan_Debugf("\n  [ERROR] Not enough free space \n");
             ERROR = FILE_TOO_LARGE;
         }
 
@@ -1382,13 +1391,13 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
         return httpCode;
     }
 
-    ESPMan_Debugln("[ESPmanager::_parseUpdateJson] Connected downloading json");
+    ESPMan_Debugf("[ESPmanager::_parseUpdateJson] Connected downloading json\n");
 
     size_t len = http.getSize();
     const size_t length = len;
 
     if (len > MAX_BUFFER_SIZE) {
-        ESPMan_Debugln("[ESPmanager::_parseUpdateJson] Receive update length too big.  Increase buffer");
+        ESPMan_Debugf("[ESPmanager::_parseUpdateJson] Receive update length too big.  Increase buffer");
         return JSON_TOO_LARGE;
     }
 
@@ -1522,6 +1531,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     //     AsyncWebParameter* h = request->getParam(i, true);
     //     Debug_ESPManager.printf("[ESPmanager::_HandleDataRequest] [%s]: %s\n", h->name().c_str(), h->value().c_str());
     // }
+
     int params = request->params();
     for (int i = 0; i < params; i++) {
         AsyncWebParameter* p = request->getParam(i);
@@ -1546,7 +1556,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     //if (millis() - last_handle_time < 50) {
 
-    Debug_ESPManager.printf("Time handle gap = %u\n", millis() - last_handle_time);
+    //Debug_ESPManager.printf("Time handle gap = %u\n", millis() - last_handle_time);
 
     //     return;
     // }
@@ -1605,6 +1615,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
         String plainCommand = request->getParam("body", true)->value();
+
+        Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
 
         if (plainCommand == "generalpage") {
 
@@ -1667,7 +1679,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
 
         if ( plainCommand == F("reboot") || plainCommand == F("restart")) {
-            ESPMan_Debugln(F("Rebooting..."));
+            ESPMan_Debugf("Rebooting...\n");
 
             _sendTextResponse(request, 200, "OK");
 
@@ -2013,7 +2025,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
 
         if (plainCommand == "formatSPIFFS") {
-            ESPMan_Debug(F("Format SPIFFS"));
+            ESPMan_Debugf("Format SPIFFS\n");
             _events.send("Formatting SPIFFS", nullptr, 0, 5000);
 
             _sendTextResponse(request, 200, "OK");
@@ -2026,7 +2038,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             _tasker.add( [this](Task & t) {
                 _fs.format();
-                ESPMan_Debugln(F(" done"));
+                ESPMan_Debugf(" done\n");
                 _events.send("Formatting done", nullptr, 0, 5000);
 
             });
@@ -2042,12 +2054,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         if (plainCommand == "deletesettings") {
 
-            ESPMan_Debug(F("Delete Settings File"));
+            ESPMan_Debugf("Delete Settings File\n");
             if (_fs.remove(SETTINGS_FILE)) {
-                ESPMan_Debugln(F(" done"));
+                ESPMan_Debugf(" done");
                 _events.send("Settings File Removed", nullptr, 0, 5000);
             } else {
-                ESPMan_Debugln(F(" failed"));
+                ESPMan_Debugf(" failed");
             }
         }
 
@@ -2137,10 +2149,33 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             return;
         }
 
+        if (plainCommand == string_syslog) {
+
+            JsonObject& syslogobject = root.createNestedObject(string_syslog);
+
+            syslogobject[string_usesyslog] = set.GEN.usesyslog;
+            syslogobject[string_syslogIP] = set.GEN.syslogIP.toString();
+            syslogobject[string_syslogPort] = set.GEN.syslogPort;
+            syslogobject[string_syslogProto] = set.GEN.syslogProto;
 
 
+        }
 
     } //  end of if plaincommand
+
+
+
+    /*
+
+
+
+                Individual responsces...
+
+
+
+    */
+
+
 
 
 
@@ -2486,7 +2521,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if ( StringtoMAC(newsettings->MAC, request->getParam(string_MAC, true)->value() ) ) {
 
 
-                    ESPMan_Debugln("New STA MAC parsed sucessfully");
+                    ESPMan_Debugf("New STA MAC parsed sucessfully\n");
                     ESPMan_Debugf("[%u]:[%u]:[%u]:[%u]:[%u]:[%u]\n", newsettings->MAC[0], newsettings->MAC[1], newsettings->MAC[2], newsettings->MAC[3], newsettings->MAC[4], newsettings->MAC[5]);
 
                     // compare MACS..
@@ -2495,11 +2530,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     WiFi.macAddress(&currentmac[0]);
 
                     if (memcmp(&(currentmac[0]), newsettings->MAC, 6)) {
-                        ESPMan_Debugln("New  MAC is different");
+                        ESPMan_Debugf("New  MAC is different\n");
                         newsettings->hasMAC = true;
                         changes = true;
                     } else {
-                        ESPMan_Debugln("New MAC = Old MAC");
+                        ESPMan_Debugf("New MAC = Old MAC\n");
                         newsettings->hasMAC = false;
                         for (uint8_t i = 0; i < 6; i++) {
                             newsettings->MAC[i] = '\0';
@@ -2512,7 +2547,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     for (uint8_t i = 0; i < 6; i++) {
                         newsettings->MAC[i] = '\0';
                     }
-                    ESPMan_Debugln("New STA MAC parsed FAILED");
+                    ESPMan_Debugf("New STA MAC parsed FAILED\n");
                 }
             }
 
@@ -2914,12 +2949,66 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     } // end of OTA enable
     /*------------------------------------------------------------------------------------------------------------------
 
-                                       MAC address STA + AP
+                                       SysLog
+
+    POST[usesyslog]: on
+    POST[syslogIP]: 192.168.1.188
+    POST[syslogPort]: 5014
+    POST[syslogProto]: 1
+
        ------------------------------------------------------------------------------------------------------------------*/
 
+#ifdef ESPMANAGER_SYSLOG
+
+    if ( request->hasParam(string_usesyslog, true)) {
+
+        bool value = request->getParam(string_usesyslog, true)->value().equals( "on");
+
+        if (value != _settings->GEN.usesyslog) {
+            _settings->GEN.usesyslog = value;
+            set.changed = true;
+            //ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
+            _events.send(string_saveandreboot, nullptr, 0, 5000);
+        }
+
+    }
+
+    if ( request->hasParam(string_syslogIP, true)) {
+
+        IPAddress value;
+        bool result = value.fromString(request->getParam(string_syslogIP, true)->value()) ;
+
+        if (result && value != _settings->GEN.syslogIP) {
+            _settings->GEN.syslogIP = value;
+            set.changed = true;
+            _events.send(string_saveandreboot, nullptr, 0, 5000);
+        }
+
+    }
+
+    if ( request->hasParam(string_syslogPort, true)) {
+
+        int value = request->getParam(string_syslogPort, true)->value().toInt();
+        if (value != _settings->GEN.syslogPort) {
+            _settings->GEN.syslogPort = value;
+            set.changed = true;
+            _events.send(string_saveandreboot, nullptr, 0, 5000);
+        }
+    }
+
+    if ( request->hasParam(string_syslogProto, true)) {
+
+        int value = request->getParam(string_syslogProto, true)->value().toInt();
+        if (value != _settings->GEN.syslogProto) {
+            _settings->GEN.syslogProto = value;
+            set.changed = true;
+            _events.send(string_saveandreboot, nullptr, 0, 5000);
+        }
+
+    }
 
 
-
+#endif
 
     /*------------------------------------------------------------------------------------------------------------------
 
@@ -3030,6 +3119,17 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     root[string_changed] = (set.changed) ? true : false;
     root[F("heap")] = ESP.getFreeHeap();
+
+
+#ifdef ESPMANAGER_GIT_TAG
+    root[F("espmanagergittag")] = ESPMANAGER_GIT_TAG; 
+#endif
+
+    if (_fs.exists("/crashlog.txt")) {
+        root["crashlog"] = true; 
+    } else {
+        root["crashlog"] = false; 
+    }
 
     sendJsontoHTTP<JsonObject>(root, request);
 
@@ -3180,7 +3280,6 @@ int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
 
     //settings.channel = 1;
 
-    ESPMan_Debugf("[ESPmanager::_initialiseAP] ( settings_t::AP_t & settings )] ENABLING AP : channel %u\n", settings.channel);
 
     if (settings.hasMAC) {
         bool result = wifi_set_macaddr(0x01, (unsigned char*)&settings.MAC);
@@ -3211,6 +3310,8 @@ int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
         snprintf(&buf[0], 32, "esp8266-%06x", ESP.getChipId());
         settings.ssid = buf;
     }
+
+    ESPMan_Debugf("[ESPmanager::_initialiseAP] ( settings_t::AP_t & settings )] ENABLING AP : channel %u, name %s\n", settings.channel, settings.ssid() );
 
 
     if (!WiFi.softAP(settings.ssid(), settings.pass(), settings.channel, !settings.visible )) {
@@ -3677,7 +3778,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
                     set.GEN.syslogProto = settingsJSON[string_syslogProto];
                 }
 
-                
+
 
             }
         }
@@ -3877,7 +3978,7 @@ int ESPmanager::_saveAllSettings(settings_t & set)
         settingsJSON[string_syslogPort] = set.GEN.syslogPort;
 
         settingsJSON[string_syslogProto] = set.GEN.syslogProto;
-        
+
     }
 
 
@@ -4210,7 +4311,7 @@ void ESPmanager::_dumpGEN(settings_t::GEN_t & settings)
     ESPMan_Debugf("syslogIP = %u.%u.%u.%u\n", settings.syslogIP[0], settings.syslogIP[1], settings.syslogIP[2], settings.syslogIP[3] );
     ESPMan_Debugf("syslogPort = %u\n", settings.syslogPort );
     ESPMan_Debugf("syslogProto = %u\n", settings.syslogProto );
-    
+
 #endif
 
 }
@@ -4275,7 +4376,7 @@ void ESPmanager::_dumpSettings()
 
 void ESPmanager::factoryReset()
 {
-    ESPMan_Debugf("FACTORY RESET");
+    ESPMan_Debugf("FACTORY RESET\n");
     WiFi.disconnect();
     ESP.eraseConfig();
     _fs.remove(SETTINGS_FILE);

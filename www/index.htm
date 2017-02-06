@@ -173,9 +173,11 @@ $(function() {
    <a href="#otapage" data-role="button" class="ui-btn">OTA</a>
    <a href="#upgradepage" data-role="button" class="ui-btn">Upgrade</a>
    <a href="#aboutpage" data-role="button" class="ui-btn">About</a>
+   <a href="#syslog
+" data-role="button" class="ui-btn">Syslog</a>
    <a href="#console" data-role="button" class="ui-btn">Console</a>
    <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
-
+   <div id="git_ver"></div>
   </div>
 
  </div>
@@ -693,6 +695,50 @@ $(function() {
  </div>
 
  <!--  PAGE BOUNDARY -->
+
+
+
+ <div data-role="page" id="syslog" data-close-btn="right" data-dialog="true">
+
+  <div data-role="header">
+   <h1>Syslog Configuration</h1>
+  </div>
+
+  <div data-role="content">
+
+   <form id="syslogform">
+
+    <div class="ui-field-contain">
+     <label for="flip-syslogenable">Enable:</label>
+     <select id="flip-syslogenable" name="usesyslog" data-role="flipswitch">
+      <option>off</option>
+      <option>on</option>
+     </select>
+    </div>
+
+    <div class="ui-field-contain">
+     <label for="text-syslogIP">IP:</label>
+     <input type="text" data-mini="true" name="syslogIP" id="text-syslogIP" value="">
+    </div>
+    <div class="ui-field-contain">
+     <label for="text-syslogPort">Port:</label>
+     <input type="text" data-mini="true" name="syslogPort" id="text-syslogPort" value="">
+    </div>
+
+    <div class="ui-field-contain">
+     <label for="text-syslogProto">Proto:</label>
+     <input type="text" data-mini="true" name="syslogProto" id="text-syslogProto" value="">
+    </div>
+    <p>SYSLOG_PROTO_IETF = 0, SYSLOG_PROTO_BSD = 1 </p>
+    
+    <a href="#generalpage" data-role="button" data-theme="a" data-icon="save" data-iconpos="notext"  class="submitbutton ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">APPLY</a>
+
+
+   </form>
+
+ </div>
+
+
  <!--  PAGE BOUNDARY -->
 
  <!-- /page -->

@@ -9,7 +9,7 @@ var globalwifi;
 
 var _home_device = getBaseUrl();
 
-//_home_device = "http://192.168.1.214/espman/";
+//_home_device = "http://192.168.1.210/espman/";
 
 console.log(_home_device);
 
@@ -264,7 +264,6 @@ $(function() {
     $("[data-role='header']").toolbar();
     $("[data-role='footer']").toolbar();
     $("body>[data-role='panel']").panel();
-
     $('#savebutton').hide();
 });
 
@@ -312,10 +311,57 @@ function getGenvars() {
             //     $("#flip-usePerminantSettings").val((result.General.usePerminantSettings) ? "on" : "off").flipswitch('refresh');
             // }
 
+
         }
+
+
+    if (result.hasOwnProperty("ESPMANAGER_GIT_TAG")) {
+        $("#git_ver").empty().append("<p><small> Git Version:" + result.ESPMANAGER_GIT_TAG + "</small></p>")
+    }
+
+
 
     });
 } // end of getgenvars func
+
+
+function getSysLogData() {
+    console.log("getSysLogData");
+    $.post(_home_device + "data.esp", "syslog", function(result) {
+        console.log(result);
+
+        if (result.hasOwnProperty("syslog")) {
+
+            if (result.syslog.hasOwnProperty("usesyslog")) {
+                $("#flip-syslogenable").val((result.syslog.usesyslog) ? "on" : "off").flipswitch('refresh');
+
+                if (result.syslog.usesyslog) {
+                    $("#text-syslogIP").closest(".ui-field-contain").show();
+                    $("#text-syslogPort").closest(".ui-field-contain").show();
+                    $("#text-syslogProto").closest(".ui-field-contain").show();
+                } else {
+                    $("#text-syslogIP").closest(".ui-field-contain").hide();
+                    $("#text-syslogPort").closest(".ui-field-contain").hide();
+                    $("#text-syslogProto").closest(".ui-field-contain").hide();
+                }
+            }
+            if (result.syslog.hasOwnProperty("syslogIP")) {
+                $("#text-syslogIP").val(result.syslog.syslogIP);
+            }
+            if (result.syslog.hasOwnProperty("syslogPort")) {
+                $("#text-syslogPort").val(result.syslog.syslogPort);
+            }
+            if (result.syslog.hasOwnProperty("syslogProto")) {
+                $("#text-syslogProto").val(result.syslog.syslogProto);
+            }
+
+
+        }
+
+
+    });
+
+}
 
 
 /****************************************************
@@ -347,6 +393,15 @@ $(document).off('click', '#rebootbutton').on('click', '#rebootbutton', function(
 $(document).on('vclick', '.upgradebutton', function(e) {
     $.post(_home_device + "data.esp", "PerformUpdate=true");
 });
+
+$(document).on('vclick', '.submitbutton', function(e) {
+
+    console.log("send hit");
+
+    $.post(_home_device + "data.esp", $(this).closest('form').serialize());
+
+});
+
 
 $(document).on('touchstart click', '.myheader', function(e) {
     //console.log("#myheader click");
@@ -525,13 +580,13 @@ $(document).on("pagecreate", "#otapage", function() {
  ****************************************************/
 
 
- function StartWifiScan() {
+function StartWifiScan() {
     $('#wifinetworks-form').hide();
 
 
     $.post(_home_device + "data.esp", "PerformWiFiScan", function(result) {
 
-            
+
             if (result.hasOwnProperty("scan")) {
 
                 if (result.scan == "started") {
@@ -582,7 +637,7 @@ $(document).on("pagecreate", "#wifipage", function() {
     getWiFiVars(false);
 
     setTimeout(function() {
-        StartWifiScan(); 
+        StartWifiScan();
         //getWiFiVars(true);
     }, 1000);
 
@@ -804,7 +859,7 @@ function getWiFiVars(scan) {
     var request;
     if (scan) {
         StartWifiScan();
-        return; 
+        return;
     }
     if (!scan) {
         request = "WiFiDetails";
@@ -1008,6 +1063,41 @@ $(document).on("pagecreate", "#aboutpage", function() {
 
 
     //  });
+
+});
+
+/****************************************************
+ *                    Syslog Page
+ *
+ ****************************************************/
+
+
+
+$(document).on("pagecreate", "#syslog", function() {
+
+
+    $(document).on('pageshow', '#syslog', function() {
+        getSysLogData();
+    });
+
+    $("#flip-syslogenable").change(function(data) {
+
+        if ($(this).val() == "on") {
+            $("#text-syslogIP").closest(".ui-field-contain").show();
+            $("#text-syslogPort").closest(".ui-field-contain").show();
+            $("#text-syslogProto").closest(".ui-field-contain").show();
+        }
+        if ($(this).val() == "off") {
+            $("#text-syslogIP").closest(".ui-field-contain").hide();
+            $("#text-syslogPort").closest(".ui-field-contain").hide();
+            $("#text-syslogProto").closest(".ui-field-contain").hide();
+        }
+
+
+        // GetAboutVars();
+    });
+
+
 
 });
 
