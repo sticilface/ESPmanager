@@ -1,2 +1,3 @@
 *.sublime*
 scripts/node_modules
+terminal.glue
