@@ -47,14 +47,16 @@ extern UMM_HEAP_INFO ummHeapInfo;
 // const char * buildTag = ESCAPEQUOTE(BUILD_TAG);
 // const char * commitTag = ESCAPEQUOTE(COMMIT_TAG);
 // const char * branchTag = ESCAPEQUOTE(BRANCH_TAG);
+
 // const char * slugTag = ESCAPEQUOTE(SLUG_TAG);
+
 #if defined(Debug_ESPManager)
 extern File _DebugFile;
 #endif
 
 
 #ifndef ESPMANAGER_GIT_TAG
-#define ESPMANAGER_GIT_TAG "NOT DEFINED" 
+#define ESPMANAGER_GIT_TAG "NOT DEFINED"
 #endif
 
 
@@ -68,17 +70,16 @@ ESPmanager::ESPmanager(
 
 }
 
-void ESPmanager::test(Task & t)
-{
+// void ESPmanager::test(Task & t)
+// {
 
-}
+// }
 
 
 
 
 ESPmanager::~ESPmanager()
 {
-
 
     if (_settings) {
         delete _settings;
@@ -289,8 +290,12 @@ int ESPmanager::begin()
         ArduinoOTA.setHostname(_settings->GEN.host());
         //
         ArduinoOTA.setPort( _settings->GEN.OTAport);
+
+        // if (set.GEN.OTApassword) {
+
+        // }
         //
-        if (_settings->GEN.OTApassword()) {
+        if (_settings->GEN.setPasswordHash) {
             ESPMan_Debugf("[ESPmanager::begin()] OTApassword: %s\n", _settings->GEN.OTApassword() );
             ArduinoOTA.setPassword( (const char *)_settings->GEN.OTApassword() );
 
@@ -300,6 +305,7 @@ int ESPmanager::begin()
 
         ArduinoOTA.onStart([this]() {
             //_events.send("begin","update");
+            _fs.end();
             event_printf("update", "begin");
 #ifdef Debug_ESPManager
             Debug_ESPManager.print(F(   "[              Performing OTA Upgrade              ]\n["));
@@ -493,12 +499,12 @@ int ESPmanager::begin()
 
         ESPMan_Debugf("Boot Time: ");
 
-        uint8_t tc = 0;
+        uint32_t tc = millis();
 
         while (!time(nullptr)) {
             tc++;
-            delay(500);
-            if (tc == 60) { break; }
+            delay(100);
+            if (millis() - tc > 30000) { break; }
         }
 
         time_t now = time(nullptr);
@@ -531,9 +537,8 @@ int ESPmanager::begin()
                 _syslog->deviceHostname(_syslogDeviceName);
                 _syslog->appName("ESPManager");
                 _syslog->defaultPriority(LOG_KERN);
-
                 _syslog->log(LOG_INFO, F("Device Started"));
-                
+
                 ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port = %u, proto=%u, hostname =%s, appName = %s\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto, _syslogDeviceName , "ESPManager");
 
             }
@@ -558,17 +563,21 @@ void ESPmanager::_APlogic(Task & t)
         }
 
         if (time_total > 0 && millis() - _APtimer > time_total ) {
-            ESPMan_Debugf("[ESPmanager::handle()] Disabling AP\n");
 
-            bool result = WiFi.enableAP(false);
 
-            if (result == false) {
-                ESPMan_Debugf("[ESPmanager::handle()] ERROR disabling AP\n");
-            }
+            ESP.restart();    //  change behaviour to restart...  if still not connected then reboot and make an AP for set time... if STA connects then no problem... 
 
-            _APtimer = 0;
-            _APtimer2 = 0;
-            _APenabledAtBoot = false;
+            // ESPMan_Debugf("[ESPmanager::handle()] Disabling AP\n");
+
+            // bool result = WiFi.enableAP(false);
+
+            // if (result == false) {
+            //     ESPMan_Debugf("[ESPmanager::handle()] ERROR disabling AP\n");
+            // }
+
+            // _APtimer = 0;
+            // _APtimer2 = 0;
+            // _APenabledAtBoot = false;
         } else if (time_total > 0) {
 
 #ifdef Debug_ESPManager
@@ -1033,11 +1042,17 @@ void ESPmanager::_upgrade(const char * path)
     }
 
 
+
+
     int ret = _parseUpdateJson(buff, jsonBuffer, p_root, path);
 
     if (ret) {
         event_printf(string_UPGRADE, string_ERROR2, MANIFST_FILE_ERROR, ret);
         ESPMan_Debugf("[ESPmanager::upgrade] MANIFEST ERROR [%i]\n", ret );
+        if (buff) {
+            delete[] buff;
+        }
+
         return;
     }
 
@@ -1046,6 +1061,9 @@ void ESPmanager::_upgrade(const char * path)
     if (!p_root) {
         event_printf(string_UPGRADE, string_ERROR, JSON_OBJECT_ERROR);
         ESPMan_Debugf("[ESPmanager::upgrade] JSON ERROR [%i]\n", JSON_OBJECT_ERROR );
+        if (buff) {
+            delete[] buff;
+        }
         return;
     }
 
@@ -1064,7 +1082,16 @@ void ESPmanager::_upgrade(const char * path)
     if (root.containsKey("formatSPIFFS")) {
         if (root["formatSPIFFS"] == true) {
             ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Formatting SPIFFS....");
-            _fs.format();
+
+            _tasker.add( [] (Task & t) { 
+                _getAllSettings(); 
+                _fs.format();
+                if (settings) {
+                    _saveAllSettings(*_settings);
+                }
+                
+            })
+            
             ESPMan_Debugf("done\n");
         }
     }
@@ -1072,7 +1099,6 @@ void ESPmanager::_upgrade(const char * path)
     if (root.containsKey("clearWiFi")) {
         if (root["clearWiFi"] == true) {
             ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Erasing WiFi Config ....");
-
             ESPMan_Debugf("done\n");
         }
     }
@@ -1112,9 +1138,9 @@ void ESPmanager::_upgrade(const char * path)
         } else {
             event_printf(string_CONSOLE, "[%u/%u] (%s) : ERROR [%i]", file_count, files_expected, filename.c_str(), ret);
         }
-
+        delay(10);
         event_printf(string_UPGRADE, "%u", (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f) );
-
+        delay(10);
 #if defined(Debug_ESPManager)
         if (ret == 0) {
             Debug_ESPManager.printf("SUCCESS \n");
@@ -1125,13 +1151,11 @@ void ESPmanager::_upgrade(const char * path)
             Debug_ESPManager.printf("FAILED [%i]\n", ret  );
         }
 #endif
-        delay(20);
+
     }
 
     //  this removes any duplicate files if a compressed
     _removePreGzFiles();
-
-
 
     if (updatesketch) {
 
@@ -1148,6 +1172,7 @@ void ESPmanager::_upgrade(const char * path)
                     _events.send("firmware", string_UPGRADE, 0, 5000);
                     delay(10);
                     _events.send("Upgrading sketch", nullptr, 0, 5000);
+                    delay(10);
                     // _fs.end();
                     ESPhttpUpdate.rebootOnUpdate(false);
 
@@ -1159,13 +1184,17 @@ void ESPmanager::_upgrade(const char * path)
                         ESPMan_Debugf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
                         // snprintf(msgdata, 100,"FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str() );
                         // _events.send(msgdata, "upgrade");
+                        delay(100);
                         event_printf(string_UPGRADE, "ERROR [%s]", ESPhttpUpdate.getLastErrorString().c_str() );
+                        delay(100);
                         break;
 
                     case HTTP_UPDATE_NO_UPDATES:
                         ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
                         //_events.send("FAILED no update", "upgrade");
+                        delay(100);
                         event_printf(string_UPGRADE, "ERROR no update");
+                        delay(100);
                         break;
 
                     case HTTP_UPDATE_OK:
@@ -1191,7 +1220,9 @@ void ESPmanager::_upgrade(const char * path)
         delete[] buff;
     }
 
+    delay(10);
     _events.send("end", string_UPGRADE, 0, 5000);
+    delay(10);
 
 }
 
@@ -1210,6 +1241,36 @@ AsyncEventSource & ESPmanager::getEvent()
     return _events;
 }
 
+
+
+#ifdef vsnprintf_P
+size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
+{
+    va_list arg;
+    va_start(arg, format);
+    char temp[64];
+    char* buffer = temp;
+    size_t len = vsnprintf_P(temp, sizeof(temp), format, arg);
+    va_end(arg);
+    if (len > sizeof(temp) - 1) {
+        buffer = new char[len + 1];
+        if (!buffer) {
+            return 0;
+        }
+        va_start(arg, format);
+        vsnprintf_P(buffer, len + 1, format, arg);
+        va_end(arg);
+    }
+    _events.send(buffer, topic, millis(), 5000);
+    ESPMan_Debugf("SENDING EVENT_P : %s\n", buffer);
+    delay(10);
+    if (buffer != temp) {
+        delete[] buffer;
+    }
+    return len;
+}
+#endif
+
 size_t ESPmanager::event_printf(const char * topic, const char * format, ... )
 {
     va_list arg;
@@ -1227,7 +1288,9 @@ size_t ESPmanager::event_printf(const char * topic, const char * format, ... )
         vsnprintf(buffer, len + 1, format, arg);
         va_end(arg);
     }
-    _events.send(buffer, topic, 0, 5000);
+    _events.send(buffer, topic, millis(), 5000);
+    ESPMan_Debugf("SENDING EVENT : %s\n", buffer);
+    delay(10);
     if (buffer != temp) {
         delete[] buffer;
     }
@@ -1268,7 +1331,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
         if (crc == String(md5_true)) {
             Fcheck.close();
-            return FILE_NOT_CHANGED;
+ //           return FILE_NOT_CHANGED;
         }
 
         Fcheck.close();
@@ -1277,9 +1340,12 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
     if (!_fs.info(_FSinfo)) {
         return SPIFFS_INFO_FAIL;
+    
     }
 
     freeBytes = _FSinfo.totalBytes - _FSinfo.usedBytes;
+
+    ESPMan_Debugf("[_DownloadToSPIFFS] totalBytes = %u, usedBytes = %u, freebytes = %u\n", _FSinfo.totalBytes, _FSinfo.usedBytes, freeBytes);
 
     if (filename.length() > _FSinfo.maxPathLength) {
         return SPIFFS_FILENAME_TOO_LONG;
@@ -1300,14 +1366,16 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
         int len = http.getSize();
 
-        if (len < freeBytes) {
+        // WiFiUDP::stopAll();
+        // WiFiClient::stopAllExcept(http.getStreamPtr());
 
+        if (len < freeBytes) {
 
             size_t byteswritten = http.writeToStream(&f);
 
             http.end();
 
-            if (byteswritten > 0 && f.size() == len ||  len == -1 ) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
+            if (f.size() == len ||  len == -1 ) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
 
                 if (md5_true) {
                     String crc = file_md5(f);
@@ -1402,38 +1470,42 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
     }
 
     //uint8_t buff[bufsize] = { 0 }; // max size of input buffer. Don't use String, as arduinoJSON doesn't like it!
-    buff = nullptr;
-    buff = new uint8_t[len];
+    // buff = nullptr;
+    // buff = new uint8_t[len];
 
-    if (!buff) {
-        ESPMan_Debugf("[ESPmanager::_parseUpdateJson] failed to allocate buff\n");
-        return MALLOC_FAIL;
-    }
+    // if (!buff) {
+    //     ESPMan_Debugf("[ESPmanager::_parseUpdateJson] failed to allocate buff\n");
+    //     return MALLOC_FAIL;
+    // }
 
 
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
-    int position = 0;
+ //   int position = 0;
 
     // read all data from server
-    while (http.connected() && (len > 0 || len == -1)) {
-        // get available data size
-        size_t size = stream->available();
-        uint8_t * b = &buff[position];
+    // while (http.connected() && (len > 0 || len == -1)) {
+    //     // get available data size
+    //     size_t size = stream->available();
+    //     uint8_t * b = &buff[position];
 
-        if (size) {
-            int c = stream->readBytes(b, ((size > sizeof(buff)) ? sizeof(buff) : size));
-            position += c;
-            if (len > 0) {
-                len -= c;
-            }
-        }
-        delay(0);
-    }
+    //     if (size) {
+    //         int c = stream->readBytes(b, ((size > sizeof(buff)) ? sizeof(buff) : size));
+    //         position += c;
+    //         if (len > 0) {
+    //             len -= c;
+    //         }
+    //     }
+    //     delay(0);
+
+
+    // }
+
+    
+    root = &jsonBuffer.parseObject(* stream );
+    //root = &jsonBuffer.parseObject( (char*)buff, length );
 
     http.end();
-
-    root = &jsonBuffer.parseObject( (char*)buff, length );
 
     if (root->success()) {
         ESPMan_Debugf("[ESPmanager::_parseUpdateJson] root->success() = true\n");
@@ -1646,7 +1718,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
                 if (ERROR) {
-                    event_printf(NULL, string_ERROR, ERROR);
+                    //event_printf_P(NULL, PSTR(string_ERROR), ERROR);
+                    event_printf_P(NULL, PSTR("THEre is an error %u\n"), ERROR);
                 } else {
                     _events.send("Settings Saved", nullptr, 0, 5000);
                     set.changed = false;
@@ -1970,6 +2043,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             SPIFFSobject[F("usedBytes")] = formatBytes(info.usedBytes);
             SPIFFSobject[F("blockSize")] = formatBytes(info.blockSize);
             SPIFFSobject[F("pageSize")] = formatBytes(info.pageSize);
+            SPIFFSobject[F("allocatedPages")] = info.allocatedPages;
+            SPIFFSobject[F("deletedPages")] = info.deletedPages;
             SPIFFSobject[F("maxOpenFiles")] = info.maxOpenFiles;
             SPIFFSobject[F("maxPathLength")] = info.maxPathLength;
 
@@ -2037,7 +2112,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // request->send(response);
 
             _tasker.add( [this](Task & t) {
+
+                _getAllSettings(); 
                 _fs.format();
+                if (settings) {
+                    _saveAllSettings(*_settings);
+                }
                 ESPMan_Debugf(" done\n");
                 _events.send("Formatting done", nullptr, 0, 5000);
 
@@ -2051,6 +2131,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //     return true;
             // };
         }
+
+        if (plainCommand == "defragSPIFFS") {
+            _tasker.add( [this](Task & t) {
+            defragSPIFFS(); 
+        });
+
+        }
+
 
         if (plainCommand == "deletesettings") {
 
@@ -2886,12 +2974,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 ESPMan_Debugf("[ESPmanager::_handle] Passwords Match\n");
                 set.changed = true;
-                // MD5Builder md5;
-                // md5.begin();
-                // md5.add( pass) ;
-                // md5.calculate();
-                // set.GEN.OTApassword = md5.toString().c_str() ;
-                set.GEN.OTApassword = pass;
+                MD5Builder md5;
+                md5.begin();
+                md5.add( pass) ;
+                md5.calculate();
+                set.GEN.OTApassword = md5.toString().c_str() ;
+                //set.GEN.OTApassword = pass;
 
                 event_printf(nullptr, string_saveandreboot);
 
@@ -3122,13 +3210,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
 #ifdef ESPMANAGER_GIT_TAG
-    root[F("espmanagergittag")] = ESPMANAGER_GIT_TAG; 
+    root[F("espmanagergittag")] = ESPMANAGER_GIT_TAG;
 #endif
 
     if (_fs.exists("/crashlog.txt")) {
-        root["crashlog"] = true; 
+        root["crashlog"] = true;
     } else {
-        root["crashlog"] = false; 
+        root["crashlog"] = false;
     }
 
     sendJsontoHTTP<JsonObject>(root, request);
@@ -3565,7 +3653,7 @@ int ESPmanager::_emergencyMode(bool shutdown)
 
     uint32_t channel = WiFi.channel(); // cache the channel for AP.
 
-    channel = 1; // cache the channel for AP.
+    //channel = 1; // cache the channel for AP.
 
     if (shutdown) {
         WiFi.disconnect(true); //  Disable STA. makes AP more stable, stops 1sec reconnect
@@ -4483,3 +4571,42 @@ void ESPmanager::_removePreGzFiles()
     }
 
 }
+/*
+s32_t SPIFFS_gc(spiffs *fs, u32_t size) {
+
+
+*/
+bool ESPmanager::defragSPIFFS()
+{
+    FSInfo info;
+
+    if(SPIFFS.info(info)){
+        size_t freeSpace = info.totalBytes - info.usedBytes - (2 * info.blockSize); 
+        SPIFFS.defrag(freeSpace);
+        return true; 
+    }
+
+    return false; 
+    
+
+//   FSInfo info;
+//   if(SPIFFS.info(info)){
+//     size_t freeSpace = info.totalBytes - info.usedBytes - (2 * info.blockSize);
+//     if(((info.deletedPages * info.pageSize) - (8 * info.blockSize)) > 0){
+//       ESPMan_Debugf("start : %u\n", info.freeBlocks);
+//       size_t startBlocks = info.freeBlocks;
+//       size_t currentBlocks = startBlocks;
+//       while(true){
+//         SPIFFS.garbageCollect(freeSpace);
+//         if(SPIFFS.info(info)){
+//           if(info.freeBlocks == currentBlocks) break;
+//           ESPMan_Debugf("current : %u\n", info.freeBlocks);
+//           currentBlocks = info.freeBlocks;
+//         } else break;
+//       }
+//       ESPMan_Debugf("cleared : %u\n", currentBlocks - startBlocks);
+//     }
+//   }
+
+//     return true; 
+ }

@@ -15,7 +15,7 @@
    6) Add ability to upload bin to SPIFFS and switch between them.
    7) Download from HTTP
    8) ? File Manager
-   9)
+   9) OTA password using md5...
 
 
    NEW TODO...
@@ -77,10 +77,10 @@
 static File _DebugFile;
 
 //#define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__) //  33,268 K RAM left
-  #define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
-  #pragma message("DEBUG enabled for ESPManager.")
+#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
+#pragma message("DEBUG enabled for ESPManager.")
 #else
-  #define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
+#define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
 #endif
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
@@ -89,7 +89,8 @@ static const char _compile_date_time[] = __DATE__ " " __TIME__;
 using namespace ESPMAN;
 
 
-class ESPmanager {
+class ESPmanager
+{
 public:
   ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS);
   ~ESPmanager();
@@ -108,7 +109,11 @@ public:
 
 
   AsyncEventSource & getEvent();
-  size_t event_printf(const char * topic, const char * format, ... );
+  size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4)));
+#ifdef vsnprintf_P
+  size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4)));
+#endif
+
   void upgrade(String path = String());
   void factoryReset();
 //        struct tm * getCompileTime();
@@ -121,7 +126,7 @@ public:
   void enablePortal();
   void disablePortal();
 
-  void test(Task & t);
+  //void test(Task & t);
 
   ASyncTasker & getTaskManager()
   {
@@ -134,16 +139,17 @@ public:
     return _syslog;
   }
 
- // bool log(const char * _1, const char * _2, ...) { 
+// bool log(const char * _1, const char * _2, ...) {
 
- // // if (_syslog) {
- //    _syslog->vlogf_P( _1, PSTR(_2), ##__VA_ARGS__);  
- //  //}
-  
- //  }
+// // if (_syslog) {
+//    _syslog->vlogf_P( _1, PSTR(_2), ##__VA_ARGS__);
+//  //}
+
+//  }
 
 #endif
 
+  bool defragSPIFFS();
 
 
 
@@ -161,7 +167,7 @@ private:
 #endif
 
 #ifdef ESPMANAGER_SYSLOG
-  WiFiUDP * _sysLogClient{nullptr};
+  WiFiUDP * _sysLogClient {nullptr};
   Syslog * _syslog{nullptr};
   const char * _syslogDeviceName{nullptr};   //  used by debuglog
 

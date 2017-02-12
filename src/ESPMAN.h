@@ -65,7 +65,7 @@ enum ap_boot_mode_t : int8_t {
     NO_STA_BOOT_AP_5 = 5,
     NO_STA_BOOT_AP_10 = 10,
     NO_STA_BOOT_AP_30 = 30,
-    NO_STA_BOOT_AP_60 = 60
+    NO_STA_BOOT_AP_60 = 60, 
 };
 
 enum no_sta_mode_t : int8_t {
