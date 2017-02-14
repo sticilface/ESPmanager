@@ -9,7 +9,13 @@ var globalwifi;
 
 var _home_device = getBaseUrl();
 
+
+
+
 //_home_device = "http://192.168.1.210/espman/";
+
+
+
 
 console.log(_home_device);
 
@@ -65,8 +71,10 @@ function startEvents() {
             //   console.log("myevent", e.data);
             // }, false);
             //  upgrade is via JSON package
+
             source.addEventListener('upgrade', function(e) {
-                //console.log("upgrade event", e.data);
+                console.log("upgrade event", e.data);
+
                 if (e.data == "begin") {
                     $("#upgrade_message").empty();
                     $("#updatebanner").empty().append("Upgrade Started");
@@ -75,15 +83,17 @@ function startEvents() {
                     addMessage("Upgrade Started");
                 } else if (e.data == "end") {
                     addMessage("Upgrade Finished");
+                    $("#upgrade-slider").val(100);
                     setTimeout(function() {
                         $("#upgradepopup").popup("close");
                     }, 1000);
                 } else if ($.isNumeric(e.data) && e.data >= 0 && e.data <= 100) {
-                    //console.log(e.data);
+                    console.log(e.data);
                     $("#upgrade-slider").val(e.data);
                     $("#upgradepopup").popup("open");
                     $("#upgradepopup").enhanceWithin().popup();
                 } else if (e.data == "firmware") {
+                    $("#upgrade-slider").val(100);
                     $("#upgrade_message").empty().append("<h4>Updating Firmware...</h4>");
                     _upgrade_failed = setTimeout(function() {
                         $("#upgrade_message").empty().append("<h4>REBOOT failed: Device Not online</h4>");
@@ -94,6 +104,7 @@ function startEvents() {
                     }, 90000);
                 } else if (e.data == "firmware-end") {
                     $("#upgrade_message").empty().append("<h4>Rebooting...</h4>");
+                    $("#upgrade-slider").val(100);
                     _waiting_reboot = true;
                     clearTimeout(_upgrade_failed);
                     _upgrade_failed = setTimeout(function() {

@@ -3,6 +3,8 @@
 
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <flash_utils.h>
+
 #include <ArduinoJson.h>
 #include <ESP8266mDNS.h>
 #include <MD5Builder.h>
@@ -15,12 +17,16 @@
 #include <Hash.h>
 #include <list>
 #include "Tasker/src/Tasker.h"
+#include "FlashWriter.h"
 
 extern "C" {
 #include "user_interface.h"
 }
 
 extern UMM_HEAP_INFO ummHeapInfo;
+
+extern "C" uint32_t _SPIFFS_start;
+
 
 //#define LAST_MODIFIED_DATE "Mon, 20 Jun 2016 14:00:00 GMT"
 
@@ -174,18 +180,26 @@ int ESPmanager::begin()
 #endif
 
     //_removePreGzFiles();
+    const char * old_settings_name = "/espman/settings.txt";
+
+    if (!_fs.exists(SETTINGS_FILE) && _fs.exists(old_settings_name)) {
+        if (_fs.rename(old_settings_name, SETTINGS_FILE)) {
+            ESPMan_Debugf("Settings file renamed to %s\n", SETTINGS_FILE);
+        }
+
+    }
 
     int getallERROR = _getAllSettings();
-    ESPMan_Debugf("[ESPmanager::begin()] _getAllSettings = %i \n", getallERROR);
+    ESPMan_Debugf("= %i \n", getallERROR);
 
     if (!_settings) {
-        ESPMan_Debugf("[ESPmanager::begin()] Unable to MALLOC for settings. rebooting....\n");
+        ESPMan_Debugf("Unable to MALLOC for settings. rebooting....\n");
         ESP.restart();
     }
 
     if (getallERROR == SPIFFS_FILE_OPEN_ERROR) {
 
-        ESPMan_Debugf("[ESPmanager::begin()] no settings file found\n");
+        ESPMan_Debugf("no settings file found\n");
 
         _settings->changed = true; //  give save button at first boot if no settings file
 
@@ -199,7 +213,7 @@ int ESPmanager::begin()
     // }
 
     if (!_settings->GEN.host()) {
-        ESPMan_Debugf("[ESPmanager::begin()] Host NOT SET\n");
+        ESPMan_Debugf("Host NOT SET\n");
         char tmp[33] = {'\0'};
         snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
         _settings->GEN.host = tmp;
@@ -247,11 +261,11 @@ int ESPmanager::begin()
 
 
 
-        ESPMan_Debugf("[ESPmanager::begin()] settings->configured = true \n");
+        ESPMan_Debugf("settings->configured = true \n");
         AP_ERROR = _initialiseAP();
-        ESPMan_Debugf("[ESPmanager::begin()] _initialiseAP = %i \n", AP_ERROR);
+        ESPMan_Debugf("_initialiseAP = %i \n", AP_ERROR);
         STA_ERROR = _initialiseSTA();
-        ESPMan_Debugf("[ESPmanager::begin()] _initialiseSTA = %i \n", STA_ERROR);
+        ESPMan_Debugf("_initialiseSTA = %i \n", STA_ERROR);
 
     } else {
 
@@ -265,7 +279,7 @@ int ESPmanager::begin()
         if (_settings->GEN.portal) {
             enablePortal();
         } else {
-            ESPMan_Debugf("[ESPmanager::enablePortal] Portal DISABLED\n");
+            ESPMan_Debugf("Portal DISABLED\n");
 
         }
 
@@ -275,7 +289,7 @@ int ESPmanager::begin()
     if ( (STA_ERROR && STA_ERROR != STA_DISABLED) ||  (AP_ERROR == AP_DISABLED && STA_ERROR == STA_DISABLED ) ) {
         if (_ap_boot_mode != DISABLED) {
             _APenabledAtBoot = true;
-            ESPMan_Debugf("[ESPmanager::begin()] CONNECT FAILURE: emergency mode enabled for %i\n",  (int8_t)_ap_boot_mode * 60 * 1000 );
+            ESPMan_Debugf("CONNECT FAILURE: emergency mode enabled for %i\n",  (int8_t)_ap_boot_mode * 60 * 1000 );
             _emergencyMode(true); // at boot if disconnected don't disable AP...
         }
     }
@@ -295,8 +309,8 @@ int ESPmanager::begin()
 
         // }
         //
-        if (_settings->GEN.setPasswordHash) {
-            ESPMan_Debugf("[ESPmanager::begin()] OTApassword: %s\n", _settings->GEN.OTApassword() );
+        if (_settings->GEN.OTApassword) {
+            ESPMan_Debugf("OTApassword: %s\n", _settings->GEN.OTApassword() );
             ArduinoOTA.setPassword( (const char *)_settings->GEN.OTApassword() );
 
 
@@ -307,13 +321,15 @@ int ESPmanager::begin()
             //_events.send("begin","update");
             _fs.end();
             event_printf("update", "begin");
+            //event_printf_P("update", PSTR("begin"));
 #ifdef Debug_ESPManager
             Debug_ESPManager.print(F(   "[              Performing OTA Upgrade              ]\n["));
 //                                       ("[--------------------------------------------------]\n ");
 #endif
         });
         ArduinoOTA.onEnd([this]() {
-            _events.send("end", "update", 0, 5000);
+            //event_printf_P("update", PSTR("end")); 
+            event_printf("update", "end"); 
             delay(100);
             _events.close();
             delay(1000);
@@ -332,6 +348,8 @@ int ESPmanager::begin()
                 Debug_ESPManager.print("-");
 #endif
                 event_printf("update", "%u", percent);
+                //_events.send()
+                
                 done = percent;
             }
         });
@@ -363,7 +381,7 @@ int ESPmanager::begin()
         ArduinoOTA.begin();
 
     } else {
-        ESPMan_Debugf("[ESPmanager::begin()] OTA DISABLED\n");
+        ESPMan_Debugf("OTA DISABLED\n");
     }
 
     if (_settings->GEN.mDNSenabled) {
@@ -480,7 +498,7 @@ int ESPmanager::begin()
                 uint32_t startheap = ESP.getFreeHeap();
                 delete _settings;
                 _settings = nullptr;
-                ESPMan_Debugf("[ESPmanager::handle()] Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
+                ESPMan_Debugf("Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
 
             }
         }
@@ -493,26 +511,26 @@ int ESPmanager::begin()
 
 #if defined(Debug_ESPManager)
 
-    if (WiFi.isConnected()) {
+    // if (WiFi.isConnected()) {
 
-        configTime(0 * 3600, 0, "pool.ntp.org");
+    //     configTime(0 * 3600, 0, "pool.ntp.org");
 
-        ESPMan_Debugf("Boot Time: ");
+    //     ESPMan_Debugf("Boot Time: ");
 
-        uint32_t tc = millis();
+    //     uint32_t tc = millis();
 
-        while (!time(nullptr)) {
-            tc++;
-            delay(100);
-            if (millis() - tc > 30000) { break; }
-        }
+    //     while (!time(nullptr)) {
+    //         tc++;
+    //         delay(100);
+    //         if (millis() - tc > 30000) { break; }
+    //     }
 
-        time_t now = time(nullptr);
+    //     time_t now = time(nullptr);
 
-        ESPMan_Debugf("%s", ctime(&now));
-        //ESPMan_Debugln();
+    //     ESPMan_Debugf("%s", ctime(&now));
+    //     //ESPMan_Debugln();
 
-    }
+    // }
 
 #endif
 
@@ -565,7 +583,7 @@ void ESPmanager::_APlogic(Task & t)
         if (time_total > 0 && millis() - _APtimer > time_total ) {
 
 
-            ESP.restart();    //  change behaviour to restart...  if still not connected then reboot and make an AP for set time... if STA connects then no problem... 
+            ESP.restart();    //  change behaviour to restart...  if still not connected then reboot and make an AP for set time... if STA connects then no problem...
 
             // ESPMan_Debugf("[ESPmanager::handle()] Disabling AP\n");
 
@@ -585,7 +603,7 @@ void ESPmanager::_APlogic(Task & t)
 
             if (millis()  - timeout_warn > 10000) {
                 timeout_warn = millis();
-                ESPMan_Debugf("[ESPmanager::handle()] Countdown to disabling AP %i of %i\n", (time_total -  (millis() - _APtimer) ) / 1000, time_total);
+                ESPMan_Debugf("Countdown to disabling AP %i of %i\n", (time_total -  (millis() - _APtimer) ) / 1000, time_total);
             }
 
 #endif
@@ -597,7 +615,7 @@ void ESPmanager::_APlogic(Task & t)
     if (!_APtimer && !_APtimer2 && WiFi.isConnected() == false) {
         //  if something is to be done... check  that action is not do nothing, or that AP is enabled, or action is reboot...
         if ( ( _no_sta_mode != NO_STA_NOTHING ) && ( WiFi.getMode() != WIFI_AP_STA || WiFi.getMode() != WIFI_AP || _no_sta_mode == NO_STA_REBOOT  ) ) {
-            ESPMan_Debugf("[ESPmanager::handle()] WiFi disconnected: starting AP Countdown\n" );
+            ESPMan_Debugf("WiFi disconnected: starting AP Countdown\n" );
             _APtimer2 = millis();
         }
         //_ap_triggered = true;
@@ -609,10 +627,10 @@ void ESPmanager::_APlogic(Task & t)
 
 
         if (_no_sta_mode == NO_STA_REBOOT) {
-            ESPMan_Debugf("[ESPmanager::handle()] WiFi disconnected: REBOOTING\n" );
+            ESPMan_Debugf("WiFi disconnected: REBOOTING\n" );
             ESP.restart();
         } else {
-            ESPMan_Debugf("[ESPmanager::handle()] WiFi disconnected: starting AP\n" );
+            ESPMan_Debugf("WiFi disconnected: starting AP\n" );
             _emergencyMode();
         }
 
@@ -627,7 +645,7 @@ void ESPmanager::_APlogic(Task & t)
             settings_t::AP_t APsettings;
             APsettings.enabled = false;
             _initialiseAP(APsettings);
-            ESPMan_Debugf("[ESPmanager::handle()] WiFi reconnected: disable AP\n" );
+            ESPMan_Debugf("WiFi reconnected: disable AP\n" );
             //_ap_triggered = false;
             _APtimer = 0;
             _APtimer2 = 0;
@@ -640,7 +658,7 @@ void ESPmanager::_APlogic(Task & t)
 
 void ESPmanager::enablePortal()
 {
-    ESPMan_Debugf("[ESPmanager::enablePortal] Enabling Portal\n");
+    ESPMan_Debugf("Enabling Portal\n");
 
     _dns = new DNSServer;
     //_portalreWrite = &_HTTP.rewrite("/", "/espman/setup.htm");
@@ -651,7 +669,7 @@ void ESPmanager::enablePortal()
         /* Setup the DNS server redirecting all the domains to the apIP */
         _dns->setErrorReplyCode(DNSReplyCode::NoError);
         _dns->start(DNS_PORT, "*", apIP);
-        ESPMan_Debugf("[ESPmanager::enablePortal] Done\n");
+        ESPMan_Debugf("Done\n");
 
         _dnsTask = & _tasker.add([this](Task & t) {
             this->_dns->processNextRequest();
@@ -663,7 +681,7 @@ void ESPmanager::enablePortal()
 
 void ESPmanager::disablePortal()
 {
-    ESPMan_Debugf("[ESPmanager::enablePortal] Disabling Portal\n");
+    ESPMan_Debugf("Disabling Portal\n");
 
     if (_dns) {
         delete _dns;
@@ -936,7 +954,7 @@ String ESPmanager::getHostname()
 
     int ERROR = _getAllSettings(set);
 
-    ESPMan_Debugf("[ESPmanager::getHostname()] error = %i\n", ERROR);
+    ESPMan_Debugf("error = %i\n", ERROR);
 
     if (!ERROR && set.GEN.host() && strlen(set.GEN.host()) > 0 ) {
         return String(set.GEN.host());
@@ -966,6 +984,7 @@ void ESPmanager::upgrade(String path)
             newpath = _settings->GEN.updateURL();
         } else {
             event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
+            //event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
             return;
         }
 
@@ -1003,6 +1022,7 @@ void ESPmanager::_upgrade(const char * path)
             path = _settings->GEN.updateURL();
         } else {
             event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
+            //event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
             return;
         }
 
@@ -1016,18 +1036,21 @@ void ESPmanager::_upgrade(const char * path)
     JsonObject * p_root = nullptr;
     uint8_t * buff = nullptr;
     bool updatesketch = false;
+    bool overwriteFiles = false;
 
     char msgdata[100];  //  delete me when done
 
-    _events.send("begin", string_UPGRADE, 0, 5000);
-    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] Checking for Updates: %s\n", path);
+    event_printf(string_UPGRADE, ("begin"), path);
+
+    ESPMan_Debugf("Checking for Updates: %s\n", path);
 
     String Spath = String(path);
     String rooturi = Spath.substring(0, Spath.lastIndexOf('/') );
 
 
     event_printf(string_CONSOLE, "%s", path);
-    ESPMan_Debugf("[ESPmanager::upgrade] rooturi=%s\n", rooturi.c_str());
+
+    ESPMan_Debugf("rooturi=%s\n", rooturi.c_str());
 
     //  save new update path for future update checks...  (if done via url only for example)
     if (_settings->GEN.updateURL()) {
@@ -1041,14 +1064,11 @@ void ESPmanager::_upgrade(const char * path)
         save_flag = true;
     }
 
-
-
-
     int ret = _parseUpdateJson(buff, jsonBuffer, p_root, path);
 
     if (ret) {
         event_printf(string_UPGRADE, string_ERROR2, MANIFST_FILE_ERROR, ret);
-        ESPMan_Debugf("[ESPmanager::upgrade] MANIFEST ERROR [%i]\n", ret );
+        ESPMan_Debugf("MANIFEST ERROR [%i]\n", ret );
         if (buff) {
             delete[] buff;
         }
@@ -1056,11 +1076,11 @@ void ESPmanager::_upgrade(const char * path)
         return;
     }
 
-    ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] _parseUpdateJson success\n");
+    ESPMan_Debugf("_parseUpdateJson success\n");
 
     if (!p_root) {
         event_printf(string_UPGRADE, string_ERROR, JSON_OBJECT_ERROR);
-        ESPMan_Debugf("[ESPmanager::upgrade] JSON ERROR [%i]\n", JSON_OBJECT_ERROR );
+        ESPMan_Debugf("JSON ERROR [%i]\n", JSON_OBJECT_ERROR );
         if (buff) {
             delete[] buff;
         }
@@ -1072,7 +1092,7 @@ void ESPmanager::_upgrade(const char * path)
 
     if (!files_expected) {
         event_printf(string_UPGRADE, string_ERROR, UNKNOWN_NUMBER_OF_FILES);
-        ESPMan_Debugf("[ESPmanager::upgrade] ERROR [%i]\n", UNKNOWN_NUMBER_OF_FILES );
+        ESPMan_Debugf("ERROR [%i]\n", UNKNOWN_NUMBER_OF_FILES );
 
     }
 
@@ -1081,26 +1101,28 @@ void ESPmanager::_upgrade(const char * path)
 
     if (root.containsKey("formatSPIFFS")) {
         if (root["formatSPIFFS"] == true) {
-            ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Formatting SPIFFS....");
+            ESPMan_Debugf("Formatting SPIFFS....");
 
-            _tasker.add( [] (Task & t) { 
-                _getAllSettings(); 
-                _fs.format();
-                if (settings) {
-                    _saveAllSettings(*_settings);
-                }
-                
-            })
-            
-            ESPMan_Debugf("done\n");
+            _getAllSettings();
+            _fs.format();
+            if (_settings) {
+                _saveAllSettings(*_settings);
+            }
+
+            ESPMan_Debugf("done\n ");
         }
     }
 
     if (root.containsKey("clearWiFi")) {
         if (root["clearWiFi"] == true) {
-            ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] Erasing WiFi Config ....");
+            ESPMan_Debugf("Erasing WiFi Config ....");
             ESPMan_Debugf("done\n");
         }
+    }
+
+    if (root.containsKey("overwrite")) {
+        overwriteFiles = root["overwrite"].as<bool>();
+        ESPMan_Debugf("overwrite files set to %s\n", (overwriteFiles) ? "true" : "false");
     }
 
 
@@ -1129,18 +1151,31 @@ void ESPmanager::_upgrade(const char * path)
             continue;
         }
 
-        ESPMan_Debugf("[%u/%u] Downloading (%s)..", file_count, files_expected, filename.c_str()  );
+#ifdef Debug_ESPManager
+        Debug_ESPManager.print("\n\n");
+#endif
 
-        int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5 );
+        ESPMan_Debugf("[%u/%u] Downloading (%s)..\n", file_count, files_expected, filename.c_str()  );
+
+        int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
+
+        char temp_buffer[50]; 
 
         if (ret == 0 || ret == FILE_NOT_CHANGED) {
+            //event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
             event_printf(string_CONSOLE, "[%u/%u] (%s) : %s", file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
+
         } else {
+            //event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : ERROR [%i]"), file_count, files_expected, filename.c_str(), ret);
             event_printf(string_CONSOLE, "[%u/%u] (%s) : ERROR [%i]", file_count, files_expected, filename.c_str(), ret);
+
         }
-        delay(10);
+
         event_printf(string_UPGRADE, "%u", (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f) );
-        delay(10);
+
+
+
+
 #if defined(Debug_ESPManager)
         if (ret == 0) {
             Debug_ESPManager.printf("SUCCESS \n");
@@ -1185,6 +1220,7 @@ void ESPmanager::_upgrade(const char * path)
                         // snprintf(msgdata, 100,"FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str() );
                         // _events.send(msgdata, "upgrade");
                         delay(100);
+                        //event_printf_P(string_UPGRADE, PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str() );
                         event_printf(string_UPGRADE, "ERROR [%s]", ESPhttpUpdate.getLastErrorString().c_str() );
                         delay(100);
                         break;
@@ -1193,13 +1229,15 @@ void ESPmanager::_upgrade(const char * path)
                         ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
                         //_events.send("FAILED no update", "upgrade");
                         delay(100);
+                        //event_printf_P(string_UPGRADE, PSTR("ERROR no update"));
                         event_printf(string_UPGRADE, "ERROR no update");
                         delay(100);
                         break;
 
                     case HTTP_UPDATE_OK:
                         ESPMan_Debugf("HTTP_UPDATE_OK");
-                        _events.send("firmware-end", string_UPGRADE, 0, 1000);
+                        //event_printf_P(string_UPGRADE, PSTR("firmware-end"));
+                        event_printf(string_UPGRADE, "firmware-end");
                         delay(100);
                         _events.close();
                         delay(1000);
@@ -1208,7 +1246,8 @@ void ESPmanager::_upgrade(const char * path)
                     }
 
                 } else {
-                    _events.send("No Change to firmware", string_CONSOLE, 0, 5000 );
+                    event_printf(string_CONSOLE, "No Change to firmware");
+                    //event_printf_P(string_CONSOLE, PSTR("No Change to firmware"));
                     ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].asString()  );
 
                 }
@@ -1220,9 +1259,11 @@ void ESPmanager::_upgrade(const char * path)
         delete[] buff;
     }
 
-    delay(10);
-    _events.send("end", string_UPGRADE, 0, 5000);
-    delay(10);
+    //delay(10);
+    //event_printf_P(string_UPGRADE, PSTR("end"));
+    event_printf(string_UPGRADE, "end");
+   
+    delay(200);
 
 }
 
@@ -1243,16 +1284,19 @@ AsyncEventSource & ESPmanager::getEvent()
 
 
 
-#ifdef vsnprintf_P
+
 size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
 {
+    Serial.println("event_printf_P called"); 
+
+    uint8_t i = 0; 
     va_list arg;
     va_start(arg, format);
-    char temp[64];
+    char temp[64] = {0};
     char* buffer = temp;
     size_t len = vsnprintf_P(temp, sizeof(temp), format, arg);
     va_end(arg);
-    if (len > sizeof(temp) - 1) {
+    if (len > sizeof(temp) - 1) { 
         buffer = new char[len + 1];
         if (!buffer) {
             return 0;
@@ -1261,21 +1305,23 @@ size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
         vsnprintf_P(buffer, len + 1, format, arg);
         va_end(arg);
     }
-    _events.send(buffer, topic, millis(), 5000);
+
     ESPMan_Debugf("SENDING EVENT_P : %s\n", buffer);
-    delay(10);
+
+    _events.send(buffer, topic, millis(), 5000);
+
     if (buffer != temp) {
         delete[] buffer;
     }
     return len;
 }
-#endif
+
 
 size_t ESPmanager::event_printf(const char * topic, const char * format, ... )
 {
     va_list arg;
     va_start(arg, format);
-    char temp[64];
+    char temp[64] = {0};
     char* buffer = temp;
     size_t len = vsnprintf(temp, sizeof(temp), format, arg);
     va_end(arg);
@@ -1289,8 +1335,8 @@ size_t ESPmanager::event_printf(const char * topic, const char * format, ... )
         va_end(arg);
     }
     _events.send(buffer, topic, millis(), 5000);
-    ESPMan_Debugf("SENDING EVENT : %s\n", buffer);
-    delay(10);
+    //delay(100);
+    //Serial.printf("SENDING EVENT : %s\n", buffer);
     if (buffer != temp) {
         delete[] buffer;
     }
@@ -1314,7 +1360,7 @@ int ESPmanager::save()
 
 #ifdef ESPMAN_USE_UPDATER
 
-int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true )
+int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true, bool overwrite)
 {
     using namespace ESPMAN;
     String filename = filename_c;
@@ -1324,14 +1370,17 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
     bool success = false;
     int ERROR = 0;
 
-    if ( _fs.exists(filename) ) {
+    ESPMan_Debugf("URL = %s, filename = %s, md5 = %s, overwrite = %s\n", url, filename_c, md5_true, (overwrite) ? "true" : "false");
 
+    if (!overwrite && _fs.exists(filename) ) {
+
+        ESPMan_Debugf("Checking for existing file.\n");
         File Fcheck = _fs.open(filename, "r");
         String crc = file_md5(Fcheck);
 
         if (crc == String(md5_true)) {
             Fcheck.close();
- //           return FILE_NOT_CHANGED;
+            return FILE_NOT_CHANGED;
         }
 
         Fcheck.close();
@@ -1340,12 +1389,12 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
     if (!_fs.info(_FSinfo)) {
         return SPIFFS_INFO_FAIL;
-    
+
     }
 
     freeBytes = _FSinfo.totalBytes - _FSinfo.usedBytes;
 
-    ESPMan_Debugf("[_DownloadToSPIFFS] totalBytes = %u, usedBytes = %u, freebytes = %u\n", _FSinfo.totalBytes, _FSinfo.usedBytes, freeBytes);
+    ESPMan_Debugf("totalBytes = %u, usedBytes = %u, freebytes = %u\n", _FSinfo.totalBytes, _FSinfo.usedBytes, freeBytes);
 
     if (filename.length() > _FSinfo.maxPathLength) {
         return SPIFFS_FILENAME_TOO_LONG;
@@ -1358,6 +1407,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
         return SPIFFS_FILE_OPEN_ERROR;
     }
 
+
     http.begin(url);
 
     int httpCode = http.GET();
@@ -1366,16 +1416,39 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
         int len = http.getSize();
 
-        // WiFiUDP::stopAll();
-        // WiFiClient::stopAllExcept(http.getStreamPtr());
+        if (len > 0 && len < freeBytes) {
 
-        if (len < freeBytes) {
+            WiFiUDP::stopAll();
+            WiFiClient::stopAllExcept(http.getStreamPtr());
+            wifi_set_sleep_type(NONE_SLEEP_T);
 
-            size_t byteswritten = http.writeToStream(&f);
+            FlashWriter writer;
+            int byteswritten = 0;
+
+            if (writer.begin(len)) {
+                uint32_t start_time = millis();
+                Serial.print("Started write to Flash: ");
+                byteswritten = http.writeToStream(&writer);  //  this writes to the 1Mb Flash partition for the OTA upgrade.  zero latency...
+                Serial.println( millis() - start_time);
+                if (byteswritten > 0 && byteswritten == len) {
+                    uint32_t start_time = millis();
+                    Serial.print("Started write to SPIFFS: ");
+                    byteswritten = writer.writeToStream(&f); //  contains a yield to allow networking.  Can take minutes to complete.
+                    Serial.println( millis() - start_time);
+                } else {
+                    ESPMan_Debugf("HTTP to Flash error, byteswritten = %i\n", byteswritten); 
+                }
+
+            } else {
+
+                ESPMan_Debugf("Try Old method and write direct to file\n");
+
+                byteswritten = http.writeToStream(&f);
+            }
 
             http.end();
 
-            if (f.size() == len ||  len == -1 ) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
+            if (f.size() == len && byteswritten == len) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
 
                 if (md5_true) {
                     String crc = file_md5(f);
@@ -1402,6 +1475,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
         }
 
     } else {
+        ESPMan_Debugf("\n  [ERROR] HTTP code = %i \n", ERROR);
         ERROR = httpCode;
     }
 
@@ -1416,6 +1490,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
         if (filename.endsWith(".gz") ) {
             String withOutgz = filename.substring(0, filename.length() - 3);
             ESPMan_Debugf("NEW File ends in .gz: without = %s...", withOutgz.c_str());
+            
             if (_fs.remove(withOutgz)) {
                 ESPMan_Debugf("%s DELETED...", withOutgz.c_str());
             }
@@ -1433,6 +1508,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
         _fs.remove("/tempfile");
     }
 
+
     return ERROR;
 }
 
@@ -1446,7 +1522,7 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
 {
     using namespace ESPMAN;
 
-    ESPMan_Debugf("[ESPmanager::_parseUpdateJson] path = %s\n", path);
+    ESPMan_Debugf("path = %s\n", path);
 
     HTTPClient http;
 
@@ -1455,17 +1531,17 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
     int httpCode = http.GET();
 
     if (httpCode != 200) {
-        ESPMan_Debugf("[ESPmanager::_parseUpdateJson] HTTP code: %i\n", httpCode  );
+        ESPMan_Debugf("HTTP code: %i\n", httpCode  );
         return httpCode;
     }
 
-    ESPMan_Debugf("[ESPmanager::_parseUpdateJson] Connected downloading json\n");
+    ESPMan_Debugf("Connected downloading json\n");
 
     size_t len = http.getSize();
     const size_t length = len;
 
     if (len > MAX_BUFFER_SIZE) {
-        ESPMan_Debugf("[ESPmanager::_parseUpdateJson] Receive update length too big.  Increase buffer");
+        ESPMan_Debugf("Receive update length too big.  Increase buffer");
         return JSON_TOO_LARGE;
     }
 
@@ -1481,7 +1557,7 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
 
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
- //   int position = 0;
+//   int position = 0;
 
     // read all data from server
     // while (http.connected() && (len > 0 || len == -1)) {
@@ -1501,17 +1577,17 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
 
     // }
 
-    
+
     root = &jsonBuffer.parseObject(* stream );
     //root = &jsonBuffer.parseObject( (char*)buff, length );
 
     http.end();
 
     if (root->success()) {
-        ESPMan_Debugf("[ESPmanager::_parseUpdateJson] root->success() = true\n");
+        ESPMan_Debugf("root->success() = true\n");
         return 0;
     } else {
-        ESPMan_Debugf("[ESPmanager::_parseUpdateJson] root->success() = false\n");
+        ESPMan_Debugf("root->success() = false\n");
         return JSON_PARSE_ERROR;
     }
 
@@ -1522,14 +1598,14 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 {
 
 
-    ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] HIT\n" );
+    ESPMan_Debugf("HIT\n" );
 
 
     if ( request->hasParam("url", true)) {
 
         String path = request->getParam("url", true)->value();
 
-        ESPMan_Debugf("[ESPmanager::_HandleSketchUpdate] path = %s\n", path.c_str());
+        ESPMan_Debugf("path = %s\n", path.c_str());
 
         _tasker.add([ = ](Task & t) {
             _upgrade(path.c_str());
@@ -1559,7 +1635,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
 void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final)
 {
-    char msgdata[100] = {'\0'};
+    //char msgdata[100] = {'\0'};
     bool _uploadAuthenticated = true;
     if (!index) {
         //if(!_username.length() || request->authenticate(_username.c_str(),_password.c_str()))
@@ -1569,10 +1645,10 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
         request->_tempFile = _fs.open(filename, "w");
 
         ESPMan_Debugf("UploadStart: %s\n", filename.c_str());
-        snprintf(msgdata, 100, "UploadStart:%s",  filename.c_str());
-        _events.send(msgdata, nullptr, 0, 5000);
 
-        //_ws.printfAll_P( PSTR("File Upload Started"));
+
+        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str()); 
+        event_printf(nullptr, "UploadStart: %s", filename.c_str()); 
     }
 
     if (_uploadAuthenticated && request->_tempFile && len) {
@@ -1581,10 +1657,12 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
 
     if (_uploadAuthenticated && final) {
         if (request->_tempFile) { request->_tempFile.close(); }
-        //_ws.printfAll_P( PSTR("%s Upload Finished"), filename.c_str());
         ESPMan_Debugf("UploadEnd: %s, %u B\n", filename.c_str(), index + len);
-        snprintf(msgdata, 100, "UploadFinished:%s (%u)",  filename.c_str(), request->_tempFile.size() );
-        _events.send(msgdata, nullptr, 0, 5000);
+        // snprintf(msgdata, 100, "UploadFinished:%s (%u)",  filename.c_str(), request->_tempFile.size() );
+        // _events.send(msgdata, nullptr, 0, 5000);
+
+        ESPMan_Debugf("UploadFinished:%s (%u)", filename.c_str(), request->_tempFile.size() );
+
 
     }
 
@@ -1719,9 +1797,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 if (ERROR) {
                     //event_printf_P(NULL, PSTR(string_ERROR), ERROR);
-                    event_printf_P(NULL, PSTR("THEre is an error %u\n"), ERROR);
+                    event_printf(NULL, "There is an error %u\n", ERROR);
                 } else {
-                    _events.send("Settings Saved", nullptr, 0, 5000);
+
+                    event_printf(NULL, "Settings Saved", ERROR);
+
                     set.changed = false;
                     if (_fs.remove("/.wizard")) {
 
@@ -1762,10 +1842,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // request->send(response);
 
             _tasker.add( [this](Task & t) {
-                _events.send("Rebooting", NULL, 0, 1000);
+                event_printf(NULL, "Rebooting");
+                //event_printf_P(NULL, PSTR("Rebooting"));
+
                 delay(100);
                 _events.close();
-
                 delay(100);
                 ESP.restart();
                 delay(100000);
@@ -1829,8 +1910,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     }
 
 
+                    //event_printf_P(NULL, PSTR("%u Networks Found"), _wifinetworksfound);
                     event_printf(NULL, "%u Networks Found", _wifinetworksfound);
-
 
                     std::list<std::pair <int, int>>::iterator it;
 
@@ -2043,8 +2124,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             SPIFFSobject[F("usedBytes")] = formatBytes(info.usedBytes);
             SPIFFSobject[F("blockSize")] = formatBytes(info.blockSize);
             SPIFFSobject[F("pageSize")] = formatBytes(info.pageSize);
-            SPIFFSobject[F("allocatedPages")] = info.allocatedPages;
-            SPIFFSobject[F("deletedPages")] = info.deletedPages;
+            //SPIFFSobject[F("allocatedPages")] = info.allocatedPages;
+            //SPIFFSobject[F("deletedPages")] = info.deletedPages;
             SPIFFSobject[F("maxOpenFiles")] = info.maxOpenFiles;
             SPIFFSobject[F("maxPathLength")] = info.maxPathLength;
 
@@ -2101,7 +2182,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         if (plainCommand == "formatSPIFFS") {
             ESPMan_Debugf("Format SPIFFS\n");
-            _events.send("Formatting SPIFFS", nullptr, 0, 5000);
+
+            //event_printf_P(NULL, PSTR("Formatting SPIFFS"));
+            event_printf(NULL, "Formatting SPIFFS");
+
 
             _sendTextResponse(request, 200, "OK");
 
@@ -2113,13 +2197,15 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             _tasker.add( [this](Task & t) {
 
-                _getAllSettings(); 
+                _getAllSettings();
                 _fs.format();
-                if (settings) {
+                if (_settings) {
                     _saveAllSettings(*_settings);
                 }
                 ESPMan_Debugf(" done\n");
-                _events.send("Formatting done", nullptr, 0, 5000);
+                //event_printf_P(NULL, PSTR("Formatting done"));
+                event_printf(NULL, "Formatting done");
+
 
             });
 
@@ -2134,8 +2220,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         if (plainCommand == "defragSPIFFS") {
             _tasker.add( [this](Task & t) {
-            defragSPIFFS(); 
-        });
+                defragSPIFFS();
+            });
 
         }
 
@@ -2145,7 +2231,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             ESPMan_Debugf("Delete Settings File\n");
             if (_fs.remove(SETTINGS_FILE)) {
                 ESPMan_Debugf(" done");
-                _events.send("Settings File Removed", nullptr, 0, 5000);
+                //event_printf_P(NULL, PSTR("Settings File Removed"));
+                event_printf(NULL, "Settings File Removed");
+
             } else {
                 ESPMan_Debugf(" failed");
             }
@@ -2156,7 +2244,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             _tasker.add( [this](Task & t) {
 
-                _events.send("Reset WiFi and Reboot", NULL, 0, 1000);
+                event_printf(NULL, "Reset WiFi and Reboot");
+                //event_printf_P(NULL, PSTR("Reset WiFi and Reboot"));
                 delay(100);
                 _events.close();
                 delay(100);
@@ -2179,7 +2268,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             ESP.eraseConfig();
 
-            ESPMan_Debugf("[ESPmanager::_HandleDataRequest] Enter Wizard hit\n");
+            ESPMan_Debugf("Enter Wizard hit\n");
 
             File f = _fs.open("/.wizard", "w"); //  creates a file that overrides everything during initial config...
 
@@ -2294,7 +2383,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     newsettings->pass = psk.c_str();
                     newsettings->enabled = true;
 
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] applied new ssid & psk to tmp obj ssid =%s, pass=%s\n", newsettings->ssid(), newsettings->pass() );
+                    ESPMan_Debugf("applied new ssid & psk to tmp obj ssid =%s, pass=%s\n", newsettings->ssid(), newsettings->pass() );
 
                     if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA ) {
 
@@ -2330,7 +2419,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         using namespace ESPMAN;
 
                         WiFiresult = 0;
-                        ESPMan_Debugf("[_syncCallback] Called\n");
+                        ESPMan_Debugf("Called\n");
 
                         uint32_t starttime = millis();
 
@@ -2338,8 +2427,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             uint8_t connected_station_count = WiFi.softAPgetStationNum();
 
-                            ESPMan_Debugf("[_syncCallback] Changing AP channel to %u :", channel);
-                            _events.send("Changing AP Channel...\n", nullptr, 0, 5000);
+                            ESPMan_Debugf("Changing AP channel to %u :", channel);
+
+                            event_printf(NULL, "Changing AP Channel...");
+                            //event_printf_P(NULL, PSTR("Changing AP Channel..."));
+
                             delay(10);
                             WiFi.enableAP(false);
                             settings_t set;
@@ -2349,7 +2441,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             bool result = _initialiseAP(set.AP);
 
                             if (!result) {
-                                ESPMan_Debugf("[_syncCallback] Waiting For AP reconnect\n");
+                                ESPMan_Debugf("Waiting For AP reconnect\n");
                                 starttime = millis();
 
 
@@ -2370,7 +2462,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                     }
 
                                     if (millis() - starttime > 60000) {
-                                        ESPMan_Debugf("[_syncCallback] Error waiting for AP reconnect\n");
+                                        ESPMan_Debugf("Error waiting for AP reconnect\n");
                                         WiFiresult = 2;
                                         WiFi.enableSTA(false);
                                         if (newsettings) {
@@ -2387,7 +2479,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                             } else {
-                                ESPMan_Debugf("[_syncCallback] Error: %i\n", result);
+                                ESPMan_Debugf("Error: %i\n", result);
                             }
 
 
@@ -2395,14 +2487,15 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         }
 
                         starttime = millis() ;// reset the start timer....
+                        //event_printf_P(NULL, PSTR("Updating WiFi Settings"));
+                        event_printf(NULL, "Updating WiFi Settings");
 
-                        _events.send("Updating WiFi Settings", nullptr, 0, 5000);
                         delay(10);
 
                         int ERROR = _initialiseSTA(*newsettings);
 
                         if (!ERROR) {
-                            ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] CALLBACK: Settings successfull\n");
+                            ESPMan_Debugf("CALLBACK: Settings successfull\n");
                             WiFiresult = 1;
 
                             if (!_settings) {
@@ -2415,17 +2508,18 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                 _settings->STA = *newsettings;
                                 //Serial.print("\ndone\n\n");
                                 _settings->changed = true;
-                                ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] CALLBACK: Settings Applied\n");
+                                ESPMan_Debugf("CALLBACK: Settings Applied\n");
                                 save_flag = true;
                             }
 
                         } else {
                             WiFiresult = 2;
-                            ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] ERROR: %i\n", ERROR);
+                            ESPMan_Debugf("ERROR: %i\n", ERROR);
                             WiFi.enableSTA(false); //  turns it off....
                         }
 
-                        _events.send("WiFi Settings Updated", nullptr, 0, 5000);
+                        //event_printf_P(NULL, PSTR("WiFi Settings Updated"));
+                        event_printf(NULL, "WiFi Settings Updated");
 
                         if (newsettings) {
                             delete newsettings;
@@ -2459,7 +2553,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             WiFiresult = 4; // connected
         }
 
-        ESPMan_Debugf("[ESPmanager] WiFiResult = %i [%u.%u.%u.%u]\n", WiFiresult, WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+        ESPMan_Debugf("WiFiResult = %i [%u.%u.%u.%u]\n", WiFiresult, WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
 
         _sendTextResponse(request, 200, String(WiFiresult).c_str());
 
@@ -2510,7 +2604,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                 if (dhcp) {
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] dhcp = on\n" );
+                    ESPMan_Debugf("dhcp = on\n" );
 
                     if (!_settings->STA.dhcp) {
                         changes = true;
@@ -2527,7 +2621,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                 } else {
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] dhcp = off\n" );
+                    ESPMan_Debugf("dhcp = off\n" );
 
                     if (_settings->STA.dhcp) {
                         changes = true;
@@ -2556,7 +2650,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         if (newsettings->IP != _settings->STA.IP ||  newsettings->GW != _settings->STA.GW || newsettings->SN != _settings->STA.SN || newsettings->DNS1 != _settings->STA.DNS1 ) {
                             changes = true;
                         }
-                        ESPMan_Debugf("[ESPmanager::_HandleDataRequest] Config Set\n");
+                        ESPMan_Debugf("Config Set\n");
                         newsettings->hasConfig = true;
                         newsettings->dhcp = false;
 
@@ -2564,7 +2658,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             bool res = newsettings->DNS2.fromString ( request->getParam(string_DNS2, true)->value() );
                             if (res) {
-                                ESPMan_Debugf("[ESPmanager::_HandleDataRequest] DNS 2 %s\n",  newsettings->DNS2.toString().c_str() );
+                                ESPMan_Debugf("DNS 2 %s\n",  newsettings->DNS2.toString().c_str() );
                                 if (newsettings->DNS2 != _settings->STA.DNS2 ) {
                                     changes = true;
                                 }
@@ -2574,7 +2668,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     }
 
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] IP %s, GW %s, SN %s\n", (IPres) ? "set" : "error", (GWres) ? "set" : "error", (SNres) ? "set" : "error"  );
+                    ESPMan_Debugf("IP %s, GW %s, SN %s\n", (IPres) ? "set" : "error", (GWres) ? "set" : "error", (SNres) ? "set" : "error"  );
                 }
 
 
@@ -2647,7 +2741,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     using namespace ESPMAN;
 
-                    _events.send("Updating WiFi Settings", nullptr, 0, 5000);
+                    event_printf(NULL, "Updating WiFi Settings");
+                    //event_printf_P(NULL, PSTR("Updating WiFi Settings"));
+
                     delay(10);
 
                     ESPMan_Debugf("*** CALLBACK: dhcp = %s\n", (newsettings->dhcp) ? "true" : "false");
@@ -2662,7 +2758,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     //WiFi.printDiag(Serial);
 
                     if (!ERROR || (ERROR == STA_DISABLED && newsettings->enabled == false)) {
-                        ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] CALLBACK: Settings successfull\n");
+                        ESPMan_Debugf("CALLBACK: Settings successfull\n");
 
                         if (!_settings) {
                             _getAllSettings();
@@ -2672,21 +2768,23 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         if (_settings) {
                             _settings->STA = *newsettings;
                             _settings->changed = true;
-                            ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] CALLBACK: Settings Applied\n");
+                            ESPMan_Debugf("CALLBACK: Settings Applied\n");
                             // _dumpSettings();
-                            _events.send("Success", nullptr, 0, 5000);
+                            event_printf(NULL, "Success");
+                            //event_printf_P(NULL, PSTR("Success"));
+
                             //save_flag = true;
                         } else {
                             event_printf(NULL, string_ERROR, SETTINGS_NOT_IN_MEMORY);
                         }
 
                     } else {
-                        ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] ERORR: Settings NOT applied successfull %i\n", ERROR);
+                        ESPMan_Debugf("ERORR: Settings NOT applied successfull %i\n", ERROR);
                         event_printf(NULL, string_ERROR, ERROR);
                         _getAllSettings();
                         if (_settings) {
                             if (_initialiseSTA(_settings->STA)) {
-                                ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] OLD settings reapplied\n");
+                                ESPMan_Debugf("OLD settings reapplied\n");
                             }
                         }
                     }
@@ -2697,7 +2795,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 });
             } else {
                 event_printf(NULL, "No Changes Made");
-                ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] No changes Made\n");
+                //event_printf_P(NULL, PSTR("No Changes Made"));
+
+                ESPMan_Debugf("No changes Made\n");
 
             }
         }
@@ -2744,7 +2844,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 if (pass && newsettings->pass != pass) {
                     newsettings->pass = pass;
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] New AP pass = %s\n", newsettings->pass() );
+                    ESPMan_Debugf("New AP pass = %s\n", newsettings->pass() );
                     changes = true;
                 }
 
@@ -2761,7 +2861,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if (channel != newsettings->channel) {
                     newsettings->channel = channel;
                     changes = true;
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] New Channel = %u\n", newsettings->channel );
+                    ESPMan_Debugf("New Channel = %u\n", newsettings->channel );
                 }
 
 
@@ -2791,7 +2891,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     }
 
-                    ESPMan_Debugf("[ESPmanager::_HandleDataRequest] New AP IP = %s\n", newsettings->IP.toString().c_str() );
+                    ESPMan_Debugf("New AP IP = %s\n", newsettings->IP.toString().c_str() );
                 }
 
 
@@ -2845,13 +2945,15 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     using namespace ESPMAN;
 
-                    _events.send("Updating AP Settings", nullptr, 0, 5000);
+                    event_printf(NULL, "Updating AP Settings");
+                    //event_printf_P(NULL, PSTR("Updating AP Settings"));
+
                     delay(10);
 
                     int ERROR = _initialiseAP(*newsettings);
 
                     if (!ERROR || (ERROR == AP_DISABLED && newsettings->enabled == false)) {
-                        ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] AP CALLBACK: Settings successfull\n");
+                        ESPMan_Debugf("AP CALLBACK: Settings successfull\n");
 
                         if (!_settings) {
                             _getAllSettings();
@@ -2861,9 +2963,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         if (_settings) {
                             _settings->AP = *newsettings;
                             _settings->changed = true;
-                            ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] CALLBACK: Settings Applied\n");
+                            ESPMan_Debugf("CALLBACK: Settings Applied\n");
                             //_dumpSettings();
-                            _events.send("Success", nullptr, 0, 5000);
+                            
+                            event_printf(NULL, "Success");
+                            //event_printf_P(NULL, PSTR("Success"));
                             //save_flag = true;
                         } else {
                             event_printf(NULL, string_ERROR, SETTINGS_NOT_IN_MEMORY);
@@ -2874,7 +2978,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         _getAllSettings();
 
                         if (_settings) {
-                            ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] Restoring old settings ERROR = %i\n", ERROR);
+                            ESPMan_Debugf("Restoring old settings ERROR = %i\n", ERROR);
 
                             _initialiseAP(_settings->AP);
 
@@ -2890,7 +2994,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 });
             } else {
                 event_printf(NULL, "No Changes Made");
-                ESPMan_Debugf("[ESPmanager::_HandleDataRequest()] No changes Made\n");
+                //event_printf_P(NULL, PSTR("No Changes Made"));
+
+                ESPMan_Debugf("No changes Made\n");
 
             }
         }
@@ -2913,7 +3019,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             set.changed = true;
             event_printf(NULL, "Device ID: %s", set.GEN.host() );
 
-            _events.send(string_saveandreboot, nullptr, 0, 5000);
+            event_printf(NULL, string_saveandreboot);
         }
 
     }
@@ -2947,7 +3053,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             set.GEN.OTAupload = command;
             set.changed = true;
 
-            ESPMan_Debugf("[ESPmanager::handle()] _OTAupload = %s\n", (set.GEN.OTAupload) ? "enabled" : "disabled");
+            ESPMan_Debugf("_OTAupload = %s\n", (set.GEN.OTAupload) ? "enabled" : "disabled");
 
 
         }
@@ -2972,7 +3078,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             if (pass && confirm && !strcmp(pass, confirm))  {
 
-                ESPMan_Debugf("[ESPmanager::_handle] Passwords Match\n");
+                ESPMan_Debugf("asswords Match\n");
                 set.changed = true;
                 MD5Builder md5;
                 md5.begin();
@@ -3029,7 +3135,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             _settings->GEN.portal = command;
             set.changed = true;
 
-            ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
+            ESPMan_Debugf("settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
 
 
         }
@@ -3056,7 +3162,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             _settings->GEN.usesyslog = value;
             set.changed = true;
             //ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
-            _events.send(string_saveandreboot, nullptr, 0, 5000);
+            
+            event_printf(nullptr, string_saveandreboot); 
         }
 
     }
@@ -3069,7 +3176,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (result && value != _settings->GEN.syslogIP) {
             _settings->GEN.syslogIP = value;
             set.changed = true;
-            _events.send(string_saveandreboot, nullptr, 0, 5000);
+            event_printf(nullptr, string_saveandreboot); 
         }
 
     }
@@ -3080,7 +3187,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (value != _settings->GEN.syslogPort) {
             _settings->GEN.syslogPort = value;
             set.changed = true;
-            _events.send(string_saveandreboot, nullptr, 0, 5000);
+            
+            event_printf(nullptr, string_saveandreboot); 
         }
     }
 
@@ -3090,7 +3198,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (value != _settings->GEN.syslogProto) {
             _settings->GEN.syslogProto = value;
             set.changed = true;
-            _events.send(string_saveandreboot, nullptr, 0, 5000);
+            
+            event_printf(nullptr, string_saveandreboot); 
         }
 
     }
@@ -3160,7 +3269,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         const char * newpath = S_newpath.c_str();
 
-        ESPMan_Debugf("[ESPmanager::_HandleDataRequest] UpgradeURL: %s\n", newpath);
+        ESPMan_Debugf("UpgradeURL: %s\n", newpath);
 
         if (newpath && strlen(newpath) > 0 && set.GEN.updateURL != newpath) {
 
@@ -3358,7 +3467,7 @@ int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
 #endif
 
     if (settings.enabled == false  ) {
-        ESPMan_Debugf("[ESPmanager::_initialiseAP( settings_t::AP_t & settings )] AP DISABLED\n");
+        ESPMan_Debugf("AP DISABLED\n");
         if (WiFi.enableAP(false)) {
             return AP_DISABLED;
         } else {
@@ -3399,7 +3508,7 @@ int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
         settings.ssid = buf;
     }
 
-    ESPMan_Debugf("[ESPmanager::_initialiseAP] ( settings_t::AP_t & settings )] ENABLING AP : channel %u, name %s\n", settings.channel, settings.ssid() );
+    ESPMan_Debugf("ENABLING AP : channel %u, name %s\n", settings.channel, settings.ssid() );
 
 
     if (!WiFi.softAP(settings.ssid(), settings.pass(), settings.channel, !settings.visible )) {
@@ -3433,12 +3542,12 @@ int ESPmanager::_initialiseSTA()
         ERROR = _initialiseSTA(_settings->STA);
         if (!ERROR) {
             if (_settings->GEN.host() && !WiFi.hostname(_settings->GEN.host())) {
-                ESPMan_Debugf("[ESPmanager::_initialiseSTA()] ERROR setting Hostname\n");
+                ESPMan_Debugf("ERROR setting Hostname\n");
             } else {
 
-                ESPMan_Debugf("[ESPmanager::_initialiseSTA()] Hostname set : %s\n", _settings->GEN.host() );
+                ESPMan_Debugf("Hostname set : %s\n", _settings->GEN.host() );
             }
-            ESPMan_Debugf("[ESPmanager::_initialiseSTA()] IP = %s\n", WiFi.localIP().toString().c_str() );
+            ESPMan_Debugf("IP = %s\n", WiFi.localIP().toString().c_str() );
             return 0;
         } else {
             return ERROR;
@@ -3503,11 +3612,11 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
     if ( set.hasConfig && set.IP != INADDR_NONE && set.GW != INADDR_NONE  && set.SN != INADDR_NONE  ) {
         //      bool config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1 = (uint32_t)0x00000000, IPAddress dns2 = (uint32_t)0x00000000);
-        ESPMan_Debugf("[ESPmanager::_initialiseSTA( settings_t::STA_t & settings)] IP %s\n", set.IP.toString().c_str() );
-        ESPMan_Debugf("[ESPmanager::_initialiseSTA( settings_t::STA_t & settings)] GW %s\n", set.GW.toString().c_str());
-        ESPMan_Debugf("[ESPmanager::_initialiseSTA( settings_t::STA_t & settings)] SN %s\n", set.SN.toString().c_str());
-        ESPMan_Debugf("[ESPmanager::_initialiseSTA( settings_t::STA_t & settings)] DNS1 %s\n", set.DNS1.toString().c_str());
-        ESPMan_Debugf("[ESPmanager::_initialiseSTA( settings_t::STA_t & settings)] DNS2 %s\n", set.DNS2.toString().c_str());
+        ESPMan_Debugf("IP %s\n", set.IP.toString().c_str() );
+        ESPMan_Debugf("GW %s\n", set.GW.toString().c_str());
+        ESPMan_Debugf("SN %s\n", set.SN.toString().c_str());
+        ESPMan_Debugf("DNS1 %s\n", set.DNS1.toString().c_str());
+        ESPMan_Debugf("DNS2 %s\n", set.DNS2.toString().c_str());
 
         WiFi.begin();
 
@@ -3518,7 +3627,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
             return WIFI_CONFIG_ERROR;
         } else {
             set.dhcp = false;
-            ESPMan_Debugf("[ESPmanager::_initialiseSTA( settings_t::STA_t & settings)] Config Applied\n");
+            ESPMan_Debugf("Config Applied\n");
         }
 
     } else {
@@ -3574,7 +3683,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
         }
     }
 
-    ESPMan_Debugf("[ESPmanager::_initialiseSTA] Begin Done\n");
+    ESPMan_Debugf("Begin Done\n");
 
     uint32_t start_time = millis();
 
@@ -3589,7 +3698,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
     while (result = WiFi.waitForConnectResult(), result != WL_CONNECTED) {
         delay(10);
         if (millis() - start_time > 60000) {
-            ESPMan_Debugf("[ESPmanager::_initialiseSTA] ABORTING CONNECTION TIMEOUT\n");
+            ESPMan_Debugf("ABORTING CONNECTION TIMEOUT\n");
             break;
 
         }
@@ -3601,7 +3710,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
         enablePortal();
     }
 
-    ESPMan_Debugf("[ESPmanager::_initialiseSTA] connRes = %u, time = %ums\n", result, millis() - start_time);
+    ESPMan_Debugf("connRes = %u, time = %ums\n", result, millis() - start_time);
 
     if ( result == WL_CONNECTED ) {
 
@@ -3925,7 +4034,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         } else {
             set.STA.dhcp = true;
             set.STA.hasConfig = false;
-            ESPMan_Debugf("[ESPmanager::_getAllSettings(settings_t & set)] dhcp set true\n");
+            ESPMan_Debugf("dhcp set true\n");
         }
 
         if (STAjson.containsKey(string_autoconnect)) {
@@ -3999,7 +4108,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
     }
 
     if (settingsversion != SETTINGS_FILE_VERSION) {
-        ESPMan_Debugf("[ESPmanager::_getAllSettings(settings_t & set)] Settings File Version Wrong expecting:%u got:%u\n", SETTINGS_FILE_VERSION, settingsversion);
+        ESPMan_Debugf("Settings File Version Wrong expecting:%u got:%u\n", SETTINGS_FILE_VERSION, settingsversion);
         return WRONG_SETTINGS_FILE_VERSION;
     }
 
@@ -4580,14 +4689,14 @@ bool ESPmanager::defragSPIFFS()
 {
     FSInfo info;
 
-    if(SPIFFS.info(info)){
-        size_t freeSpace = info.totalBytes - info.usedBytes - (2 * info.blockSize); 
-        SPIFFS.defrag(freeSpace);
-        return true; 
+    if (SPIFFS.info(info)) {
+        size_t freeSpace = info.totalBytes - info.usedBytes - (2 * info.blockSize);
+        //     SPIFFS.defrag(freeSpace);
+        return true;
     }
 
-    return false; 
-    
+    return false;
+
 
 //   FSInfo info;
 //   if(SPIFFS.info(info)){
@@ -4608,5 +4717,5 @@ bool ESPmanager::defragSPIFFS()
 //     }
 //   }
 
-//     return true; 
- }
+//     return true;
+}

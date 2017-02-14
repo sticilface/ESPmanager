@@ -1,5 +1,6 @@
 $(function () {
 
+
  $("[data-role='header']").toolbar();
  $("body>[data-role='panel']").panel();
  

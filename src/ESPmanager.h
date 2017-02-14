@@ -52,9 +52,7 @@
 
 #define ESPMANAGER_SYSLOG
 #define ESPMANAGER_SAVESTACK
-//#define Debug_ESPManager Serial
-
-
+#define Debug_ESPManager Serial
 
 
 #ifdef ESPMANAGER_SYSLOG
@@ -65,7 +63,7 @@
 #include "SaveStack.h"
 #endif
 
-#define SETTINGS_FILE "/espman/settings.txt"
+#define SETTINGS_FILE "/espman/settings.json"
 // #define SALT_LENGTH 20
 #define ESPMANVERSION "1.0-async"
 #define SETTINGS_FILE_VERSION 2
@@ -77,7 +75,7 @@
 static File _DebugFile;
 
 //#define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__) //  33,268 K RAM left
-#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1), ##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
+#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR( "[%s, line %u] " _1), __PRETTY_FUNCTION__, __LINE__ ,##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
 #pragma message("DEBUG enabled for ESPManager.")
 #else
 #define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
@@ -110,9 +108,8 @@ public:
 
   AsyncEventSource & getEvent();
   size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4)));
-#ifdef vsnprintf_P
   size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4)));
-#endif
+
 
   void upgrade(String path = String());
   void factoryReset();
@@ -161,7 +158,7 @@ private:
   void _upgrade(const char * path);
 
 #ifdef ESPMAN_USE_UPDATER
-  int   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr);
+  int   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
   int   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
   void  _HandleSketchUpdate(AsyncWebServerRequest * request);
 #endif
