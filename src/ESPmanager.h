@@ -52,7 +52,7 @@
 
 #define ESPMANAGER_SYSLOG
 #define ESPMANAGER_SAVESTACK
-#define Debug_ESPManager Serial
+//#define Debug_ESPManager Serial
 
 
 #ifdef ESPMANAGER_SYSLOG

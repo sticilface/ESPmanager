@@ -119,7 +119,7 @@ size_t FlashWriter::readBytes(uint8_t * dst, size_t size) {
     uint32_t nb = alignedBegin - addr;
     uint32_t tmp;
     if (!ESP.flashRead(alignedBegin - 4, &tmp, 4)) {
-      Serial.printf("[%s: %d] addr=%x size=%u ab=%x ae=%x\r\n", __PRETTY_FUNCTION__  , __LINE__, addr, size, alignedBegin, alignedEnd);
+      //Serial.printf("[%s: %d] addr=%x size=%u ab=%x ae=%x\r\n", __PRETTY_FUNCTION__  , __LINE__, addr, size, alignedBegin, alignedEnd);
       return 0;
     }
     memcpy(dst, &tmp + 4 - nb, nb);
@@ -127,7 +127,7 @@ size_t FlashWriter::readBytes(uint8_t * dst, size_t size) {
 
   if (alignedEnd != alignedBegin) {
     if (!ESP.flashRead(alignedBegin, (uint32_t*) (dst + alignedBegin - addr), alignedEnd - alignedBegin)) {
-      Serial.printf("[%s: %d] addr=%x size=%u ab=%x ae=%x\r\n", __PRETTY_FUNCTION__  , __LINE__, addr, size, alignedBegin, alignedEnd);
+      //Serial.printf("[%s: %d] addr=%x size=%u ab=%x ae=%x\r\n", __PRETTY_FUNCTION__  , __LINE__, addr, size, alignedBegin, alignedEnd);
       return 0;
     }
   }
@@ -136,7 +136,7 @@ size_t FlashWriter::readBytes(uint8_t * dst, size_t size) {
     uint32_t nb = addr + size - alignedEnd;
     uint32_t tmp;
     if (!ESP.flashRead(alignedEnd, &tmp, 4)) {
-      Serial.printf("[%s: %d] addr=%x size=%x ab=%x ae=%x\r\n", __PRETTY_FUNCTION__  , __LINE__, addr, size, alignedBegin, alignedEnd);
+      //Serial.printf("[%s: %d] addr=%x size=%x ab=%x ae=%x\r\n", __PRETTY_FUNCTION__  , __LINE__, addr, size, alignedBegin, alignedEnd);
       return 0;
     }
     memcpy(dst + size - nb, &tmp, nb);
@@ -186,14 +186,14 @@ int FlashWriter::writeToStream(Stream * stream)
         
       } else {
         _currentReadAddress = fallbackAddr; //  try to read and write that block again... 
-        Serial.printf("[%s: %d] Write Error (time =%u ms) \n", __PRETTY_FUNCTION__  , __LINE__, millis() - write_time );
+        //Serial.printf("[%s: %d] Write Error (time =%u ms) \n", __PRETTY_FUNCTION__  , __LINE__, millis() - write_time );
 
       }
       
       left = available(); 
 
       if (millis() - start_time > _timeout) {
-        Serial.printf("[%s: %d] Write TimeOut \n", __PRETTY_FUNCTION__  , __LINE__ );
+        //Serial.printf("[%s: %d] Write TimeOut \n", __PRETTY_FUNCTION__  , __LINE__ );
         return 0; 
       }
       

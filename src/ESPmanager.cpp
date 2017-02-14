@@ -983,8 +983,8 @@ void ESPmanager::upgrade(String path)
         if (_settings->GEN.updateURL() && strlen(_settings->GEN.updateURL()) > 0 ) {
             newpath = _settings->GEN.updateURL();
         } else {
-            event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
-            //event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
+            //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
+            event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
             return;
         }
 
@@ -1021,8 +1021,8 @@ void ESPmanager::_upgrade(const char * path)
         if (_settings->GEN.updateURL() && strlen(_settings->GEN.updateURL()) > 0 ) {
             path = _settings->GEN.updateURL();
         } else {
-            event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
-            //event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
+            //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
+            event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
             return;
         }
 
@@ -1162,12 +1162,12 @@ void ESPmanager::_upgrade(const char * path)
         char temp_buffer[50]; 
 
         if (ret == 0 || ret == FILE_NOT_CHANGED) {
-            //event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
-            event_printf(string_CONSOLE, "[%u/%u] (%s) : %s", file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
+            event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
+            //event_printf(string_CONSOLE, "[%u/%u] (%s) : %s", file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
 
         } else {
-            //event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : ERROR [%i]"), file_count, files_expected, filename.c_str(), ret);
-            event_printf(string_CONSOLE, "[%u/%u] (%s) : ERROR [%i]", file_count, files_expected, filename.c_str(), ret);
+            event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : ERROR [%i]"), file_count, files_expected, filename.c_str(), ret);
+            //event_printf(string_CONSOLE, "[%u/%u] (%s) : ERROR [%i]", file_count, files_expected, filename.c_str(), ret);
 
         }
 
@@ -1220,8 +1220,8 @@ void ESPmanager::_upgrade(const char * path)
                         // snprintf(msgdata, 100,"FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str() );
                         // _events.send(msgdata, "upgrade");
                         delay(100);
-                        //event_printf_P(string_UPGRADE, PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str() );
-                        event_printf(string_UPGRADE, "ERROR [%s]", ESPhttpUpdate.getLastErrorString().c_str() );
+                        event_printf_P(string_UPGRADE, PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str() );
+                        //event_printf(string_UPGRADE, "ERROR [%s]", ESPhttpUpdate.getLastErrorString().c_str() );
                         delay(100);
                         break;
 
@@ -1229,15 +1229,15 @@ void ESPmanager::_upgrade(const char * path)
                         ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
                         //_events.send("FAILED no update", "upgrade");
                         delay(100);
-                        //event_printf_P(string_UPGRADE, PSTR("ERROR no update"));
-                        event_printf(string_UPGRADE, "ERROR no update");
+                        event_printf_P(string_UPGRADE, PSTR("ERROR no update"));
+                        //event_printf(string_UPGRADE, "ERROR no update");
                         delay(100);
                         break;
 
                     case HTTP_UPDATE_OK:
                         ESPMan_Debugf("HTTP_UPDATE_OK");
-                        //event_printf_P(string_UPGRADE, PSTR("firmware-end"));
-                        event_printf(string_UPGRADE, "firmware-end");
+                        event_printf_P(string_UPGRADE, PSTR("firmware-end"));
+                        //event_printf(string_UPGRADE, "firmware-end");
                         delay(100);
                         _events.close();
                         delay(1000);
@@ -1246,8 +1246,8 @@ void ESPmanager::_upgrade(const char * path)
                     }
 
                 } else {
-                    event_printf(string_CONSOLE, "No Change to firmware");
-                    //event_printf_P(string_CONSOLE, PSTR("No Change to firmware"));
+                    //event_printf(string_CONSOLE, "No Change to firmware");
+                    event_printf_P(string_CONSOLE, PSTR("No Change to firmware"));
                     ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].asString()  );
 
                 }
@@ -1260,8 +1260,8 @@ void ESPmanager::_upgrade(const char * path)
     }
 
     //delay(10);
-    //event_printf_P(string_UPGRADE, PSTR("end"));
-    event_printf(string_UPGRADE, "end");
+    event_printf_P(string_UPGRADE, PSTR("end"));
+    //event_printf(string_UPGRADE, "end");
    
     delay(200);
 
@@ -1287,8 +1287,6 @@ AsyncEventSource & ESPmanager::getEvent()
 
 size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
 {
-    Serial.println("event_printf_P called"); 
-
     uint8_t i = 0; 
     va_list arg;
     va_start(arg, format);
@@ -1305,8 +1303,6 @@ size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
         vsnprintf_P(buffer, len + 1, format, arg);
         va_end(arg);
     }
-
-    ESPMan_Debugf("SENDING EVENT_P : %s\n", buffer);
 
     _events.send(buffer, topic, millis(), 5000);
 
@@ -1427,14 +1423,14 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
             if (writer.begin(len)) {
                 uint32_t start_time = millis();
-                Serial.print("Started write to Flash: ");
+                //Serial.print("Started write to Flash: ");
                 byteswritten = http.writeToStream(&writer);  //  this writes to the 1Mb Flash partition for the OTA upgrade.  zero latency...
-                Serial.println( millis() - start_time);
+                //Serial.println( millis() - start_time);
                 if (byteswritten > 0 && byteswritten == len) {
                     uint32_t start_time = millis();
-                    Serial.print("Started write to SPIFFS: ");
+                    //Serial.print("Started write to SPIFFS: ");
                     byteswritten = writer.writeToStream(&f); //  contains a yield to allow networking.  Can take minutes to complete.
-                    Serial.println( millis() - start_time);
+                    //erial.println( millis() - start_time);
                 } else {
                     ESPMan_Debugf("HTTP to Flash error, byteswritten = %i\n", byteswritten); 
                 }
@@ -1647,8 +1643,8 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
         ESPMan_Debugf("UploadStart: %s\n", filename.c_str());
 
 
-        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str()); 
-        event_printf(nullptr, "UploadStart: %s", filename.c_str()); 
+        event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str()); 
+        //event_printf(nullptr, "UploadStart: %s", filename.c_str()); 
     }
 
     if (_uploadAuthenticated && request->_tempFile && len) {
@@ -1660,8 +1656,9 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
         ESPMan_Debugf("UploadEnd: %s, %u B\n", filename.c_str(), index + len);
         // snprintf(msgdata, 100, "UploadFinished:%s (%u)",  filename.c_str(), request->_tempFile.size() );
         // _events.send(msgdata, nullptr, 0, 5000);
+        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str()); 
 
-        ESPMan_Debugf("UploadFinished:%s (%u)", filename.c_str(), request->_tempFile.size() );
+        event_printf_P(nullptr , PSTR("UploadFinished:%s (%u)"), filename.c_str(), request->_tempFile.size() );
 
 
     }
@@ -1766,7 +1763,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         String plainCommand = request->getParam("body", true)->value();
 
-        Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
+       // Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
 
         if (plainCommand == "generalpage") {
 
@@ -1796,8 +1793,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
                 if (ERROR) {
-                    //event_printf_P(NULL, PSTR(string_ERROR), ERROR);
-                    event_printf(NULL, "There is an error %u\n", ERROR);
+                    event_printf(NULL, string_ERROR, ERROR);
+                    //event_printf(NULL, "There is an error %u\n", ERROR);
                 } else {
 
                     event_printf(NULL, "Settings Saved", ERROR);
@@ -1842,8 +1839,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // request->send(response);
 
             _tasker.add( [this](Task & t) {
-                event_printf(NULL, "Rebooting");
-                //event_printf_P(NULL, PSTR("Rebooting"));
+                //event_printf(NULL, "Rebooting");
+                event_printf_P(NULL, PSTR("Rebooting"));
 
                 delay(100);
                 _events.close();
@@ -1910,8 +1907,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     }
 
 
-                    //event_printf_P(NULL, PSTR("%u Networks Found"), _wifinetworksfound);
-                    event_printf(NULL, "%u Networks Found", _wifinetworksfound);
+                    event_printf_P(NULL, PSTR("%u Networks Found"), _wifinetworksfound);
+                    //event_printf(NULL, "%u Networks Found", _wifinetworksfound);
 
                     std::list<std::pair <int, int>>::iterator it;
 
@@ -2183,8 +2180,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (plainCommand == "formatSPIFFS") {
             ESPMan_Debugf("Format SPIFFS\n");
 
-            //event_printf_P(NULL, PSTR("Formatting SPIFFS"));
-            event_printf(NULL, "Formatting SPIFFS");
+            event_printf_P(NULL, PSTR("Formatting SPIFFS"));
+            //event_printf(NULL, "Formatting SPIFFS");
 
 
             _sendTextResponse(request, 200, "OK");
@@ -2203,8 +2200,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     _saveAllSettings(*_settings);
                 }
                 ESPMan_Debugf(" done\n");
-                //event_printf_P(NULL, PSTR("Formatting done"));
-                event_printf(NULL, "Formatting done");
+                event_printf_P(NULL, PSTR("Formatting done"));
+                //event_printf(NULL, "Formatting done");
 
 
             });
@@ -2231,8 +2228,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             ESPMan_Debugf("Delete Settings File\n");
             if (_fs.remove(SETTINGS_FILE)) {
                 ESPMan_Debugf(" done");
-                //event_printf_P(NULL, PSTR("Settings File Removed"));
-                event_printf(NULL, "Settings File Removed");
+                event_printf_P(NULL, PSTR("Settings File Removed"));
+                //event_printf(NULL, "Settings File Removed");
 
             } else {
                 ESPMan_Debugf(" failed");
@@ -2244,8 +2241,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             _tasker.add( [this](Task & t) {
 
-                event_printf(NULL, "Reset WiFi and Reboot");
-                //event_printf_P(NULL, PSTR("Reset WiFi and Reboot"));
+                //event_printf(NULL, "Reset WiFi and Reboot");
+                event_printf_P(NULL, PSTR("Reset WiFi and Reboot"));
                 delay(100);
                 _events.close();
                 delay(100);
@@ -2429,8 +2426,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             ESPMan_Debugf("Changing AP channel to %u :", channel);
 
-                            event_printf(NULL, "Changing AP Channel...");
-                            //event_printf_P(NULL, PSTR("Changing AP Channel..."));
+                            //event_printf(NULL, "Changing AP Channel...");
+                            event_printf_P(NULL, PSTR("Changing AP Channel..."));
 
                             delay(10);
                             WiFi.enableAP(false);
@@ -2487,8 +2484,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         }
 
                         starttime = millis() ;// reset the start timer....
-                        //event_printf_P(NULL, PSTR("Updating WiFi Settings"));
-                        event_printf(NULL, "Updating WiFi Settings");
+                        event_printf_P(NULL, PSTR("Updating WiFi Settings"));
+                        //event_printf(NULL, "Updating WiFi Settings");
 
                         delay(10);
 
@@ -2518,8 +2515,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             WiFi.enableSTA(false); //  turns it off....
                         }
 
-                        //event_printf_P(NULL, PSTR("WiFi Settings Updated"));
-                        event_printf(NULL, "WiFi Settings Updated");
+                        event_printf_P(NULL, PSTR("WiFi Settings Updated"));
+                        //event_printf(NULL, "WiFi Settings Updated");
 
                         if (newsettings) {
                             delete newsettings;
@@ -2741,8 +2738,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     using namespace ESPMAN;
 
-                    event_printf(NULL, "Updating WiFi Settings");
-                    //event_printf_P(NULL, PSTR("Updating WiFi Settings"));
+                    //event_printf(NULL, "Updating WiFi Settings");
+                    event_printf_P(NULL, PSTR("Updating WiFi Settings"));
 
                     delay(10);
 
@@ -2770,8 +2767,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             _settings->changed = true;
                             ESPMan_Debugf("CALLBACK: Settings Applied\n");
                             // _dumpSettings();
-                            event_printf(NULL, "Success");
-                            //event_printf_P(NULL, PSTR("Success"));
+                            //event_printf(NULL, "Success");
+                            event_printf_P(NULL, PSTR("Success"));
 
                             //save_flag = true;
                         } else {
@@ -2794,8 +2791,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     return true;
                 });
             } else {
-                event_printf(NULL, "No Changes Made");
-                //event_printf_P(NULL, PSTR("No Changes Made"));
+                //event_printf(NULL, "No Changes Made");
+                event_printf_P(NULL, PSTR("No Changes Made"));
 
                 ESPMan_Debugf("No changes Made\n");
 
@@ -2945,8 +2942,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     using namespace ESPMAN;
 
-                    event_printf(NULL, "Updating AP Settings");
-                    //event_printf_P(NULL, PSTR("Updating AP Settings"));
+                    //event_printf(NULL, "Updating AP Settings");
+                    event_printf_P(NULL, PSTR("Updating AP Settings"));
 
                     delay(10);
 
@@ -2966,8 +2963,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             ESPMan_Debugf("CALLBACK: Settings Applied\n");
                             //_dumpSettings();
                             
-                            event_printf(NULL, "Success");
-                            //event_printf_P(NULL, PSTR("Success"));
+                            //event_printf(NULL, "Success");
+                            event_printf_P(NULL, PSTR("Success"));
                             //save_flag = true;
                         } else {
                             event_printf(NULL, string_ERROR, SETTINGS_NOT_IN_MEMORY);
@@ -2993,8 +2990,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     return true;
                 });
             } else {
-                event_printf(NULL, "No Changes Made");
-                //event_printf_P(NULL, PSTR("No Changes Made"));
+                //event_printf(NULL, "No Changes Made");
+                event_printf_P(NULL, PSTR("No Changes Made"));
 
                 ESPMan_Debugf("No changes Made\n");
 
