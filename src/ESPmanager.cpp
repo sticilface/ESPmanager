@@ -1133,9 +1133,9 @@ void ESPmanager::_upgrade(const char * path)
 
         //  if the is url is set to true then don't prepend the rootUri...
         if (item["isurl"] == true) {
-            remote_path = String(item["location"].asString());
+            remote_path = String(item["location"].as<const char *>());
         } else {
-            remote_path = rooturi + String(item["location"].asString());
+            remote_path = rooturi + String(item["location"].as<const char *>());
         }
 
         const char* md5 = item["md5"];
@@ -1196,12 +1196,12 @@ void ESPmanager::_upgrade(const char * path)
 
         for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
             JsonObject& item = *it;
-            String remote_path = rooturi + String(item["location"].asString());
+            String remote_path = rooturi + String(item["location"].as<const char *>());
             String filename = item["saveto"];
             String commit = root["commit"];
 
             if (remote_path.endsWith("bin") && filename == "sketch" ) {
-                if ( String( item["md5"].asString() ) != getSketchMD5() ) {
+                if ( String( item["md5"].as<const char *>() ) != getSketchMD5() ) {
 
                     ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
                     _events.send("firmware", string_UPGRADE, 0, 5000);
@@ -1248,7 +1248,7 @@ void ESPmanager::_upgrade(const char * path)
                 } else {
                     //event_printf(string_CONSOLE, "No Change to firmware");
                     event_printf_P(string_CONSOLE, PSTR("No Change to firmware"));
-                    ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].asString()  );
+                    ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].as<const char *>()  );
 
                 }
             }
@@ -3894,7 +3894,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (settingsJSON.containsKey(string_host)) {
-            set.GEN.host = settingsJSON[string_host].asString();
+            set.GEN.host = settingsJSON[string_host].as<const char *>();
         }
 
         if (settingsJSON.containsKey(string_mDNS)) {
@@ -3902,7 +3902,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (settingsJSON.containsKey(string_updateURL)) {
-            set.GEN.updateURL = settingsJSON[string_updateURL].asString();
+            set.GEN.updateURL = settingsJSON[string_updateURL].as<const char *>();
         }
 
         if (settingsJSON.containsKey(string_updateFreq)) {
@@ -3910,7 +3910,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (settingsJSON.containsKey(string_OTApassword)) {
-            set.GEN.OTApassword = settingsJSON[string_OTApassword].asString();
+            set.GEN.OTApassword = settingsJSON[string_OTApassword].as<const char *>();
         }
 
         // if (settingsJSON.containsKey(string_GUIusername)) {
@@ -3923,7 +3923,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         //         set.GEN.GUIpassword = strdup(settingsJSON[string_GUIpassword]);
         // }
         if (settingsJSON.containsKey(string_GUIhash)) {
-            set.GEN.GUIhash = settingsJSON[string_GUIhash].asString();
+            set.GEN.GUIhash = settingsJSON[string_GUIhash].as<const char *>();
         }
 
         // if (settingsJSON.containsKey(string_usePerminantSettings)) {
@@ -3997,14 +3997,14 @@ int ESPmanager::_getAllSettings(settings_t & set)
         if (STAjson.containsKey(string_ssid)) {
             if (strlen(STAjson[string_ssid]) < MAX_SSID_LENGTH) {
 
-                set.STA.ssid = STAjson[string_ssid].asString();
+                set.STA.ssid = STAjson[string_ssid].as<const char *>();
                 //strncpy( &settings.ssid[0], STAjson["ssid"], strlen(STAjson["ssid"]) );
             }
         }
 
         if (STAjson.containsKey(string_pass)) {
             if (strlen(STAjson[string_pass]) < MAX_PASS_LENGTH) {
-                set.STA.pass = STAjson[string_pass].asString();
+                set.STA.pass = STAjson[string_pass].as<const char *>();
                 //strncpy( &settings.pass[0], STAjson["pass"], strlen(STAjson["pass"]) );
             }
         }
@@ -4071,7 +4071,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
             //settings.hasPass = true;
             if (strlen(APjson[string_pass]) < MAX_PASS_LENGTH) {
 
-                set.AP.pass = APjson[string_pass].asString();
+                set.AP.pass = APjson[string_pass].as<const char *>();
             }
         }
 
