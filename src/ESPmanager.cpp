@@ -956,7 +956,7 @@ String ESPmanager::getHostname()
 
     ESPMan_Debugf("error = %i\n", ERROR);
 
-    if (!ERROR && set.GEN.host() && strlen(set.GEN.host()) > 0 ) {
+    if (!ERROR && set.GEN.host() && strnlen(set.GEN.host(), 100) > 0 ) {
         return String(set.GEN.host());
     } else  {
         char tmp[33] = {'\0'};
@@ -980,7 +980,7 @@ void ESPmanager::upgrade(String path)
 
     if (path.length() == 0) {
 
-        if (_settings->GEN.updateURL() && strlen(_settings->GEN.updateURL()) > 0 ) {
+        if (_settings->GEN.updateURL() && strnlen(_settings->GEN.updateURL(), 100) > 0 ) {
             newpath = _settings->GEN.updateURL();
         } else {
             //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
@@ -1018,7 +1018,7 @@ void ESPmanager::_upgrade(const char * path)
 
     if (!path) {
 
-        if (_settings->GEN.updateURL() && strlen(_settings->GEN.updateURL()) > 0 ) {
+        if (_settings->GEN.updateURL() && strnlen(_settings->GEN.updateURL(), 100) > 0 ) {
             path = _settings->GEN.updateURL();
         } else {
             //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
@@ -2832,7 +2832,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 String S_pass = request->getParam(string_pass, true)->value();
                 const char * pass = S_pass.c_str();
 
-                if (pass && strlen(pass) > 0 && (strlen(pass) > 63 || strlen(pass) < 8)) {
+                if (pass && strnlen(pass, 100) > 0 && (strnlen(pass, 100) > 63 || strnlen(pass, 100) < 8)) {
                     // fail passphrase to long or short!
                     ESPMan_Debugf("[AP] fail passphrase to long or short!\n");
                     event_printf(nullptr, string_ERROR, PASSWOROD_INVALID);
@@ -3010,7 +3010,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         const char * newid = newidString.c_str();
         ESPMan_Debugf( "Device ID func hit %s\n", newid  );
 
-        if (newid && strlen(newid) > 0 && strlen(newid) < 32 && set.GEN.host != newid) {
+        if (newid && strnlen(newid, 100) > 0 && strnlen(newid,100) < 32 && set.GEN.host != newid) {
 
             set.GEN.host = newid;
             set.changed = true;
@@ -3268,7 +3268,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         ESPMan_Debugf("UpgradeURL: %s\n", newpath);
 
-        if (newpath && strlen(newpath) > 0 && set.GEN.updateURL != newpath) {
+        if (newpath && strnlen(newpath,100) > 0 && set.GEN.updateURL != newpath) {
 
             set.GEN.updateURL = newpath;
             set.changed = true;
@@ -3581,7 +3581,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
 
 
-    if (!set.ssid() || ( set.ssid() && strlen(set.ssid() ) == 0)) {
+    if (!set.ssid() || ( set.ssid() && strnlen(set.ssid(),100 ) == 0)) {
         return NO_STA_SSID;
     }
 
@@ -3995,7 +3995,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (STAjson.containsKey(string_ssid)) {
-            if (strlen(STAjson[string_ssid]) < MAX_SSID_LENGTH) {
+            if (strnlen(STAjson[string_ssid],100) < MAX_SSID_LENGTH) {
 
                 set.STA.ssid = STAjson[string_ssid].as<const char *>();
                 //strncpy( &settings.ssid[0], STAjson["ssid"], strlen(STAjson["ssid"]) );
@@ -4003,7 +4003,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (STAjson.containsKey(string_pass)) {
-            if (strlen(STAjson[string_pass]) < MAX_PASS_LENGTH) {
+            if (strnlen(STAjson[string_pass],100) < MAX_PASS_LENGTH) {
                 set.STA.pass = STAjson[string_pass].as<const char *>();
                 //strncpy( &settings.pass[0], STAjson["pass"], strlen(STAjson["pass"]) );
             }
@@ -4069,7 +4069,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
 
         if (APjson.containsKey(string_pass)) {
             //settings.hasPass = true;
-            if (strlen(APjson[string_pass]) < MAX_PASS_LENGTH) {
+            if (strnlen(APjson[string_pass],100) < MAX_PASS_LENGTH) {
 
                 set.AP.pass = APjson[string_pass].as<const char *>();
             }
