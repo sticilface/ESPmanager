@@ -23,6 +23,8 @@ for file in `ls -A1`; do curl -F "file=@$PWD/$file" X.X.X.X/espman/upload; done
 
 #include <Hash.h>
 #include <ESP8266mDNS.h>
+#include <favicon.h>
+
 
 #include <ESPmanager.h>
 
@@ -64,6 +66,16 @@ void setup()
 	//  then use this rewrite and serve static to serve your index file(s)
 	HTTP.rewrite("/", "/index.htm");
 	HTTP.serveStatic("/index.htm", SPIFFS, "/index.htm");
+
+    //  rewrite the AJAX loader
+    HTTP.rewrite("/images/ajax-loader.gif", "/espman/ajax-loader.gif"); 
+
+    // Serve favicon from PROGMEM: #include <favicon.h>
+    HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) { 
+    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, favicon_ico_gz_len);
+    response->addHeader("Content-Encoding", "gzip");
+    request->send(response);
+    });
 
 
 

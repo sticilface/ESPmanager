@@ -389,6 +389,7 @@ int ESPmanager::begin()
     }
 
     _HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
+
     _HTTP.rewrite("/espman/", "/espman/index.htm");
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
 
@@ -402,8 +403,15 @@ int ESPmanager::begin()
     }, std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6)  );
 
     _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" );
+    _HTTP.serveStatic("/espman/ajax-loader.gif", _fs, "/espman/ajax-loader.gif" );
 
     _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" );
+
+    // _HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) { 
+    // AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, favicon_ico_gz_len);
+    // response->addHeader("Content-Encoding", "gzip");
+    // request->send(response);
+    // });
 
     // _HTTP.on("/espman/setup.htm", [this](AsyncWebServerRequest * request) {
 
@@ -1331,8 +1339,6 @@ size_t ESPmanager::event_printf(const char * topic, const char * format, ... )
         va_end(arg);
     }
     _events.send(buffer, topic, millis(), 5000);
-    //delay(100);
-    //Serial.printf("SENDING EVENT : %s\n", buffer);
     if (buffer != temp) {
         delete[] buffer;
     }
