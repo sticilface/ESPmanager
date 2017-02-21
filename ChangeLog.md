@@ -1,3 +1,14 @@
+# V2.2
+## New Features
+- Save Crash Dump to SPIFFS.  Enabled by default, using `#define ESPMANAGER_SAVESTACK` uncomment in ESPmanager.h to stop. Will add it as a web setting. 
+- Created FlashWriter class, to save downloaded files to the OTA flash section before copying them to SPIFFS.  This is because as SPIFFS gets fragmented it can take 200ms to find free block, and the network times out.  Fixes https://github.com/sticilface/ESPmanager/issues/17.
+- Added in Jsonupdater manifest example. https://github.com/sticilface/ESPmanager/issues/16.
+
+## Bug Fixes
+-  use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
+
+
+
 # V2.1
 
 ## New Features
