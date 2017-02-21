@@ -1107,7 +1107,7 @@ void ESPmanager::_upgrade(const char * path)
 
     JsonArray & array = root["files"];
 
-    if (root.containsKey("formatSPIFFS")) {
+    if (root.containsKey(F("formatSPIFFS"))) {
         if (root["formatSPIFFS"] == true) {
             ESPMan_Debugf("Formatting SPIFFS....");
 
@@ -1121,14 +1121,14 @@ void ESPmanager::_upgrade(const char * path)
         }
     }
 
-    if (root.containsKey("clearWiFi")) {
+    if (root.containsKey(F("clearWiFi"))) {
         if (root["clearWiFi"] == true) {
             ESPMan_Debugf("Erasing WiFi Config ....");
             ESPMan_Debugf("done\n");
         }
     }
 
-    if (root.containsKey("overwrite")) {
+    if (root.containsKey(F("overwrite"))) {
         overwriteFiles = root["overwrite"].as<bool>();
         ESPMan_Debugf("overwrite files set to %s\n", (overwriteFiles) ? "true" : "false");
     }
@@ -3326,9 +3326,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
     if (_fs.exists("/crashlog.txt")) {
-        root["crashlog"] = true;
+        root[F("crashlog")] = true;
     } else {
-        root["crashlog"] = false;
+        root[F("crashlog")] = false;
     }
 
     sendJsontoHTTP<JsonObject>(root, request);
