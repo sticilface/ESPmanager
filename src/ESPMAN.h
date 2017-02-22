@@ -212,11 +212,13 @@ public:
     }
     myString(const char *cstr);
     myString(const myString &str);
+    myString(myString &&str);
 
     ~myString();
 
     myString & operator =(const char *cstr);
     myString & operator =(const myString &str);
+    myString & operator =(myString &&str);
     // untested ==
     bool operator ==(const myString &rhs);
     bool operator !=(const myString &rhs)

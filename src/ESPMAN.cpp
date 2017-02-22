@@ -127,9 +127,22 @@ ESPMAN::myString::myString(const ESPMAN::myString &str)
         if (str.buffer) {
                 buffer = strdup(str.buffer);
         }
-
-
 }
+
+ESPMAN::myString::myString(ESPMAN::myString &&str)
+{
+
+        if (buffer) {
+                free(buffer);
+                buffer = nullptr;
+        }
+
+        if (str.buffer) {
+                buffer = str.buffer;
+                str.buffer = nullptr; 
+        }
+}
+
 
 ESPMAN::myString & ESPMAN::myString::operator =(const char *cstr)
 {
@@ -146,9 +159,6 @@ ESPMAN::myString & ESPMAN::myString::operator =(const char *cstr)
 
 ESPMAN::myString & ESPMAN::myString::operator =(const myString &rhs)
 {
-
-        //Serial.printf("[ESPMAN::myString::operator =(const myString &str)] rhs = %s\n", (rhs.buffer)? rhs.buffer : "null" );
-
         if (buffer) { free(buffer); }
         if (rhs.buffer) {
                 buffer = strdup(rhs.buffer);
@@ -158,7 +168,20 @@ ESPMAN::myString & ESPMAN::myString::operator =(const myString &rhs)
         return *this;
 }
 
-  ESPMAN::myString::operator bool() const {
+ESPMAN::myString & ESPMAN::myString::operator =(myString &&rhs)
+{
+        if (buffer) { free(buffer); }
+        if (rhs.buffer) {
+                buffer = rhs.buffer;
+                rhs.buffer = nullptr; 
+        } else {
+                buffer = nullptr;
+        }
+        return *this;
+}
+
+
+ESPMAN::myString::operator bool() const {
   return (buffer && strlen(buffer) > 0);
 }
 
