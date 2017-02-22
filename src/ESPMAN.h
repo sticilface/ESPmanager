@@ -212,10 +212,12 @@ public:
     myString(const myString &str);
     myString(myString &&str);
     myString(const __FlashStringHelper *str); 
+    myString(String str);
 
     virtual ~myString();
 
     myString & operator =(const char *cstr);
+    myString & operator =(const __FlashStringHelper *str);
     myString & operator =(const myString &str);
     myString & operator =(myString &&str);
     // untested ==

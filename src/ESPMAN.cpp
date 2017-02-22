@@ -113,7 +113,7 @@ bool ESPMAN::JSONpackage::save(const char * file)
 
 
 ESPMAN::myString::myString(const char *cstr)
-: buffer(nullptr)
+    : buffer(nullptr)
 {
     //Serial.printf("%p created from const char *\n", this);
     if (cstr) {
@@ -122,7 +122,7 @@ ESPMAN::myString::myString(const char *cstr)
 }
 
 ESPMAN::myString::myString(const ESPMAN::myString &str)
-: buffer(nullptr)
+    : buffer(nullptr)
 {
     //Serial.printf("%p copied by &\n", &str);
     if (str.buffer) {
@@ -131,7 +131,7 @@ ESPMAN::myString::myString(const ESPMAN::myString &str)
 }
 
 ESPMAN::myString::myString(ESPMAN::myString &&str)
-: buffer(nullptr)
+    : buffer(nullptr)
 {
     //Serial.printf("%p copied by &&\n", &str);
     if (str.buffer) {
@@ -141,15 +141,32 @@ ESPMAN::myString::myString(ESPMAN::myString &&str)
 }
 
 ESPMAN::myString::myString(const __FlashStringHelper *str)
-: buffer(nullptr)
+    : buffer(nullptr)
 {
     //Serial.printf("%p created from __FlashStringHelper \n", this);
+
+    if (!str) {
+        return;
+    }
+
     PGM_P p = reinterpret_cast<PGM_P>(str);
     size_t len = strlen(p);
 
-    if (len){
+    if (len) {
         buffer = (char*)malloc(len + 1);
-        strcpy_P(buffer, p); 
+        strcpy_P(buffer, p);
+    }
+
+}
+
+ESPMAN::myString::myString(String str)
+    : buffer(nullptr)
+{
+    //Serial.printf("%p copied by &&\n", &str);
+    size_t len = str.length();
+    if (len) {
+        buffer = (char*)malloc(len + 1);
+        strncpy(buffer , str.c_str(), len + 1);
     }
 
 }
@@ -161,6 +178,27 @@ ESPMAN::myString & ESPMAN::myString::operator =(const char *cstr)
     if (buffer) { free(buffer); }
     if (cstr) {
         buffer = strdup(cstr);
+    } else {
+        buffer = nullptr;
+    }
+    return *this;
+}
+
+ESPMAN::myString & ESPMAN::myString::operator =(const __FlashStringHelper *str)
+{
+    //Serial.printf("[ESPMAN::myString::operator =(const char *cstr)] cstr = %s\n", (cstr)? cstr : "null");
+
+    if (buffer) { free(buffer); }
+    if (str) {
+
+        PGM_P p = reinterpret_cast<PGM_P>(str);
+        size_t len = strlen(p);
+
+        if (len) {
+            buffer = (char*)malloc(len + 1);
+            strcpy_P(buffer, p);
+        }
+
     } else {
         buffer = nullptr;
     }
@@ -236,36 +274,36 @@ ESPMAN::myString::~myString()
 }
 
 ESPMAN::myStringf::myStringf(const char * format, ...)
-: myString()
+    : myString()
 {
     va_list arg;
     va_start(arg, format);
-    size_t len = vsnprintf(nullptr, 0, format, arg); 
+    size_t len = vsnprintf(nullptr, 0, format, arg);
     va_end(arg);
 
     if (len) {
-        buffer = (char*)malloc(len + 1); 
+        buffer = (char*)malloc(len + 1);
         if (buffer) {
             va_start(arg, format);
-            vsnprintf(buffer, len + 1, format, arg); 
+            vsnprintf(buffer, len + 1, format, arg);
             va_end(arg);
         }
     }
 }
 
 ESPMAN::myStringf_P::myStringf_P(PGM_P formatP, ...)
-: myString()
+    : myString()
 {
     va_list arg;
     va_start(arg, formatP);
-    size_t len = vsnprintf_P(nullptr, 0, formatP, arg); 
+    size_t len = vsnprintf_P(nullptr, 0, formatP, arg);
     va_end(arg);
 
     if (len) {
-        buffer = (char*)malloc(len + 1); 
+        buffer = (char*)malloc(len + 1);
         if (buffer) {
             va_start(arg, formatP);
-            vsnprintf_P(buffer, len + 1, formatP, arg); 
+            vsnprintf_P(buffer, len + 1, formatP, arg);
             va_end(arg);
         }
     }
