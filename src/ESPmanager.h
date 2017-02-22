@@ -56,7 +56,7 @@
 
 
 #ifdef ESPMANAGER_SYSLOG
-#include <Syslog.h>
+#include <ESPmanSysLog.h>
 #endif
 
 #ifdef ESPMANAGER_SAVESTACK
@@ -131,18 +131,10 @@ public:
   }
 
 #ifdef ESPMANAGER_SYSLOG
-  Syslog * logger()
-  {
-    return _syslog;
-  }
 
-// bool log(const char * _1, const char * _2, ...) {
 
-// // if (_syslog) {
-//    _syslog->vlogf_P( _1, PSTR(_2), ##__VA_ARGS__);
-//  //}
 
-//  }
+
 
 #endif
 
@@ -163,10 +155,11 @@ private:
   void  _HandleSketchUpdate(AsyncWebServerRequest * request);
 #endif
 
+
 #ifdef ESPMANAGER_SYSLOG
-  WiFiUDP * _sysLogClient {nullptr};
-  Syslog * _syslog{nullptr};
-  const char * _syslogDeviceName{nullptr};   //  used by debuglog
+  // WiFiUDP * _sysLogClient {nullptr};
+  // Syslog * _syslog{nullptr};
+  // const char * _syslogDeviceName{nullptr};   //  used by debuglog
 
 #endif
 

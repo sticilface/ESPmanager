@@ -92,10 +92,10 @@ ESPmanager::~ESPmanager()
     }
 
 #ifdef ESPMANAGER_SYSLOG
-    if (_syslogDeviceName) {
-        free( (char*)_syslogDeviceName);
-        _syslogDeviceName = nullptr;
-    }
+    // if (_syslogDeviceName) {
+    //     free( (char*)_syslogDeviceName);
+    //     _syslogDeviceName = nullptr;
+    // }
 #endif
 
 
@@ -547,28 +547,27 @@ int ESPmanager::begin()
 
     if (_settings->GEN.usesyslog) {
 
-        ESPMan_Debugf("Syslog = true\n");
-        _sysLogClient = new WiFiUDP;
+        // ESPMan_Debugf("Syslog = true\n");
+        // _sysLogClient = new WiFiUDP;
 
-        if (_sysLogClient) {
-            ESPMan_Debugf("Created syslog client\n");
+        // if (_sysLogClient) {
+        //     ESPMan_Debugf("Created syslog client\n");
+
+        //     // _syslog = new Syslog( *_sysLogClient , (_settings->GEN.syslogProto) ? 1 : 0 );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
 
 
-            _syslog = new Syslog( *_sysLogClient , (_settings->GEN.syslogProto) ? 1 : 0 );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
+        //     // if (_syslog) {
+        //     //     _syslog->server(_settings->GEN.syslogIP, _settings->GEN.syslogPort );
+        //     //     _syslogDeviceName = strdup(_settings->GEN.host());
+        //     //     _syslog->deviceHostname(_syslogDeviceName);
+        //     //     _syslog->appName("ESPManager");
+        //     //     _syslog->defaultPriority(LOG_KERN);
+        //     //     _syslog->log(LOG_INFO, F("Device Started"));
 
+        //     //     ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port = %u, proto=%u, hostname =%s, appName = %s\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto, _syslogDeviceName , "ESPManager");
 
-            if (_syslog) {
-                _syslog->server(_settings->GEN.syslogIP, _settings->GEN.syslogPort );
-                _syslogDeviceName = strdup(_settings->GEN.host());
-                _syslog->deviceHostname(_syslogDeviceName);
-                _syslog->appName("ESPManager");
-                _syslog->defaultPriority(LOG_KERN);
-                _syslog->log(LOG_INFO, F("Device Started"));
-
-                ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port = %u, proto=%u, hostname =%s, appName = %s\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto, _syslogDeviceName , "ESPManager");
-
-            }
-        }
+        //     // }
+        // }
     }
 
 #endif
