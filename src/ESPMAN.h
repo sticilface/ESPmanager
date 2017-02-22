@@ -207,14 +207,13 @@ public:
 class myString
 {
 public:
-    myString() : buffer(nullptr)
-    {
-    }
+    myString() : buffer(nullptr) { }
     myString(const char *cstr);
     myString(const myString &str);
     myString(myString &&str);
+    myString(const __FlashStringHelper *str); 
 
-    ~myString();
+    virtual ~myString();
 
     myString & operator =(const char *cstr);
     myString & operator =(const myString &str);
@@ -239,6 +238,21 @@ public:
 
 protected:
     char *buffer {nullptr};
+
+};
+
+class myStringf : public myString {
+public:
+    myStringf(const char *, ...);
+private:
+
+}; 
+
+class myStringf_P : public myString {
+public:
+    myStringf_P(PGM_P, ... );
+private:
+    
 
 };
 
