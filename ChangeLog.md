@@ -5,6 +5,7 @@
 - Added in Jsonupdater manifest example. https://github.com/sticilface/ESPmanager/issues/16.
 - Add Error to String responses
 - Big improvements to myString.  Lots of implicit convertions, use with FLASH strings, and PSTR(). Derived classes that allow printf and printf_P with convertion back to myString.  Addition of c_str(). move semantics to allow efficient copying of tempories. 
+- Added a SysLog implementation.  Allows sending of data, and priorities and unique appNames to a syslog server from sketch.  Configured in web interface
 
 ## Bug Fixes
 -  use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
