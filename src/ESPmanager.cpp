@@ -328,8 +328,8 @@ int ESPmanager::begin()
 #endif
         });
         ArduinoOTA.onEnd([this]() {
-            //event_printf_P("update", PSTR("end")); 
-            event_printf("update", "end"); 
+            //event_printf_P("update", PSTR("end"));
+            event_printf("update", "end");
             delay(100);
             _events.close();
             delay(1000);
@@ -349,7 +349,7 @@ int ESPmanager::begin()
 #endif
                 event_printf("update", "%u", percent);
                 //_events.send()
-                
+
                 done = percent;
             }
         });
@@ -407,7 +407,7 @@ int ESPmanager::begin()
 
     _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" );
 
-    // _HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) { 
+    // _HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) {
     // AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, favicon_ico_gz_len);
     // response->addHeader("Content-Encoding", "gzip");
     // request->send(response);
@@ -551,22 +551,22 @@ int ESPmanager::begin()
         // _sysLogClient = new WiFiUDP;
 
         // if (_sysLogClient) {
-        //     ESPMan_Debugf("Created syslog client\n");
+        
+             ESPMan_Debugf("Created syslog client\n");
 
-        //     // _syslog = new Syslog( *_sysLogClient , (_settings->GEN.syslogProto) ? 1 : 0 );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
+             _syslog = new SysLog( _settings->GEN.syslogIP, _settings->GEN.syslogPort, (_settings->GEN.syslogProto) ? SYSLOG_PROTO_BSD : SYSLOG_PROTO_IETF );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
 
 
-        //     // if (_syslog) {
+              if (_syslog) {
         //     //     _syslog->server(_settings->GEN.syslogIP, _settings->GEN.syslogPort );
-        //     //     _syslogDeviceName = strdup(_settings->GEN.host());
-        //     //     _syslog->deviceHostname(_syslogDeviceName);
+                 _syslog->setDeviceName( _settings->GEN.host ) ;
         //     //     _syslog->appName("ESPManager");
         //     //     _syslog->defaultPriority(LOG_KERN);
-        //     //     _syslog->log(LOG_INFO, F("Device Started"));
+                 _syslog->log(LOG_INFO, F("Device Started"));
 
-        //     //     ESPMan_Debugf("Address of syslog %p, ip = %u.%u.%u.%u, port = %u, proto=%u, hostname =%s, appName = %s\n", _syslog, _settings->GEN.syslogIP[0], _settings->GEN.syslogIP[1], _settings->GEN.syslogIP[2], _settings->GEN.syslogIP[3], _settings->GEN.syslogPort ,  _settings->GEN.syslogProto, _syslogDeviceName , "ESPManager");
+          ESPMan_Debugf("Address of syslog %p, ip = %s, port = %u, proto=%u, hostname =%s\n", _syslog, _settings->GEN.syslogIP.toString().c_str(), _settings->GEN.syslogPort , _settings->GEN.syslogProto, "ESPManager");
 
-        //     // }
+              }
         // }
     }
 
@@ -1166,7 +1166,7 @@ void ESPmanager::_upgrade(const char * path)
 
         int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
 
-        char temp_buffer[50]; 
+        char temp_buffer[50];
 
         if (ret == 0 || ret == FILE_NOT_CHANGED) {
             event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
@@ -1269,7 +1269,7 @@ void ESPmanager::_upgrade(const char * path)
     //delay(10);
     event_printf_P(string_UPGRADE, PSTR("end"));
     //event_printf(string_UPGRADE, "end");
-   
+
     delay(200);
 
 }
@@ -1294,14 +1294,14 @@ AsyncEventSource & ESPmanager::getEvent()
 
 size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
 {
-    uint8_t i = 0; 
+    uint8_t i = 0;
     va_list arg;
     va_start(arg, format);
     char temp[64] = {0};
     char* buffer = temp;
     size_t len = vsnprintf_P(temp, sizeof(temp), format, arg);
     va_end(arg);
-    if (len > sizeof(temp) - 1) { 
+    if (len > sizeof(temp) - 1) {
         buffer = new char[len + 1];
         if (!buffer) {
             return 0;
@@ -1437,7 +1437,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
                     byteswritten = writer.writeToStream(&f); //  contains a yield to allow networking.  Can take minutes to complete.
                     //erial.println( millis() - start_time);
                 } else {
-                    ESPMan_Debugf("HTTP to Flash error, byteswritten = %i\n", byteswritten); 
+                    ESPMan_Debugf("HTTP to Flash error, byteswritten = %i\n", byteswritten);
                 }
 
             } else {
@@ -1491,7 +1491,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
         if (filename.endsWith(".gz") ) {
             String withOutgz = filename.substring(0, filename.length() - 3);
             ESPMan_Debugf("NEW File ends in .gz: without = %s...", withOutgz.c_str());
-            
+
             if (_fs.remove(withOutgz)) {
                 ESPMan_Debugf("%s DELETED...", withOutgz.c_str());
             }
@@ -1648,8 +1648,8 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
         ESPMan_Debugf("UploadStart: %s\n", filename.c_str());
 
 
-        event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str()); 
-        //event_printf(nullptr, "UploadStart: %s", filename.c_str()); 
+        event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str());
+        //event_printf(nullptr, "UploadStart: %s", filename.c_str());
     }
 
     if (_uploadAuthenticated && request->_tempFile && len) {
@@ -1661,7 +1661,7 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
         ESPMan_Debugf("UploadEnd: %s, %u B\n", filename.c_str(), index + len);
         // snprintf(msgdata, 100, "UploadFinished:%s (%u)",  filename.c_str(), request->_tempFile.size() );
         // _events.send(msgdata, nullptr, 0, 5000);
-        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str()); 
+        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str());
 
         event_printf_P(nullptr , PSTR("UploadFinished:%s (%u)"), filename.c_str(), request->_tempFile.size() );
 
@@ -1768,7 +1768,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         String plainCommand = request->getParam("body", true)->value();
 
-       // Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
+        // Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
 
         if (plainCommand == "generalpage") {
 
@@ -2967,7 +2967,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             _settings->changed = true;
                             ESPMan_Debugf("CALLBACK: Settings Applied\n");
                             //_dumpSettings();
-                            
+
                             //event_printf(NULL, "Success");
                             event_printf_P(NULL, PSTR("Success"));
                             //save_flag = true;
@@ -3015,7 +3015,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         const char * newid = newidString.c_str();
         ESPMan_Debugf( "Device ID func hit %s\n", newid  );
 
-        if (newid && strnlen(newid, 100) > 0 && strnlen(newid,100) < 32 && set.GEN.host != newid) {
+        if (newid && strnlen(newid, 100) > 0 && strnlen(newid, 100) < 32 && set.GEN.host != newid) {
 
             set.GEN.host = newid;
             set.changed = true;
@@ -3164,8 +3164,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             _settings->GEN.usesyslog = value;
             set.changed = true;
             //ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
-            
-            event_printf(nullptr, string_saveandreboot); 
+
+            event_printf(nullptr, string_saveandreboot);
         }
 
     }
@@ -3178,7 +3178,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (result && value != _settings->GEN.syslogIP) {
             _settings->GEN.syslogIP = value;
             set.changed = true;
-            event_printf(nullptr, string_saveandreboot); 
+            event_printf(nullptr, string_saveandreboot);
         }
 
     }
@@ -3189,8 +3189,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (value != _settings->GEN.syslogPort) {
             _settings->GEN.syslogPort = value;
             set.changed = true;
-            
-            event_printf(nullptr, string_saveandreboot); 
+
+            event_printf(nullptr, string_saveandreboot);
         }
     }
 
@@ -3200,8 +3200,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (value != _settings->GEN.syslogProto) {
             _settings->GEN.syslogProto = value;
             set.changed = true;
-            
-            event_printf(nullptr, string_saveandreboot); 
+
+            event_printf(nullptr, string_saveandreboot);
         }
 
     }
@@ -3273,7 +3273,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         ESPMan_Debugf("UpgradeURL: %s\n", newpath);
 
-        if (newpath && strnlen(newpath,100) > 0 && set.GEN.updateURL != newpath) {
+        if (newpath && strnlen(newpath, 100) > 0 && set.GEN.updateURL != newpath) {
 
             set.GEN.updateURL = newpath;
             set.changed = true;
@@ -3586,7 +3586,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
 
 
-    if (!set.ssid() || ( set.ssid() && strnlen(set.ssid(),100 ) == 0)) {
+    if (!set.ssid() || ( set.ssid() && strnlen(set.ssid(), 100 ) == 0)) {
         return NO_STA_SSID;
     }
 
@@ -3752,6 +3752,38 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
 // }
 
+#ifdef ESPMANAGER_SYSLOG
+
+bool ESPmanager::log(myString  msg)
+{
+    if (_syslog) {
+        return _syslog->log(std::move(msg) );
+    }
+    return false;
+}
+bool ESPmanager::log(uint16_t pri, myString  msg)
+{
+    if (_syslog) {
+        return _syslog->log(pri, std::move(msg) );
+    }
+    return false;
+}
+bool ESPmanager::log(myString appName, myString  msg)
+{
+    if (_syslog) {
+        return _syslog->log( std::move(appName), std::move(msg) );
+    }
+    return false;
+}
+bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
+{
+    if (_syslog) {
+        return _syslog->log(pri, std::move(appName), std::move(msg));
+    }
+    return false;
+}
+
+#endif
 
 
 
@@ -4000,7 +4032,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (STAjson.containsKey(string_ssid)) {
-            if (strnlen(STAjson[string_ssid],100) < MAX_SSID_LENGTH) {
+            if (strnlen(STAjson[string_ssid], 100) < MAX_SSID_LENGTH) {
 
                 set.STA.ssid = STAjson[string_ssid].as<const char *>();
                 //strncpy( &settings.ssid[0], STAjson["ssid"], strlen(STAjson["ssid"]) );
@@ -4008,7 +4040,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
         }
 
         if (STAjson.containsKey(string_pass)) {
-            if (strnlen(STAjson[string_pass],100) < MAX_PASS_LENGTH) {
+            if (strnlen(STAjson[string_pass], 100) < MAX_PASS_LENGTH) {
                 set.STA.pass = STAjson[string_pass].as<const char *>();
                 //strncpy( &settings.pass[0], STAjson["pass"], strlen(STAjson["pass"]) );
             }
@@ -4074,7 +4106,7 @@ int ESPmanager::_getAllSettings(settings_t & set)
 
         if (APjson.containsKey(string_pass)) {
             //settings.hasPass = true;
-            if (strnlen(APjson[string_pass],100) < MAX_PASS_LENGTH) {
+            if (strnlen(APjson[string_pass], 100) < MAX_PASS_LENGTH) {
 
                 set.AP.pass = APjson[string_pass].as<const char *>();
             }
