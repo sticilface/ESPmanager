@@ -86,6 +86,8 @@ static const char * string_UPDATE = "update";
 static const char * string_CONSOLE = "console";
 static const char * string_ERROR = "ERROR [%i]";
 static const char * string_ERROR2 = "ERROR [%i] [%i]";
+static const char * string_ERROR2_toString = "ERROR [%s] [%s]";
+static const char * string_ERROR_toString = "ERROR [%s]";
 static const char * string_deviceid = "deviceid";
 static const char * string_settingsversion = "settingversion";
 

@@ -368,7 +368,7 @@ int ESPmanager::begin()
 #endif
 
             if (error) {
-                event_printf(string_UPDATE, string_ERROR, error);
+                event_printf(string_UPDATE, string_ERROR_toString, getError(error).c_str());
             }
 
             delay(1000);
@@ -1074,7 +1074,7 @@ void ESPmanager::_upgrade(const char * path)
     int ret = _parseUpdateJson(buff, jsonBuffer, p_root, path);
 
     if (ret) {
-        event_printf(string_UPGRADE, string_ERROR2, MANIFST_FILE_ERROR, ret);
+        event_printf(string_UPGRADE, string_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError( (ESPMAN_ERR)ret).c_str());
         ESPMan_Debugf("MANIFEST ERROR [%i]\n", ret );
         if (buff) {
             delete[] buff;
@@ -1086,7 +1086,7 @@ void ESPmanager::_upgrade(const char * path)
     ESPMan_Debugf("_parseUpdateJson success\n");
 
     if (!p_root) {
-        event_printf(string_UPGRADE, string_ERROR, JSON_OBJECT_ERROR);
+        event_printf(string_UPGRADE, string_ERROR_toString , getError(JSON_OBJECT_ERROR).c_str());
         ESPMan_Debugf("JSON ERROR [%i]\n", JSON_OBJECT_ERROR );
         if (buff) {
             delete[] buff;
@@ -1098,7 +1098,7 @@ void ESPmanager::_upgrade(const char * path)
     files_expected = root["filecount"];
 
     if (!files_expected) {
-        event_printf(string_UPGRADE, string_ERROR, UNKNOWN_NUMBER_OF_FILES);
+        event_printf(string_UPGRADE, string_ERROR_toString, getError(UNKNOWN_NUMBER_OF_FILES).c_str() );
         ESPMan_Debugf("ERROR [%i]\n", UNKNOWN_NUMBER_OF_FILES );
 
     }
@@ -1798,7 +1798,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
                 if (ERROR) {
-                    event_printf(NULL, string_ERROR, ERROR);
+                    event_printf(NULL, string_ERROR_toString, getError(ERROR).c_str());
                     //event_printf(NULL, "There is an error %u\n", ERROR);
                 } else {
 
@@ -2777,12 +2777,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             //save_flag = true;
                         } else {
-                            event_printf(NULL, string_ERROR, SETTINGS_NOT_IN_MEMORY);
+                            event_printf(NULL, string_ERROR_toString, getError(SETTINGS_NOT_IN_MEMORY).c_str());
                         }
 
                     } else {
                         ESPMan_Debugf("ERORR: Settings NOT applied successfull %i\n", ERROR);
-                        event_printf(NULL, string_ERROR, ERROR);
+                        event_printf(NULL, string_ERROR_toString, getError(ERROR).c_str());
                         _getAllSettings();
                         if (_settings) {
                             if (_initialiseSTA(_settings->STA)) {
@@ -2840,7 +2840,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if (pass && strnlen(pass, 100) > 0 && (strnlen(pass, 100) > 63 || strnlen(pass, 100) < 8)) {
                     // fail passphrase to long or short!
                     ESPMan_Debugf("[AP] fail passphrase to long or short!\n");
-                    event_printf(nullptr, string_ERROR, PASSWOROD_INVALID);
+                    event_printf(nullptr, string_ERROR_toString, getError(PASSWOROD_INVALID).c_str());
                     abortchanges = true;
                 }
 
@@ -2972,7 +2972,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             event_printf_P(NULL, PSTR("Success"));
                             //save_flag = true;
                         } else {
-                            event_printf(NULL, string_ERROR, SETTINGS_NOT_IN_MEMORY);
+                            event_printf(NULL, string_ERROR_toString, getError(SETTINGS_NOT_IN_MEMORY).c_str());
                         }
 
                     } else {
@@ -2980,14 +2980,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         _getAllSettings();
 
                         if (_settings) {
-                            ESPMan_Debugf("Restoring old settings ERROR = %i\n", ERROR);
+                            ESPMan_Debugf("Restoring old settings ERROR = %i, %s\n", ERROR , getError(ERROR).c_str() );
 
                             _initialiseAP(_settings->AP);
 
                         }
 
 
-                        event_printf(NULL, string_ERROR, ERROR);
+                        event_printf(NULL, string_ERROR_toString, getError(ERROR).c_str() ) ;
                     }
 
                     delete newsettings;
@@ -3092,7 +3092,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 event_printf(nullptr, string_saveandreboot);
 
             } else {
-                event_printf(nullptr, string_ERROR, PASSWORD_MISMATCH);
+                event_printf(nullptr, string_ERROR_toString, getError(PASSWORD_MISMATCH).c_str() ) ;
             }
         }
 
