@@ -150,7 +150,7 @@ ESPMAN::myString::myString(const __FlashStringHelper *str)
     }
 
     PGM_P p = reinterpret_cast<PGM_P>(str);
-    size_t len = strlen(p);
+    size_t len = strlen_P(p);
 
     if (len) {
         buffer = (char*)malloc(len + 1);
@@ -192,7 +192,7 @@ ESPMAN::myString & ESPMAN::myString::operator =(const __FlashStringHelper *str)
     if (str) {
 
         PGM_P p = reinterpret_cast<PGM_P>(str);
-        size_t len = strlen(p);
+        size_t len = strlen_P(p);
 
         if (len) {
             buffer = (char*)malloc(len + 1);
