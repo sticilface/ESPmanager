@@ -130,11 +130,22 @@ public:
     return _tasker;
   }
 
+  ASyncTasker & tasker()
+  {
+    return _tasker;
+  }
+
 #ifdef ESPMANAGER_SYSLOG
 
+  SysLog * logger()
+  {
+    return _syslog;
+  }
 
-
-
+  bool log(myString  msg); 
+  bool log(uint16_t pri, myString  msg); 
+  bool log(myString appName, myString  msg);
+  bool log(uint16_t pri, myString appName, myString  msg);
 
 #endif
 
@@ -158,7 +169,7 @@ private:
 
 #ifdef ESPMANAGER_SYSLOG
   // WiFiUDP * _sysLogClient {nullptr};
-  // Syslog * _syslog{nullptr};
+   SysLog * _syslog{nullptr};
   // const char * _syslogDeviceName{nullptr};   //  used by debuglog
 
 #endif
