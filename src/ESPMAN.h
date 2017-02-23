@@ -21,7 +21,7 @@ enum ESPMAN_ERR : int8_t {
     JSON_PARSE_ERROR         = -26,
     JSON_OBJECT_ERROR        = -27,
     CONFIG_FILE_ERROR        = -28,
-    UPDATOR_ERROR            = -29,
+    UPDATER_ERROR            = -29,
     JSON_TOO_LARGE           = -30,
     MALLOC_FAIL              = -31,
     MANIFST_FILE_ERROR       = -32,

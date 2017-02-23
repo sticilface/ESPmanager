@@ -4753,3 +4753,110 @@ bool ESPmanager::defragSPIFFS()
 
 //     return true;
 }
+
+myString ESPmanager::getError(ESPMAN_ERR err)
+{
+    switch (err) {
+        case UNKNOWN_ERROR:
+            return F("Unkown Error"); break;
+        case NO_UPDATE_URL:
+            return F("No Update Url"); break;
+        case SPIFFS_FILES_ABSENT:
+            return F("SPIFFS files missing"); break;
+        case FILE_NOT_CHANGED:
+            return F("File not changed"); break;
+        case MD5_CHK_ERROR:
+            return F("MD5 check Error"); break;
+        case HTTP_ERROR:
+            return F("HTTP error"); break;
+        case JSON_PARSE_ERROR:
+            return F("JSON parse ERROR"); break;
+        case JSON_OBJECT_ERROR:
+            return F("JSON Object ERROR"); break;
+        case CONFIG_FILE_ERROR:
+            return F("Config File ERROR"); break;
+        case UPDATER_ERROR:
+            return F("Updater ERROR"); break;
+        case JSON_TOO_LARGE:
+            return F("JSON too large"); break;
+        case MALLOC_FAIL:
+            return F("Malloc Fail"); break;
+        case MANIFST_FILE_ERROR:
+            return F("Manifest file ERROR"); break;
+        case UNKNOWN_NUMBER_OF_FILES:
+            return F("Unknown number of files"); break;
+        case SPIFFS_INFO_FAIL:
+            return F("SPIFFS info fail"); break;
+        case SPIFFS_FILENAME_TOO_LONG:
+            return F("Filename too long"); break;
+        case SPIFFS_FILE_OPEN_ERROR:
+            return F("SPIFFS file open ERROR"); break;
+        case FILE_TOO_LARGE:
+            return F("File too large"); break;
+        case INCOMPLETE_DOWNLOAD:
+            return F("Incomplete Download"); break;
+        case CRC_ERROR:
+            return F("CRC ERROR"); break;
+        case JSON_KEY_MISSING:
+            return F("JSON key missing"); break;
+        case EMPTY_BUFFER:
+            return F("Empty buffer"); break;
+        case AP_DISABLED:
+            return F("AP Disabled"); break;
+        case ERROR_ENABLING_AP:
+            return F("ERROR enabling AP"); break;
+        case ERROR_DISABLING_AP:
+            return F("ERROR disabling AP"); break;
+        case ERROR_SETTING_CONFIG:
+            return F("Settings Config ERROR"); break;
+        case ERROR_ENABLING_STA:
+            return F("ERROR enabling STA"); break;
+        case FAILED_SET_AUTOCONNECT:
+            return F("Failed to set Autoconnect"); break;
+        case FAILED_SET_AUTORECONNECT:
+            return F("Failed to set Autoreconnect"); break;
+        case WIFI_CONFIG_ERROR:
+            return F("WiFi config ERROR"); break;
+        case NO_STA_SSID:
+            return F("No SSID specified"); break;
+        case ERROR_WIFI_BEGIN:
+            return F("ERROR starting WiFi"); break;
+        case NO_SSID_AVAIL:
+            return F("SSID not available "); break;
+        case CONNECT_FAILED:
+            return F("Connect Failed"); break;
+        case UNITITIALISED:
+            return F("Uninitialised"); break;
+        case ERROR_SPIFFS_MOUNT:
+            return F("SPIFFS mount FAIL"); break;
+        case AUTO_CONNECTED_STA:
+            return F("Auto connected to STA"); break;
+        case ERROR_DISABLING_STA:
+            return F("ERROR disabling STA"); break;
+        case STA_DISABLED:
+            return F("STA disabled"); break;
+        case SETTINGS_NOT_IN_MEMORY:
+            return F("Settings not in memory"); break;
+        case ERROR_SETTING_MAC:
+            return F("ERROR setting MAC"); break;
+        case PASSWORD_MISMATCH:
+            return F("Password Mismatch"); break;
+        case NO_CHANGES:
+            return F("No Changes"); break;
+        case PASSWOROD_INVALID:
+            return F("Password invalid"); break;
+        case WRONG_SETTINGS_FILE_VERSION:
+            return F("Wrong Settings File Version"); break;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+

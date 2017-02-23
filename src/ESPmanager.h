@@ -100,6 +100,7 @@ public:
   static String file_md5 (File & f);
   template <class T = JsonObject> static void sendJsontoHTTP( const T & root, AsyncWebServerRequest * request);
   String getHostname();
+  myString getError(ESPMAN_ERR err); 
 
 
   inline uint32_t trueSketchSize();
