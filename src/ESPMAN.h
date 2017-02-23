@@ -231,15 +231,17 @@ public:
     {
         return !(*this == cstr);
     }
-    const char * operator()() const
-    {
-        return static_cast<const char *>(buffer);
-    };
+    const char * operator()() const;
+    const char * operator()(const char *) const;
+    const char * c_str() const;
     operator bool() const;
+    operator String() const; 
 
 
 protected:
     char *buffer {nullptr};
+private:
+    const char * _nullString = "NULL";
 
 };
 

@@ -230,6 +230,33 @@ ESPMAN::myString & ESPMAN::myString::operator =(myString &&rhs)
     return *this;
 }
 
+const char * ESPMAN::myString::operator()() const
+{
+    if (buffer) {
+        return static_cast<const char *>(buffer);
+    } else {
+        return _nullString;
+    }
+
+};
+
+const char * ESPMAN::myString::operator()(const char *) const
+{
+    if (buffer) {
+        return static_cast<const char *>(buffer);
+    } else {
+        return _nullString;
+    }
+};
+
+const char * ESPMAN::myString::c_str() const
+{
+    if (buffer) {
+        return static_cast<const char *>(buffer);
+    } else {
+        return _nullString;
+    }
+};
 
 ESPMAN::myString::operator bool() const
 {
@@ -264,6 +291,12 @@ bool ESPMAN::myString::operator ==(char * cstr)
     return false;
 
 }
+
+ESPMAN::myString::operator String() const {
+
+    return String(buffer); 
+
+} 
 
 ESPMAN::myString::~myString()
 {
