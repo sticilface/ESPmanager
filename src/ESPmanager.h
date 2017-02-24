@@ -55,8 +55,8 @@
 #define ESPMANAGER_SYSLOG /* 16 Bytes */
 #define ESPMANAGER_SAVESTACK /* 0 Bytes - */
 #define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
-#define ESPMANAGER_LOG
-#define Debug_ESPManager Serial /* 1760 bytes  */ 
+//#define ESPMANAGER_LOG   /*  experimental logging */ 
+//#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 #include <ESPmanSysLog.h>
 

@@ -305,11 +305,10 @@ bool ESPMAN::myString::operator ==(const myString &rhs)
 
 // }
 
-ESPMAN::myString::operator String() const {
-
-    return String(buffer); 
-
-} 
+ESPMAN::myString::operator String() const
+{
+    return String(buffer);
+}
 
 ESPMAN::myString::~myString()
 {

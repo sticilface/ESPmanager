@@ -938,9 +938,9 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         return CONFIG_FILE_ERROR;
     }
 
-    if (!path) {
+    if (!path || strlen(path) == 0 ) {
 
-        if (_settings->GEN.updateURL ) {
+        if ( _settings->GEN.updateURL ) {
             path = _settings->GEN.updateURL.c_str();
         } else {
             //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
@@ -948,6 +948,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
             return NO_UPDATE_URL;
         }
 
+    } else {
+            ESPMan_Debugf("Path sent in: %s\n", path);
     }
 
 
@@ -1619,6 +1621,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     JsonObject& root = jsonBuffer.createObject();
 
     static uint32_t last_handle_time = 0;
+    bool sendsaveandreboot = false; 
 
     //if (millis() - last_handle_time < 50) {
 
@@ -2910,7 +2913,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             set.changed = true;
             event_printf(NULL, "Device ID: %s", set.GEN.host() );
 
-            event_printf(NULL, string_saveandreboot);
+            sendsaveandreboot = true;
         }
 
     }
@@ -2978,7 +2981,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 set.GEN.OTApassword = md5.toString().c_str() ;
                 //set.GEN.OTApassword = pass;
 
-                event_printf(nullptr, string_saveandreboot);
+                sendsaveandreboot = true;
 
             } else {
                 event_printf(nullptr, string_ERROR_toString, getError(PASSWORD_MISMATCH).c_str() ) ;
@@ -3006,7 +3009,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             set.GEN.mDNSenabled = command;
             set.changed = true;
             ESPMan_Debugf("mDNS set to : %s\n", (command) ? "on" : "off");
-            //  _events.send(string_saveandreboot);
+            sendsaveandreboot = true;
             //  InitialiseFeatures();
         }
     } // end of OTA enable
@@ -3054,7 +3057,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             set.changed = true;
             //ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
 
-            event_printf(nullptr, string_saveandreboot);
+            sendsaveandreboot = true;
         }
 
     }
@@ -3067,7 +3070,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (result && value != _settings->GEN.syslogIP) {
             _settings->GEN.syslogIP = value;
             set.changed = true;
-            event_printf(nullptr, string_saveandreboot);
+            sendsaveandreboot = true;
         }
 
     }
@@ -3079,7 +3082,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             _settings->GEN.syslogPort = value;
             set.changed = true;
 
-            event_printf(nullptr, string_saveandreboot);
+            sendsaveandreboot = true;
         }
     }
 
@@ -3090,7 +3093,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             _settings->GEN.syslogProto = value;
             set.changed = true;
 
-            event_printf(nullptr, string_saveandreboot);
+            sendsaveandreboot = true;
         }
 
     }
@@ -3153,6 +3156,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                                             New UPGRADE
        ------------------------------------------------------------------------------------------------------------------*/
+    
 
     if (request->hasParam(string_updateURL, true) ) {
 
@@ -3187,13 +3191,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     if (request->hasParam("PerformUpdate", true) ) {
 
-        myString path = set.GEN.updateURL;
+        String path = String();  
 
-
+        if (set.GEN.updateURL) {
+           path = set.GEN.updateURL;
+        } 
+        
         _tasker.add( [this, path](Task & t) {
-            //_syncCallback = [this, path ]() {
-            _upgrade(path());
-            //  return true;
+            _upgrade(path.c_str());
         });
 
     }
@@ -3221,6 +3226,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     sendJsontoHTTP<JsonObject>(root, request);
 
+if (sendsaveandreboot) {
+    event_printf(nullptr, string_saveandreboot);
+}
 
     // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
     // response->addHeader(ESPMAN::string_CORS,"*");

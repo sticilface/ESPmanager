@@ -1277,9 +1277,6 @@ $(document).on("pageshow", "#upgradepage", function() {
 
     getUpgradeVars();
 
-
-
-
     $("#updatesubmitbutton").click(function() {
         $.post(_home_device + "data.esp", $(this).closest("form").find('input,select').filter(':visible').serialize(), function(data) {
             //console.log("Data Sent");
@@ -1288,11 +1285,15 @@ $(document).on("pageshow", "#upgradepage", function() {
         });
     });
 
-    // $("#checkforupdatebutton").click(function() {
 
-    //     $.post("data.esp", "PerformUpdate=true");
+    $("#checkforupdatebutton").click(function() {
 
-    // });
+        var data = $(this).closest("form").find('input,select').filter(':visible').serializeArray(); 
+        data.push({name: 'PerformUpdate', value: true});
+
+        $.post(_home_device + "data.esp", data);
+
+    });
 
 });
 
