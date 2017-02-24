@@ -463,9 +463,9 @@ int ESPmanager::begin()
     //_HTTP.serveStatic("/espman/", _fs, "/espman/"); //.setLastModified(getCompileTime());
 
     // _HTTP.serveStatic("/jquery", _fs, "/jquery/").setCacheControl("max-age:86400").setFilter(ON_AP_FILTER);
-
+#ifdef ESPMAN_USE_UPDATER
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
-
+#endif
     // _HTTP.on("/testindex.html", HTTP_GET, [](AsyncWebServerRequest *request) {
     //   AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_htm_gz, index_htm_gz_len);
     //   response->addHeader("Content-Encoding", "gzip");
@@ -1013,6 +1013,8 @@ void ESPmanager::upgrade(String path)
 
 }
 
+
+#ifdef ESPMAN_USE_UPDATER
 void ESPmanager::_upgrade(const char * path)
 {
     using namespace ESPMAN;
@@ -1273,6 +1275,8 @@ void ESPmanager::_upgrade(const char * path)
     delay(200);
 
 }
+
+#endif
 
 uint32_t ESPmanager::trueSketchSize()
 {
@@ -1770,14 +1774,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         // Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
 
-        if (plainCommand == "generalpage") {
+        if (plainCommand == F("generalpage")) {
 
             ESPMan_Debugf("Got body\n");
 
 
         }
 
-        if (plainCommand == "save") {
+        if (plainCommand == F("save")) {
             ESPMan_Debugf("Saving Settings File....\n");
             if (_settings) {
 
@@ -1809,23 +1813,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                         _sendTextResponse(request, 200, "OK");
 
-                        // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
-                        // response->addHeader(ESPMAN::string_CORS, "*");
-                        // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-                        // request->send(response);
-
                         _tasker.add( [this](Task & t) {
                             ESPMan_Debugf("REBOOTING....\n");
                             delay(100);
                             ESP.restart();
                         });
-
-                        // _syncCallback = [this]() {
-                        //     ESPMan_Debugf("REBOOTING....\n");
-                        //     delay(100);
-                        //     ESP.restart();
-                        //     return true;
-                        // };
 
                         return; //  stop request
                     }
@@ -1837,11 +1829,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             ESPMan_Debugf("Rebooting...\n");
 
             _sendTextResponse(request, 200, "OK");
-
-            // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
-            // response->addHeader(ESPMAN::string_CORS, "*");
-            // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-            // request->send(response);
 
             _tasker.add( [this](Task & t) {
                 //event_printf(NULL, "Rebooting");
@@ -1884,9 +1871,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if (wifiScanState == -2) {
                     WiFi.scanNetworks(true);
                     //_sendTextResponse(request, 200, "started");
-                    root["scan"] = "started";
+                    root[F("scan")] = "started";
                 } else if (wifiScanState == -1) {
-                    root["scan"] = "running";
+                    root[F("scan")] = "running";
                 } else if (wifiScanState > 0) {
 
                     _wifinetworksfound = wifiScanState;
@@ -1994,9 +1981,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             JsonObject& GenericObject = root.createNestedObject("generic");
 
-            GenericObject["channel"] = WiFi.channel();
-            GenericObject["sleepmode"] = (int)WiFi.getSleepMode();
-            GenericObject["phymode"] = (int)WiFi.getPhyMode();
+            GenericObject[F("channel")] = WiFi.channel();
+            GenericObject[F("sleepmode")] = (int)WiFi.getSleepMode();
+            GenericObject[F("phymode")] = (int)WiFi.getPhyMode();
 
 
             JsonObject& STAobject = root.createNestedObject(string_STA);
@@ -2061,7 +2048,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         /*------------------------------------------------------------------------------------------------------------------
                                           Send about page details...
            ------------------------------------------------------------------------------------------------------------------*/
-        if (plainCommand == "AboutPage") {
+        if (plainCommand == F("AboutPage")) {
 
             FSInfo info;
             _fs.info(info);
@@ -2182,7 +2169,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         }
 
-        if (plainCommand == "formatSPIFFS") {
+        if (plainCommand == F("formatSPIFFS")) {
             ESPMan_Debugf("Format SPIFFS\n");
 
             event_printf_P(NULL, PSTR("Formatting SPIFFS"));
@@ -2220,15 +2207,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // };
         }
 
-        if (plainCommand == "defragSPIFFS") {
-            _tasker.add( [this](Task & t) {
-                defragSPIFFS();
-            });
-
-        }
-
-
-        if (plainCommand == "deletesettings") {
+        if (plainCommand == F("deletesettings")) {
 
             ESPMan_Debugf("Delete Settings File\n");
             if (_fs.remove(SETTINGS_FILE)) {
@@ -2844,7 +2823,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     abortchanges = true;
                 }
 
-                if (pass && newsettings->pass != pass) {
+                if (pass && newsettings->pass != myString(pass)) {
                     newsettings->pass = pass;
                     ESPMan_Debugf("New AP pass = %s\n", newsettings->pass() );
                     changes = true;
@@ -3015,7 +2994,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         const char * newid = newidString.c_str();
         ESPMan_Debugf( "Device ID func hit %s\n", newid  );
 
-        if (newid && strnlen(newid, 100) > 0 && strnlen(newid, 100) < 32 && set.GEN.host != newid) {
+        if (newid && strnlen(newid, 100) > 0 && strnlen(newid, 100) < 32 && set.GEN.host != myString(newid)) {
 
             set.GEN.host = newid;
             set.changed = true;
@@ -3273,7 +3252,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         ESPMan_Debugf("UpgradeURL: %s\n", newpath);
 
-        if (newpath && strnlen(newpath, 100) > 0 && set.GEN.updateURL != newpath) {
+        if (newpath && strnlen(newpath, 100) > 0 && set.GEN.updateURL != myString(newpath)) {
 
             set.GEN.updateURL = newpath;
             set.changed = true;
@@ -4714,45 +4693,7 @@ void ESPmanager::_removePreGzFiles()
     }
 
 }
-/*
-s32_t SPIFFS_gc(spiffs *fs, u32_t size) {
 
-
-*/
-bool ESPmanager::defragSPIFFS()
-{
-    FSInfo info;
-
-    if (SPIFFS.info(info)) {
-        size_t freeSpace = info.totalBytes - info.usedBytes - (2 * info.blockSize);
-        //     SPIFFS.defrag(freeSpace);
-        return true;
-    }
-
-    return false;
-
-
-//   FSInfo info;
-//   if(SPIFFS.info(info)){
-//     size_t freeSpace = info.totalBytes - info.usedBytes - (2 * info.blockSize);
-//     if(((info.deletedPages * info.pageSize) - (8 * info.blockSize)) > 0){
-//       ESPMan_Debugf("start : %u\n", info.freeBlocks);
-//       size_t startBlocks = info.freeBlocks;
-//       size_t currentBlocks = startBlocks;
-//       while(true){
-//         SPIFFS.garbageCollect(freeSpace);
-//         if(SPIFFS.info(info)){
-//           if(info.freeBlocks == currentBlocks) break;
-//           ESPMan_Debugf("current : %u\n", info.freeBlocks);
-//           currentBlocks = info.freeBlocks;
-//         } else break;
-//       }
-//       ESPMan_Debugf("cleared : %u\n", currentBlocks - startBlocks);
-//     }
-//   }
-
-//     return true;
-}
 
 myString ESPmanager::getError(ESPMAN_ERR err)
 {

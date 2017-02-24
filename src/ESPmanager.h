@@ -50,14 +50,14 @@
 #include "Tasker/src/Tasker.h"
 #include "ESPMAN.h"   //  has to go after
 
-#define ESPMANAGER_SYSLOG
-#define ESPMANAGER_SAVESTACK
-//#define Debug_ESPManager Serial
 
+//  These are the Features that can be turned off to save more FLASH and RAM space. 
+//#define ESPMANAGER_SYSLOG /* 16 Bytes
+//#define ESPMANAGER_SAVESTACK /* 0 Bytes - 
+//#define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
+//#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
-#ifdef ESPMANAGER_SYSLOG
 #include <ESPmanSysLog.h>
-#endif
 
 #ifdef ESPMANAGER_SAVESTACK
 #include "SaveStack.h"
@@ -65,9 +65,9 @@
 
 #define SETTINGS_FILE "/espman/settings.json"
 // #define SALT_LENGTH 20
-#define ESPMANVERSION "1.0-async"
+#define ESPMANVERSION "2.2-async"
 #define SETTINGS_FILE_VERSION 2
-#define ESPMAN_USE_UPDATER 1
+
 
 
 #if defined(Debug_ESPManager)
@@ -106,42 +106,24 @@ public:
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
 
-
   AsyncEventSource & getEvent();
   size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4)));
   size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4)));
 
-
   void upgrade(String path = String());
   void factoryReset();
-//        struct tm * getCompileTime();
   int save();
-  bool portal()
-  {
-    return _dns;
-  }
+  bool portal() { return _dns; }
 
   void enablePortal();
   void disablePortal();
 
-  //void test(Task & t);
-
-  ASyncTasker & getTaskManager()
-  {
-    return _tasker;
-  }
-
-  ASyncTasker & tasker()
-  {
-    return _tasker;
-  }
+  ASyncTasker & getTaskManager() { return _tasker; }
+  ASyncTasker & tasker() { return _tasker; }
 
 #ifdef ESPMANAGER_SYSLOG
 
-  SysLog * logger()
-  {
-    return _syslog;
-  }
+  SysLog * logger() { return _syslog; }
 
   bool log(myString  msg); 
   bool log(uint16_t pri, myString  msg); 
@@ -150,30 +132,23 @@ public:
 
 #endif
 
-  bool defragSPIFFS();
-
-
 
 private:
 
   void _HandleDataRequest(AsyncWebServerRequest * request);
-//        void _handleManifest(AsyncWebServerRequest *request);
   void _handleFileUpload(AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final);
-  void _upgrade(const char * path);
-
+  
 #ifdef ESPMAN_USE_UPDATER
+  void _upgrade(const char * path);
   int   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
   int   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
   void  _HandleSketchUpdate(AsyncWebServerRequest * request);
+#else 
+  void _upgrade(const char * path) {}
 #endif
 
+  SysLog * _syslog{nullptr};
 
-#ifdef ESPMANAGER_SYSLOG
-  // WiFiUDP * _sysLogClient {nullptr};
-   SysLog * _syslog{nullptr};
-  // const char * _syslogDeviceName{nullptr};   //  used by debuglog
-
-#endif
 
   int _getAllSettings(); //  gets settings to settings ptr, uses new if it doesn't exist.  overwrite current data
   int _getAllSettings(settings_t & set); //only populates the set... used to retrieve certain vailue...
@@ -182,14 +157,14 @@ private:
   int _initialiseAP(bool override = false); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::AP_settings_t settings);
   int _initialiseSTA(); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::STA_settings_t settings);
   int _initialiseSTA( settings_t::STA_t & settings);
-  //int _autoSDKconnect();
   int _emergencyMode(bool shutdown = false);
-  //void _applyPermenent(settings_t & set);
   void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text);
 
   void _removePreGzFiles();
   void _initialiseTasks();
   void _APlogic(Task & t);
+
+  void _log(uint16_t pri, myString  msg) {}
 
   // String _hash(const char * pass);
   // bool _hashCheck(const char * password, const char * hash) ;

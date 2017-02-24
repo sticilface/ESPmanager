@@ -278,19 +278,19 @@ bool ESPMAN::myString::operator ==(const myString &rhs)
 
 }
 //  untested
-bool ESPMAN::myString::operator ==(char * cstr)
-{
-    if (!cstr && !buffer) {
-        return true;
-    }
+// bool ESPMAN::myString::operator ==(char * cstr)
+// {
+//     if (!cstr && !buffer) {
+//         return true;
+//     }
 
-    if (cstr && buffer) {
-        return strcmp(buffer, cstr) == 0;
-    }
+//     if (cstr && buffer) {
+//         return strcmp(buffer, cstr) == 0;
+//     }
 
-    return false;
+//     return false;
 
-}
+// }
 
 ESPMAN::myString::operator String() const {
 

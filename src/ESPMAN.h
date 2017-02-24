@@ -200,17 +200,14 @@ public:
     myString & operator =(const __FlashStringHelper *str);
     myString & operator =(const myString &str);
     myString & operator =(myString &&str);
-    // untested ==
+    
+
     bool operator ==(const myString &rhs);
     bool operator !=(const myString &rhs)
     {
         return !(*this == rhs);
     }
-    bool operator ==( char * cstr);
-    bool operator !=( char * cstr)
-    {
-        return !(*this == cstr);
-    }
+
     const char * operator()() const;
     const char * operator()(const char *) const;
     const char * c_str() const;
@@ -241,10 +238,7 @@ private:
 };
 
 struct settings_t {
-    settings_t()
-    {
-        start_time = millis();
-    }
+    settings_t() { start_time = millis(); }
 
     uint32_t start_time {0};
     bool configured {false};
