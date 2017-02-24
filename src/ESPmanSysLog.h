@@ -10,7 +10,7 @@ Credit due to https://github.com/arcao/Syslog for the implementation.
 
 #include "ESPMAN.h"
 #include <IPAddress.h>
-#include <WiFiUDP.h>
+#include <WiFiUdp.h>
 //#include <bitset>
 
 using namespace ESPMAN;
