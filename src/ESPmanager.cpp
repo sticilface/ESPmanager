@@ -101,7 +101,7 @@ ESPmanager::~ESPmanager()
 
 }
 
-int ESPmanager::begin()
+ESPMAN_ERR_t ESPmanager::begin()
 {
     using namespace std::placeholders;
     using namespace ESPMAN;
@@ -212,7 +212,7 @@ int ESPmanager::begin()
     //     settings->configured = true;
     // }
 
-    if (!_settings->GEN.host()) {
+    if (!_settings->GEN.host) {
         ESPMan_Debugf("Host NOT SET\n");
         char tmp[33] = {'\0'};
         snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
@@ -226,7 +226,7 @@ int ESPmanager::begin()
     int STA_ERROR = 0;
     int AUTO_ERROR = 0;
 
-    WiFi.hostname(_settings->GEN.host());
+    WiFi.hostname(_settings->GEN.host.c_str());
 
 
     if (_fs.exists("/.wizard")) {
@@ -272,6 +272,7 @@ int ESPmanager::begin()
         //  enable emergency mode and portal....
 
         ESP.eraseConfig(); //  clear everything when starting for first time...
+
         WiFi.mode(WIFI_OFF);
 
         _emergencyMode(true);
@@ -301,7 +302,7 @@ int ESPmanager::begin()
             ArduinoOTA.handle();
         }, true).setRepeat(true).setTimeout(500);
 
-        ArduinoOTA.setHostname(_settings->GEN.host());
+        ArduinoOTA.setHostname(_settings->GEN.host.c_str());
         //
         ArduinoOTA.setPort( _settings->GEN.OTAport);
 
@@ -430,48 +431,10 @@ int ESPmanager::begin()
 
     _HTTP.addHandler(&_events);
 
-
-
-    /*
-       <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
-       <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
-       <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script> -->
-       <!--<link rel="stylesheet" href="/jquery/jqm1.4.5.css">-->
-       <!--<script src="/jquery/jq1.11.1.js"></script>-->
-       <!--<script src="/jquery/jqm1.4.5.js"></script>-->
-
-     */
-
-    //_HTTP.redirect("/jquery/jqm1.4.5.css", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" ).setFilter(ON_STA_FILTER);
-    //_HTTP.rewrite("/jquery/jq1.11.1.js", "http://code.jquery.com/jquery-1.11.1.min.js").setFilter(ON_STA_FILTER);
-    //_HTTP.rewrite("/jquery/jqm1.4.5.js", "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js").setFilter(ON_STA_FILTER);
-    //  _HTTP.rewrite("/jquery/images/ajax-loader.gif", "")
-//  This works  but redirects do not work with appcache....
-    // _HTTP.on("/jquery/jqm1.4.5.css", HTTP_GET, [](AsyncWebServerRequest *request){
-    //         request->redirect("http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css");
-    // }).setFilter(ON_STA_FILTER);
-    //
-    // _HTTP.on("/jquery/jq1.11.1.js", HTTP_GET, [](AsyncWebServerRequest *request){
-    //         request->redirect("http://code.jquery.com/jquery-1.11.1.min.js");
-    // }).setFilter(ON_STA_FILTER);
-    //
-    // _HTTP.on("/jquery/jqm1.4.5.js", HTTP_GET, [](AsyncWebServerRequest *request){
-    //         request->redirect("http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js");
-    // }).setFilter(ON_STA_FILTER);
-
-
-    //_HTTP.serveStatic("/espman/", _fs, "/espman/"); //.setLastModified(getCompileTime());
-
-    // _HTTP.serveStatic("/jquery", _fs, "/jquery/").setCacheControl("max-age:86400").setFilter(ON_AP_FILTER);
 #ifdef ESPMAN_USE_UPDATER
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
 #endif
-    // _HTTP.on("/testindex.html", HTTP_GET, [](AsyncWebServerRequest *request) {
-    //   AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", index_htm_gz, index_htm_gz_len);
-    //   response->addHeader("Content-Encoding", "gzip");
-    //   request->send(response);
-    //
-    // } );
+
 
     _initialiseTasks();
 
@@ -517,6 +480,16 @@ int ESPmanager::begin()
     _tasker.add( std::bind( &ESPmanager::_APlogic, this, _1 )).setRepeat(true).setTimeout(500);
 
 
+    // _tasker.add( [this](Task & t) {
+
+    //     ESP_LOG(LOG_DEBUG, "HELLO"); 
+    //     ESP_LOG(LOG_DEBUG, myStringf("HELLO %s", "sailor"));
+    //     ESP_LOG(LOG_DEBUG, myStringf_P( PSTR("HELLO %s from progmem"), "sailor")); 
+
+
+    // }).setRepeat(true).setTimeout(1000); 
+
+
 #if defined(Debug_ESPManager)
 
     // if (WiFi.isConnected()) {
@@ -547,27 +520,18 @@ int ESPmanager::begin()
 
     if (_settings->GEN.usesyslog) {
 
-        // ESPMan_Debugf("Syslog = true\n");
-        // _sysLogClient = new WiFiUDP;
+        ESPMan_Debugf("Created syslog client\n");
 
-        // if (_sysLogClient) {
-        
-             ESPMan_Debugf("Created syslog client\n");
-
-             _syslog = new SysLog( _settings->GEN.syslogIP, _settings->GEN.syslogPort, (_settings->GEN.syslogProto) ? SYSLOG_PROTO_BSD : SYSLOG_PROTO_IETF );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
+        _syslog = new SysLog( _settings->GEN.syslogIP, _settings->GEN.syslogPort, (_settings->GEN.syslogProto) ? SYSLOG_PROTO_BSD : SYSLOG_PROTO_IETF );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
 
 
-              if (_syslog) {
-        //     //     _syslog->server(_settings->GEN.syslogIP, _settings->GEN.syslogPort );
-                 _syslog->setDeviceName( _settings->GEN.host ) ;
-        //     //     _syslog->appName("ESPManager");
-        //     //     _syslog->defaultPriority(LOG_KERN);
-                 _syslog->log(LOG_INFO, F("Device Started"));
+        if (_syslog) {
+            _syslog->setDeviceName( _settings->GEN.host ) ;
+            _syslog->log(LOG_INFO, F("Device Started"));
 
-          ESPMan_Debugf("Address of syslog %p, ip = %s, port = %u, proto=%u, hostname =%s\n", _syslog, _settings->GEN.syslogIP.toString().c_str(), _settings->GEN.syslogPort , _settings->GEN.syslogProto, "ESPManager");
+            ESPMan_Debugf("Address of syslog %p, ip = %s, port = %u, proto=%u, hostname =%s\n", _syslog, _settings->GEN.syslogIP.toString().c_str(), _settings->GEN.syslogPort , _settings->GEN.syslogProto, "ESPManager");
 
-              }
-        // }
+        }
     }
 
 #endif
@@ -663,7 +627,7 @@ void ESPmanager::_APlogic(Task & t)
 }
 
 
-void ESPmanager::enablePortal()
+ESPMAN_ERR_t ESPmanager::enablePortal()
 {
     ESPMan_Debugf("Enabling Portal\n");
 
@@ -682,6 +646,10 @@ void ESPmanager::enablePortal()
             this->_dns->processNextRequest();
         }, true).setRepeat().setTimeout(500);
 
+        return SUCCESS; 
+
+    } else {
+        return MALLOC_FAIL; 
     }
 
 }
@@ -750,57 +718,7 @@ void ESPmanager::_initialiseTasks()
 
 void ESPmanager::handle()
 {
-    //  using namespace ESPMAN;
-//    static uint32_t timeout = 0;
-
     _tasker.loop();
-
-    //if (_OTAupload) { ArduinoOTA.handle(); }
-
-    // if (_dns) {
-    //     _dns->processNextRequest();
-    // }
-
-    //  Ony handle manager code every 500ms...
-    // if (millis() - timeout < 500) {
-    //     return;
-    // }
-
-//   timeout = millis();
-
-    // if (_syncCallback) {
-    //     if (_syncCallback()) {
-    //         _syncCallback = nullptr;
-    //     };
-    // }
-
-
-
-
-
-    // if (_updateFreq && millis() - _updateTimer > _updateFreq * 60000) {
-    //     _updateTimer = millis();
-    //     ESPMan_Debugf("Performing update check\n");
-    //     //__events.send("Checking for updates", nullptr, 0, 5000);
-    //     _getAllSettings();
-
-    //     if (_settings) {
-    //         _upgrade(_settings->GEN.updateURL());
-    //     }
-
-    // }
-
-
-    // if (_settings && !_settings->changed) {
-    //     if (millis() - _settings->start_time > SETTINGS_MEMORY_TIMEOUT) {
-    //         uint32_t startheap = ESP.getFreeHeap();
-    //         delete _settings;
-    //         _settings = nullptr;
-    //         ESPMan_Debugf("[ESPmanager::handle()] Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
-
-    //     }
-    // }
-
 }
 
 //format bytes thanks to @me-no-dev
@@ -963,16 +881,16 @@ String ESPmanager::getHostname()
 
     ESPMan_Debugf("error = %i\n", ERROR);
 
-    if (!ERROR && set.GEN.host() && strnlen(set.GEN.host(), 100) > 0 ) {
-        return String(set.GEN.host());
+    if (!ERROR && set.GEN.host ) {
+        return String(set.GEN.host.c_str());
     } else  {
         char tmp[33] = {'\0'};
-        snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
+        snprintf_P(tmp, 32, PSTR("esp8266-%06x"), ESP.getChipId());
         return String(tmp);
     }
 }
 
-void ESPmanager::upgrade(String path)
+ESPMAN_ERR_t ESPmanager::upgrade(String path)
 {
 
     using namespace ESPMAN;
@@ -982,17 +900,17 @@ void ESPmanager::upgrade(String path)
     myString newpath;
 
     if (!_settings) {
-        return;
+        return CONFIG_FILE_ERROR;
     }
 
     if (path.length() == 0) {
 
-        if (_settings->GEN.updateURL() && strnlen(_settings->GEN.updateURL(), 100) > 0 ) {
-            newpath = _settings->GEN.updateURL();
+        if (_settings->GEN.updateURL ) {
+            newpath = _settings->GEN.updateURL.c_str();
         } else {
             //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
             event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
-            return;
+            return NO_UPDATE_URL;
         }
 
     } else {
@@ -1004,35 +922,30 @@ void ESPmanager::upgrade(String path)
         this->_upgrade(newpath());
     });
 
-    // _syncCallback = [ newpath, this ]() {
-
-    //     this->_upgrade(newpath());
-    //     return true;
-
-    // };
+    return SUCCESS; 
 
 }
 
 
 #ifdef ESPMAN_USE_UPDATER
-void ESPmanager::_upgrade(const char * path)
+ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 {
     using namespace ESPMAN;
 
     _getAllSettings();
 
     if (!_settings) {
-        return;
+        return CONFIG_FILE_ERROR;
     }
 
     if (!path) {
 
-        if (_settings->GEN.updateURL() && strnlen(_settings->GEN.updateURL(), 100) > 0 ) {
-            path = _settings->GEN.updateURL();
+        if (_settings->GEN.updateURL ) {
+            path = _settings->GEN.updateURL.c_str();
         } else {
             //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
             event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
-            return;
+            return NO_UPDATE_URL;
         }
 
     }
@@ -1076,13 +989,13 @@ void ESPmanager::_upgrade(const char * path)
     int ret = _parseUpdateJson(buff, jsonBuffer, p_root, path);
 
     if (ret) {
-        event_printf(string_UPGRADE, string_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError( (ESPMAN_ERR)ret).c_str());
+        event_printf(string_UPGRADE, string_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError( (ESPMAN_ERR_t)ret).c_str());
         ESPMan_Debugf("MANIFEST ERROR [%i]\n", ret );
         if (buff) {
             delete[] buff;
         }
 
-        return;
+        return MANIFST_FILE_ERROR;
     }
 
     ESPMan_Debugf("_parseUpdateJson success\n");
@@ -1093,7 +1006,7 @@ void ESPmanager::_upgrade(const char * path)
         if (buff) {
             delete[] buff;
         }
-        return;
+        return JSON_PARSE_ERROR;
     }
 
     JsonObject & root = *p_root;
@@ -1153,10 +1066,7 @@ void ESPmanager::_upgrade(const char * path)
         if (remote_path.endsWith("bin") && filename == "sketch" ) {
             updatesketch = true;
             files_recieved++;         //  add one to keep count in order...
-
             ESPMan_Debugf("[%u/%u] BIN Updated pending\n", file_count, files_expected);
-
-
             continue;
         }
 
@@ -1168,7 +1078,7 @@ void ESPmanager::_upgrade(const char * path)
 
         int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
 
-        char temp_buffer[50];
+        //char temp_buffer[50];
 
         if (ret == 0 || ret == FILE_NOT_CHANGED) {
             event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
@@ -1365,7 +1275,7 @@ int ESPmanager::save()
 
 #ifdef ESPMAN_USE_UPDATER
 
-int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true, bool overwrite)
+ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true, bool overwrite)
 {
     using namespace ESPMAN;
     String filename = filename_c;
@@ -1373,7 +1283,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
     FSInfo _FSinfo;
     int freeBytes = 0;
     bool success = false;
-    int ERROR = 0;
+    ESPMAN_ERR_t ERROR = SUCCESS;
 
     ESPMan_Debugf("URL = %s, filename = %s, md5 = %s, overwrite = %s\n", url, filename_c, md5_true, (overwrite) ? "true" : "false");
 
@@ -1481,7 +1391,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
 
     } else {
         ESPMan_Debugf("\n  [ERROR] HTTP code = %i \n", ERROR);
-        ERROR = httpCode;
+        ERROR = static_cast<ESPMAN_ERR_t>(httpCode);
     }
 
     f.close();
@@ -1523,7 +1433,7 @@ int ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, con
  *
  */
 
-int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path)
+ESPMAN_ERR_t ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path)
 {
     using namespace ESPMAN;
 
@@ -1537,7 +1447,7 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
 
     if (httpCode != 200) {
         ESPMan_Debugf("HTTP code: %i\n", httpCode  );
-        return httpCode;
+        return static_cast<ESPMAN_ERR_t>(httpCode);
     }
 
     ESPMan_Debugf("Connected downloading json\n");
@@ -1590,7 +1500,7 @@ int ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer
 
     if (root->success()) {
         ESPMan_Debugf("root->success() = true\n");
-        return 0;
+        return SUCCESS;
     } else {
         ESPMan_Debugf("root->success() = false\n");
         return JSON_PARSE_ERROR;
@@ -2221,7 +2131,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
 
 
-        if ( plainCommand == "resetwifi" ) {
+        if ( plainCommand == F("resetwifi") ) {
 
             _tasker.add( [this](Task & t) {
 
@@ -2245,7 +2155,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                        wizard
         ------------------------------------------------------------------------------------------------------------------*/
 
-        if (plainCommand == "enterWizard") {
+        if (plainCommand == F("enterWizard")) {
 
             ESP.eraseConfig();
 
@@ -2282,12 +2192,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
 
 
-        if (plainCommand == "cancelWizard") {
+        if (plainCommand == F("cancelWizard")) {
 
             _fs.remove("/.wizard");
         }
 
-        if (plainCommand == "factoryReset") {
+        if (plainCommand == F("factoryReset")) {
 
             _sendTextResponse(request, 200, "Factory Reset Done");
 
@@ -3414,7 +3324,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
 
-int ESPmanager::_initialiseAP(bool override)
+ESPMAN_ERR_t ESPmanager::_initialiseAP(bool override)
 {
     using namespace ESPMAN;
     int ERROR = 0;
@@ -3436,7 +3346,7 @@ int ESPmanager::_initialiseAP(bool override)
 
 }
 
-int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
+ESPMAN_ERR_t ESPmanager::_initialiseAP( settings_t::AP_t & settings )
 {
     using namespace ESPMAN;
 
@@ -3483,21 +3393,21 @@ int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
 
 
 
-    if (!settings.ssid() ) {
+    if (!settings.ssid) {
         char buf[33] = {'\0'};
         snprintf(&buf[0], 32, "esp8266-%06x", ESP.getChipId());
         settings.ssid = buf;
     }
 
-    ESPMan_Debugf("ENABLING AP : channel %u, name %s\n", settings.channel, settings.ssid() );
+    ESPMan_Debugf("ENABLING AP : channel %u, name %s, channel = %u, hidden = %u \n", settings.channel, settings.ssid.c_str(), settings.channel ,  !settings.visible );
 
 
-    if (!WiFi.softAP(settings.ssid(), settings.pass(), settings.channel, !settings.visible )) {
+    if (!WiFi.softAP(settings.ssid.c_str(), (settings.pass)? settings.pass.c_str() : nullptr , settings.channel, !settings.visible )) {
         return ERROR_ENABLING_AP;
     }
 
 
-    return 0;
+    return SUCCESS;
 
 }
 
@@ -3510,10 +3420,10 @@ int ESPmanager::_initialiseAP( settings_t::AP_t & settings )
 
  */
 
-int ESPmanager::_initialiseSTA()
+ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 {
     using namespace ESPMAN;
-    int ERROR = 0;
+    ESPMAN_ERR_t ERROR = SUCCESS;
 
     if (!_settings) {
         _getAllSettings();
@@ -3522,14 +3432,13 @@ int ESPmanager::_initialiseSTA()
     if (_settings) {
         ERROR = _initialiseSTA(_settings->STA);
         if (!ERROR) {
-            if (_settings->GEN.host() && !WiFi.hostname(_settings->GEN.host())) {
+            if ( _settings->GEN.host && !WiFi.hostname( _settings->GEN.host.c_str() ) ) {
                 ESPMan_Debugf("ERROR setting Hostname\n");
             } else {
-
-                ESPMan_Debugf("Hostname set : %s\n", _settings->GEN.host() );
+                ESPMan_Debugf("Hostname set : %s\n", _settings->GEN.host.c_str() );
             }
             ESPMan_Debugf("IP = %s\n", WiFi.localIP().toString().c_str() );
-            return 0;
+            return SUCCESS;
         } else {
             return ERROR;
         }
@@ -3539,10 +3448,10 @@ int ESPmanager::_initialiseSTA()
 
 }
 
-int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
+ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 {
     using namespace ESPMAN;
-    int ERROR = 0;
+    ESPMAN_ERR_t ERROR = SUCCESS;
     bool portal_enabled = _dns;
 
     if (portal_enabled) {
@@ -3565,7 +3474,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
 
 
-    if (!set.ssid() || ( set.ssid() && strnlen(set.ssid(), 100 ) == 0)) {
+    if (!set.ssid) {
         return NO_STA_SSID;
     }
 
@@ -3645,20 +3554,20 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
     // Serial.println("-------  POST CONFIG ------");
     // WiFi.printDiag(Serial);
 
-    if (WiFi.isConnected() && WiFi.SSID() == set.ssid() && WiFi.psk() == set.pass()  ) {
+    if (WiFi.isConnected() && WiFi.SSID() == set.ssid.c_str() && WiFi.psk() == set.pass.c_str()  ) {
         ESPMan_Debugf( "Reconnecting WiFi... \n" );
         WiFi.reconnect();
     } else {
 
-        if (  set.ssid() && set.pass()  ) {
-            ESPMan_Debugf( "ssid = %s, pass = %s\n", set.ssid(), set.pass());
-            if (!WiFi.begin( set.ssid(), set.pass())) {
+        if (  set.ssid && set.pass  ) {
+            ESPMan_Debugf( "ssid = %s, pass = %s\n", set.ssid.c_str(), set.pass.c_str()  );
+            if (!WiFi.begin( set.ssid.c_str(), set.pass.c_str())) {
                 return ERROR_WIFI_BEGIN;
             }
 
-        } else if ( set.ssid() ) {
-            ESPMan_Debugf( "ssid = %s\n", set.ssid());
-            if (!WiFi.begin( set.ssid())) {
+        } else if ( set.ssid ) {
+            ESPMan_Debugf( "ssid = %s\n", set.ssid.c_str());
+            if (!WiFi.begin( set.ssid.c_str())) {
                 return ERROR_WIFI_BEGIN;
             }
         }
@@ -3695,7 +3604,7 @@ int ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
     if ( result == WL_CONNECTED ) {
 
-        return 0;
+        return SUCCESS;
     }
 
     return CONNECT_FAILED;
@@ -3768,7 +3677,7 @@ bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
 
 //  allows creating of a seperate config
 //  need to add in captive portal to setttings....
-int ESPmanager::_emergencyMode(bool shutdown)
+ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown)
 {
     using namespace ESPMAN;
     ESPMan_Debugf("***** EMERGENCY mode **** \n");
@@ -3830,7 +3739,7 @@ int ESPmanager::_emergencyMode(bool shutdown)
 // ToDo......
 
 
-int ESPmanager::_getAllSettings()
+ESPMAN_ERR_t ESPmanager::_getAllSettings()
 {
 
     using namespace ESPMAN;
@@ -3845,10 +3754,10 @@ int ESPmanager::_getAllSettings()
     }
 
     if (_settings->changed) {
-        return 0; // dont overwrite changes already in memory...
+        return SUCCESS; // dont overwrite changes already in memory...
     }
 
-    int ERROR = 0;
+    ESPMAN_ERR_t ERROR = SUCCESS;
 
     ERROR =  _getAllSettings(*_settings);
 
@@ -3878,7 +3787,7 @@ int ESPmanager::_getAllSettings()
 
 }
 
-int ESPmanager::_getAllSettings(settings_t & set)
+ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
 {
 
     using namespace ESPMAN;
@@ -3887,9 +3796,9 @@ int ESPmanager::_getAllSettings(settings_t & set)
     uint8_t settingsversion = 0;
     uint32_t start_heap = ESP.getFreeHeap();
 
-    int ERROR = 0;
+    ESPMAN_ERR_t ERROR = SUCCESS;
 
-    ERROR = json.parseSPIFS(SETTINGS_FILE);
+    ERROR = static_cast<ESPMAN_ERR_t> (json.parseSPIFS(SETTINGS_FILE));
 
     if (ERROR) {
         return ERROR;
@@ -4125,9 +4034,11 @@ int ESPmanager::_getAllSettings(settings_t & set)
         return WRONG_SETTINGS_FILE_VERSION;
     }
 
+    return SUCCESS; 
+
 }
 
-int ESPmanager::_saveAllSettings(settings_t & set)
+ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 {
 
     using namespace ESPMAN;
@@ -4331,170 +4242,9 @@ int ESPmanager::_saveAllSettings(settings_t & set)
 
     f.close();
 
-    return 0;
+    return SUCCESS;
 
 }
-
-
-// void ESPmanager::_applyPermenent(settings_t & set)
-// {
-
-//     if (set.GEN.usePerminantSettings) {
-
-//         if (_perminant_host) {
-//             ESPMan_Debugf("[ESPmanager::_getAllSettings] Host override: %s\n", _perminant_host);
-//             set.GEN.host = _perminant_host;
-//         }
-
-//         if (_perminant_ssid) {
-//             ESPMan_Debugf("[ESPmanager::_getAllSettings] SSID override: %s\n", _perminant_ssid);
-//             set.STA.ssid = _perminant_ssid;
-//             set.STA.enabled = true;
-//         }
-
-//         if (_perminant_pass) {
-//             ESPMan_Debugf("[ESPmanager::_getAllSettings] PASS override: %s\n", _perminant_pass);
-//             set.STA.pass = _perminant_pass;
-//         }
-//     }
-// }
-
-
-// const char * ESPmanager::_getError(ESPMAN::ESPMAN_ERR err)
-// {
-//         using namespace ESPMAN;
-//
-//         switch (err) {
-//         case UNKNOWN_ERROR:
-//                 return String(F("UNKNOWN_ERROR")).c_str();
-//         case NO_UPDATE_URL:
-//                 return String(F("NO_UPDATE_URL")).c_str();
-//         case SPIFFS_FILES_ABSENT:
-//                 return String(F("SPIFFS_FILES_ABSENT")).c_str();
-//         case FILE_NOT_CHANGED:
-//                 return String(F("FILE_NOT_CHANGED")).c_str();
-//         case MD5_CHK_ERROR:
-//                 return String(F("MD5_CHK_ERROR")).c_str();
-//         case HTTP_ERROR:
-//                 return String(F("HTTP_ERROR")).c_str();
-//         case JSON_PARSE_ERROR:
-//                 return String(F("JSON_PARSE_ERROR")).c_str();
-//         case JSON_OBJECT_ERROR:
-//                 return String(F("JSON_OBJECT_ERROR")).c_str();
-//         case CONFIG_FILE_ERROR:
-//                 return String(F("CONFIG_FILE_ERROR")).c_str();
-//         case UPDATOR_ERROR:
-//                 return String(F("UPDATOR_ERROR")).c_str();
-//         case JSON_TOO_LARGE:
-//                 return String(F("JSON_TOO_LARGE")).c_str();
-//         case MALLOC_FAIL:
-//                 return String(F("MALLOC_FAIL")).c_str();
-//         case MANIFST_FILE_ERROR:
-//                 return String(F("MANIFST_FILE_ERROR")).c_str();
-//         case UNKNOWN_NUMBER_OF_FILES:
-//                 return String(F("UNKNOWN_NUMBER_OF_FILES")).c_str();
-//         case SPIFFS_INFO_FAIL:
-//                 return String(F("SPIFFS_INFO_FAIL")).c_str();
-//         case SPIFFS_FILENAME_TOO_LONG:
-//                 return String(F("SPIFFS_FILENAME_TOO_LONG")).c_str();
-//         case SPIFFS_FILE_OPEN_ERROR:
-//                 return String(F("SPIFFS_FILE_OPEN_ERROR")).c_str();
-//         case FILE_TOO_LARGE:
-//                 return String(F("FILE_TOO_LARGE")).c_str();
-//         case INCOMPLETE_DOWNLOAD:
-//                 return String(F("INCOMPLETE_DOWNLOAD")).c_str();
-//         case CRC_ERROR:
-//                 return String(F("CRC_ERROR")).c_str();
-//         case JSON_KEY_MISSING:
-//                 return String(F("JSON_KEY_MISSING")).c_str();
-//         case EMPTY_BUFFER:
-//                 return String(F("EMPTY_BUFFER")).c_str();
-//         case AP_DISABLED:
-//                 return String(F("AP_DISABLED")).c_str();
-//         case ERROR_ENABLING_AP:
-//                 return String(F("ERROR_ENABLING_AP")).c_str();
-//         default:
-//                 return String(F("NO STRING CONVERTION")).c_str();
-//
-//                 // case: default
-//                 //   return " ";
-//
-//         }
-//
-//
-//         // UNKNOWN_ERROR            = -20,//  start at -20 as we use httpupdate errors
-//         // NO_UPDATE_URL            = -21,
-//         // SPIFFS_FILES_ABSENT      = -22,
-//         // FILE_NOT_CHANGED         = -23,
-//         // MD5_CHK_ERROR            = -24,
-//         // HTTP_ERROR               = -25,
-//         // JSON_PARSE_ERROR         = -26,
-//         // JSON_OBJECT_ERROR        = -27,
-//         // CONFIG_FILE_ERROR        = -28,
-//         // UPDATOR_ERROR            = -29,
-//         // JSON_TOO_LARGE           = -30,
-//         // MALLOC_FAIL              = -31,
-//         // MANIFST_FILE_ERROR       = -32,
-//         // UNKNOWN_NUMBER_OF_FILES  = -33,
-//         // SPIFFS_INFO_FAIL         = -34,
-//         // SPIFFS_FILENAME_TOO_LONG = -35,
-//         // SPIFFS_FILE_OPEN_ERROR   = -36,
-//         // FILE_TOO_LARGE           = -37,
-//         // INCOMPLETE_DOWNLOAD      = -38,
-//         // CRC_ERROR                = -39,
-//         // JSON_KEY_MISSING         = -40,
-//         // EMPTY_BUFFER             = -41,
-//         // AP_DISABLED              = -42,
-//         // ERROR_ENABLING_AP        = -43,
-//         // ERROR_DISABLING_AP       = -44,
-//         // ERROR_SETTING_CONFIG     = -45,
-//         // ERROR_ENABLING_STA       = -46,
-//         // FAILED_SET_AUTOCONNECT   = -47,
-//         // FAILED_SET_AUTORECONNECT = -48,
-//         // WIFI_CONFIG_ERROR        = -49,
-//         // NO_STA_SSID              = -50,
-//         // ERROR_WIFI_BEGIN         = -60,
-//         // NO_SSID_AVAIL            = -70,
-//         // CONNECT_FAILED           = -80,
-//         // UNITITIALISED            = -81,
-//         // ERROR_SPIFFS_MOUNT       = -82,
-//         // AUTO_CONNECTED_STA       = -83,
-//         // ERROR_DISABLING_STA      = -84,
-//         // STA_DISABLED             = -85,
-//
-// }
-
-// const char * ESPmanager::_updateUrl()
-// {
-//         generateDigestHash("abc", "def", "fff");
-//
-//         settings_t set;
-//         int ERROR = _getAllSettings(set);
-//         ESPMan_Debugf("[ESPmanager::_updateUrl()] error = %i\n", ERROR);
-//         if (!ERROR) {
-//                 return set.GEN.updateURL();
-//         } else {
-//                 return nullptr;
-//         }
-//
-// }
-
-
-
-
-
-
-
-// ESPmanager::settings_t& ESPmanager::settings_t::operator=( const ESPmanager::settings_t &other ) {
-//         // x = other.x;
-//         // c = other.c;
-//         // s = other.s;
-//         return *this;
-// }
-
-
-
-
 
 
 
@@ -4695,106 +4445,110 @@ void ESPmanager::_removePreGzFiles()
 }
 
 
-myString ESPmanager::getError(ESPMAN_ERR err)
+myString ESPmanager::getError(ESPMAN_ERR_t err)
 {
     switch (err) {
-        case UNKNOWN_ERROR:
-            return F("Unkown Error"); break;
-        case NO_UPDATE_URL:
-            return F("No Update Url"); break;
-        case SPIFFS_FILES_ABSENT:
-            return F("SPIFFS files missing"); break;
-        case FILE_NOT_CHANGED:
-            return F("File not changed"); break;
-        case MD5_CHK_ERROR:
-            return F("MD5 check Error"); break;
-        case HTTP_ERROR:
-            return F("HTTP error"); break;
-        case JSON_PARSE_ERROR:
-            return F("JSON parse ERROR"); break;
-        case JSON_OBJECT_ERROR:
-            return F("JSON Object ERROR"); break;
-        case CONFIG_FILE_ERROR:
-            return F("Config File ERROR"); break;
-        case UPDATER_ERROR:
-            return F("Updater ERROR"); break;
-        case JSON_TOO_LARGE:
-            return F("JSON too large"); break;
-        case MALLOC_FAIL:
-            return F("Malloc Fail"); break;
-        case MANIFST_FILE_ERROR:
-            return F("Manifest file ERROR"); break;
-        case UNKNOWN_NUMBER_OF_FILES:
-            return F("Unknown number of files"); break;
-        case SPIFFS_INFO_FAIL:
-            return F("SPIFFS info fail"); break;
-        case SPIFFS_FILENAME_TOO_LONG:
-            return F("Filename too long"); break;
-        case SPIFFS_FILE_OPEN_ERROR:
-            return F("SPIFFS file open ERROR"); break;
-        case FILE_TOO_LARGE:
-            return F("File too large"); break;
-        case INCOMPLETE_DOWNLOAD:
-            return F("Incomplete Download"); break;
-        case CRC_ERROR:
-            return F("CRC ERROR"); break;
-        case JSON_KEY_MISSING:
-            return F("JSON key missing"); break;
-        case EMPTY_BUFFER:
-            return F("Empty buffer"); break;
-        case AP_DISABLED:
-            return F("AP Disabled"); break;
-        case ERROR_ENABLING_AP:
-            return F("ERROR enabling AP"); break;
-        case ERROR_DISABLING_AP:
-            return F("ERROR disabling AP"); break;
-        case ERROR_SETTING_CONFIG:
-            return F("Settings Config ERROR"); break;
-        case ERROR_ENABLING_STA:
-            return F("ERROR enabling STA"); break;
-        case FAILED_SET_AUTOCONNECT:
-            return F("Failed to set Autoconnect"); break;
-        case FAILED_SET_AUTORECONNECT:
-            return F("Failed to set Autoreconnect"); break;
-        case WIFI_CONFIG_ERROR:
-            return F("WiFi config ERROR"); break;
-        case NO_STA_SSID:
-            return F("No SSID specified"); break;
-        case ERROR_WIFI_BEGIN:
-            return F("ERROR starting WiFi"); break;
-        case NO_SSID_AVAIL:
-            return F("SSID not available "); break;
-        case CONNECT_FAILED:
-            return F("Connect Failed"); break;
-        case UNITITIALISED:
-            return F("Uninitialised"); break;
-        case ERROR_SPIFFS_MOUNT:
-            return F("SPIFFS mount FAIL"); break;
-        case AUTO_CONNECTED_STA:
-            return F("Auto connected to STA"); break;
-        case ERROR_DISABLING_STA:
-            return F("ERROR disabling STA"); break;
-        case STA_DISABLED:
-            return F("STA disabled"); break;
-        case SETTINGS_NOT_IN_MEMORY:
-            return F("Settings not in memory"); break;
-        case ERROR_SETTING_MAC:
-            return F("ERROR setting MAC"); break;
-        case PASSWORD_MISMATCH:
-            return F("Password Mismatch"); break;
-        case NO_CHANGES:
-            return F("No Changes"); break;
-        case PASSWOROD_INVALID:
-            return F("Password invalid"); break;
-        case WRONG_SETTINGS_FILE_VERSION:
-            return F("Wrong Settings File Version"); break;
+    case UNKNOWN_ERROR:
+        return F("Unkown Error"); break;
+    case NO_UPDATE_URL:
+        return F("No Update Url"); break;
+    case SPIFFS_FILES_ABSENT:
+        return F("SPIFFS files missing"); break;
+    case FILE_NOT_CHANGED:
+        return F("File not changed"); break;
+    case MD5_CHK_ERROR:
+        return F("MD5 check Error"); break;
+    case HTTP_ERROR:
+        return F("HTTP error"); break;
+    case JSON_PARSE_ERROR:
+        return F("JSON parse ERROR"); break;
+    case JSON_OBJECT_ERROR:
+        return F("JSON Object ERROR"); break;
+    case CONFIG_FILE_ERROR:
+        return F("Config File ERROR"); break;
+    case UPDATER_ERROR:
+        return F("Updater ERROR"); break;
+    case JSON_TOO_LARGE:
+        return F("JSON too large"); break;
+    case MALLOC_FAIL:
+        return F("Malloc Fail"); break;
+    case MANIFST_FILE_ERROR:
+        return F("Manifest file ERROR"); break;
+    case UNKNOWN_NUMBER_OF_FILES:
+        return F("Unknown number of files"); break;
+    case SPIFFS_INFO_FAIL:
+        return F("SPIFFS info fail"); break;
+    case SPIFFS_FILENAME_TOO_LONG:
+        return F("Filename too long"); break;
+    case SPIFFS_FILE_OPEN_ERROR:
+        return F("SPIFFS file open ERROR"); break;
+    case FILE_TOO_LARGE:
+        return F("File too large"); break;
+    case INCOMPLETE_DOWNLOAD:
+        return F("Incomplete Download"); break;
+    case CRC_ERROR:
+        return F("CRC ERROR"); break;
+    case JSON_KEY_MISSING:
+        return F("JSON key missing"); break;
+    case EMPTY_BUFFER:
+        return F("Empty buffer"); break;
+    case AP_DISABLED:
+        return F("AP Disabled"); break;
+    case ERROR_ENABLING_AP:
+        return F("ERROR enabling AP"); break;
+    case ERROR_DISABLING_AP:
+        return F("ERROR disabling AP"); break;
+    case ERROR_SETTING_CONFIG:
+        return F("Settings Config ERROR"); break;
+    case ERROR_ENABLING_STA:
+        return F("ERROR enabling STA"); break;
+    case FAILED_SET_AUTOCONNECT:
+        return F("Failed to set Autoconnect"); break;
+    case FAILED_SET_AUTORECONNECT:
+        return F("Failed to set Autoreconnect"); break;
+    case WIFI_CONFIG_ERROR:
+        return F("WiFi config ERROR"); break;
+    case NO_STA_SSID:
+        return F("No SSID specified"); break;
+    case ERROR_WIFI_BEGIN:
+        return F("ERROR starting WiFi"); break;
+    case NO_SSID_AVAIL:
+        return F("SSID not available "); break;
+    case CONNECT_FAILED:
+        return F("Connect Failed"); break;
+    case UNITITIALISED:
+        return F("Uninitialised"); break;
+    case ERROR_SPIFFS_MOUNT:
+        return F("SPIFFS mount FAIL"); break;
+    case AUTO_CONNECTED_STA:
+        return F("Auto connected to STA"); break;
+    case ERROR_DISABLING_STA:
+        return F("ERROR disabling STA"); break;
+    case STA_DISABLED:
+        return F("STA disabled"); break;
+    case SETTINGS_NOT_IN_MEMORY:
+        return F("Settings not in memory"); break;
+    case ERROR_SETTING_MAC:
+        return F("ERROR setting MAC"); break;
+    case PASSWORD_MISMATCH:
+        return F("Password Mismatch"); break;
+    case NO_CHANGES:
+        return F("No Changes"); break;
+    case PASSWOROD_INVALID:
+        return F("Password invalid"); break;
+    case WRONG_SETTINGS_FILE_VERSION:
+        return F("Wrong Settings File Version"); break;
     }
 }
 
 
-
-
-
+void ESPmanager::_log(uint16_t pri, myString  msg)
+{
+    log(pri,msg); 
+    Serial.printf("[%3u] %s\n", pri ,msg.c_str()); 
+    event_printf("LOG", "[%3u] %s", msg.c_str()); 
+    
+}
 
 
 

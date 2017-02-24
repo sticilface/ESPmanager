@@ -52,10 +52,11 @@
 
 
 //  These are the Features that can be turned off to save more FLASH and RAM space. 
-//#define ESPMANAGER_SYSLOG /* 16 Bytes
-//#define ESPMANAGER_SAVESTACK /* 0 Bytes - 
-//#define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
-//#define Debug_ESPManager Serial /* 1760 bytes  */ 
+#define ESPMANAGER_SYSLOG /* 16 Bytes */
+#define ESPMANAGER_SAVESTACK /* 0 Bytes - */
+#define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
+#define ESPMANAGER_LOG
+#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 #include <ESPmanSysLog.h>
 
@@ -69,13 +70,17 @@
 #define SETTINGS_FILE_VERSION 2
 
 
+//  New logging methods... just send the message to the logging function, otherwise squash it all... 
+#ifdef ESPMANAGER_LOG
+  #define ESP_LOG(a,b) { _log(a,b) ; }
+#else 
+ #define ESP_LOG(a,b) { }
+#endif
 
 #if defined(Debug_ESPManager)
-
 static File _DebugFile;
-
 //#define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__) //  33,268 K RAM left
-#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR( "[%s, line %u] " _1), __PRETTY_FUNCTION__, __LINE__ ,##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
+#define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR( "[%s, line %u] " _1), __func__, __LINE__ ,##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
 #pragma message("DEBUG enabled for ESPManager.")
 #else
 #define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
@@ -92,7 +97,7 @@ class ESPmanager
 public:
   ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS);
   ~ESPmanager();
-  int begin();
+  ESPMAN_ERR_t begin();
   void handle();
   static String formatBytes(size_t bytes);
   static bool StringtoMAC(uint8_t *mac, const String & input);
@@ -100,8 +105,8 @@ public:
   static String file_md5 (File & f);
   template <class T = JsonObject> static void sendJsontoHTTP( const T & root, AsyncWebServerRequest * request);
   String getHostname();
-  myString getError(ESPMAN_ERR err); 
-  myString getError(int err) { return getError( (ESPMAN_ERR)err ); }
+  myString getError(ESPMAN_ERR_t err); 
+  myString getError(int err) { return getError( (ESPMAN_ERR_t)err ); }
 
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
@@ -110,12 +115,12 @@ public:
   size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4)));
   size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4)));
 
-  void upgrade(String path = String());
+  ESPMAN_ERR_t upgrade(String path = String());
   void factoryReset();
   int save();
   bool portal() { return _dns; }
 
-  void enablePortal();
+  ESPMAN_ERR_t enablePortal();
   void disablePortal();
 
   ASyncTasker & getTaskManager() { return _tasker; }
@@ -139,32 +144,32 @@ private:
   void _handleFileUpload(AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final);
   
 #ifdef ESPMAN_USE_UPDATER
-  void _upgrade(const char * path);
-  int   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
-  int   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
+  ESPMAN_ERR_t _upgrade(const char * path);
+  ESPMAN_ERR_t   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
+  ESPMAN_ERR_t   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
   void  _HandleSketchUpdate(AsyncWebServerRequest * request);
 #else 
-  void _upgrade(const char * path) {}
+  ESPMAN_ERR_t _upgrade(const char * path) {}
 #endif
 
   SysLog * _syslog{nullptr};
 
 
-  int _getAllSettings(); //  gets settings to settings ptr, uses new if it doesn't exist.  overwrite current data
-  int _getAllSettings(settings_t & set); //only populates the set... used to retrieve certain vailue...
-  int _saveAllSettings(settings_t & set);
-  int _initialiseAP( settings_t::AP_t & settings);
-  int _initialiseAP(bool override = false); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::AP_settings_t settings);
-  int _initialiseSTA(); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::STA_settings_t settings);
-  int _initialiseSTA( settings_t::STA_t & settings);
-  int _emergencyMode(bool shutdown = false);
+  ESPMAN_ERR_t _getAllSettings(); //  gets settings to settings ptr, uses new if it doesn't exist.  overwrite current data
+  ESPMAN_ERR_t _getAllSettings(settings_t & set); //only populates the set... used to retrieve certain vailue...
+  ESPMAN_ERR_t _saveAllSettings(settings_t & set);
+  ESPMAN_ERR_t _initialiseAP( settings_t::AP_t & settings);
+  ESPMAN_ERR_t _initialiseAP(bool override = false); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::AP_settings_t settings);
+  ESPMAN_ERR_t _initialiseSTA(); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::STA_settings_t settings);
+  ESPMAN_ERR_t _initialiseSTA( settings_t::STA_t & settings);
+  ESPMAN_ERR_t _emergencyMode(bool shutdown = false);
   void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text);
 
   void _removePreGzFiles();
   void _initialiseTasks();
   void _APlogic(Task & t);
 
-  void _log(uint16_t pri, myString  msg) {}
+  void _log(uint16_t pri, myString  msg); 
 
   // String _hash(const char * pass);
   // bool _hashCheck(const char * password, const char * hash) ;

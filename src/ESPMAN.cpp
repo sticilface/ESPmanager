@@ -1,5 +1,18 @@
 #include "ESPMAN.h"
 
+
+ESPMAN::JSONpackage::JSONpackage(bool isArray)
+{
+    if (isArray) {
+        _isArray = true;
+        _root = _jsonBuffer.createArray();
+    } else {
+        _isArray = false;
+        _root = _jsonBuffer.createObject();
+    }
+}
+
+
 int ESPMAN::JSONpackage::parse(char * data, int size)
 {
 
@@ -39,46 +52,46 @@ int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs)
         return FILE_TOO_LARGE;
     }
 
-    _data = std::unique_ptr<char[]>(new char[totalBytes]);
+    // _data = std::unique_ptr<char[]>(new char[totalBytes]);
 
-    if (!_data) {
-        return MALLOC_FAIL;
-    }
+    // if (!_data) {
+    //     return MALLOC_FAIL;
+    // }
 
-    int position = 0;
-    int bytesleft = totalBytes;
+    // int position = 0;
+    // int bytesleft = totalBytes;
 
-    while ((f.available() > -1) && (bytesleft > 0)) {
+    // while ((f.available() > -1) && (bytesleft > 0)) {
 
-        // get available data size
-        int sizeAvailable = f.available();
-        if (sizeAvailable) {
-            int readBytes = sizeAvailable;
+    //     // get available data size
+    //     int sizeAvailable = f.available();
+    //     if (sizeAvailable) {
+    //         int readBytes = sizeAvailable;
 
-            // read only the asked bytes
-            if (readBytes > bytesleft) {
-                readBytes = bytesleft;
-            }
+    //         // read only the asked bytes
+    //         if (readBytes > bytesleft) {
+    //             readBytes = bytesleft;
+    //         }
 
-            // get new position in buffer
-            char * buf = &_data.get()[position];
-            // read data
-            int bytesread = f.readBytes(_data.get(), readBytes);
-            if (readBytes && bytesread == 0) { break; } //  this fixes a corrupt file that has size but can't be read.
-            bytesleft -= bytesread;
-            position += bytesread;
+    //         // get new position in buffer
+    //         char * buf = &_data.get()[position];
+    //         // read data
+    //         int bytesread = f.readBytes(_data.get(), readBytes);
+    //         if (readBytes && bytesread == 0) { break; } //  this fixes a corrupt file that has size but can't be read.
+    //         bytesleft -= bytesread;
+    //         position += bytesread;
 
-        }
-        // time for network streams
-        delay(0);
-    }
+    //     }
+    //     // time for network streams
+    //     delay(0);
+    // }
 
-    f.close();
+    // f.close();
 
     if (_isArray) {
-        _root = _jsonBuffer.parseArray(_data.get(), totalBytes);
+        _root = _jsonBuffer.parseArray(f);
     } else {
-        _root = _jsonBuffer.parseObject(_data.get(), totalBytes);
+        _root = _jsonBuffer.parseObject(f);
     }
 
     if (!_root.success()) {

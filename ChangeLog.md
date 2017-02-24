@@ -1,15 +1,33 @@
+# To Do
+ - Add manual SSID and password. 
+ - Add multi WiFi implementaion to search for and join a number of WiFi Networks. 
+
 # V2.2
 ## New Features
-- Save Crash Dump to SPIFFS.  Enabled by default, using `#define ESPMANAGER_SAVESTACK` uncomment in ESPmanager.h to stop. Will add it as a web setting. 
+- Save Crash Dump to SPIFFS.  Enabled by default, using `#define ESPMANAGER_SAVESTACK` uncomment in ESPmanager.h to stop. Will add it as a web setting at some point.  
 - Created FlashWriter class, to save downloaded files to the OTA flash section before copying them to SPIFFS.  This is because as SPIFFS gets fragmented it can take 200ms to find free block, and the network times out.  Fixes https://github.com/sticilface/ESPmanager/issues/17.
 - Added in Jsonupdater manifest example. https://github.com/sticilface/ESPmanager/issues/16.
 - Add Error to String responses. `myString getError(code)`
 - Big improvements to myString.  Lots of implicit convertions, use with FLASH strings, and PSTR(). Derived classes that allow printf and printf_P with convertion back to myString.  Addition of c_str(). move semantics to allow efficient copying of tempories. implicit convertion to String. 
 - Added SysLog implementation.  Allows sending of data, and priorities and unique appNames to a syslog server from sketch.  Configured in web interface
+  -- Access through 
+  ```cpp
+  bool ESPManager::log(myString  msg); 
+  bool ESPManager::log(uint16_t pri, myString  msg); 
+  bool ESPManager::log(myString appName, myString  msg);
+  bool ESPManager::log(uint16_t pri, myString appName, myString  msg);
+  ```
+  You can use const char *, printf and printf_P to send log messages as follows
+  ```cpp
+  manager.log( "Simple Error" );
+  manager.log( myStringf( "MSG: %s, error code %u", "String Error", 120) ); 
+  manager.log( myStringf_P( PSTR("MSG: %s, error code %u"), "String Error", 120) );  //  String stored in FLASH. 
+  ```
 
-## Bug Fixes
--  use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
-
+## Improvements
+- Use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
+- Use ArduinoJson Stream as input, rather than read SPIFFS file into memory. 
+- Remove myString to const char * comparison.  Use `myString(const char *)` instead. 
 
 
 # V2.1

@@ -11,7 +11,8 @@
 namespace ESPMAN
 {
 
-enum ESPMAN_ERR : int8_t {
+enum ESPMAN_ERR_t : int8_t {
+    SUCCESS                  = 0, 
     UNKNOWN_ERROR            = -20,//  start at -20 as we use httpupdate errors
     NO_UPDATE_URL            = -21,
     SPIFFS_FILES_ABSENT      = -22,
@@ -157,24 +158,10 @@ private:
     bool _isArray {false};
 
 public:
-    JSONpackage(bool isArray = false)
-    {
-        if (isArray) {
-            _isArray = true;
-            _root = _jsonBuffer.createArray();
-        } else {
-            _isArray = false;
-            _root = _jsonBuffer.createObject();
-        }
-    }
-    ~JSONpackage()
-    {
-    }
+    JSONpackage(bool isArray = false);
+    ~JSONpackage() { }
 
-    JsonVariant & getRoot()
-    {
-        return _root;
-    }
+    JsonVariant & getRoot() { return _root; }
 
     int parseSPIFS(const char * file, FS & fs = SPIFFS);
     int parse(char * data, int size);
@@ -203,17 +190,13 @@ public:
     
 
     bool operator ==(const myString &rhs);
-    bool operator !=(const myString &rhs)
-    {
-        return !(*this == rhs);
-    }
+    bool operator !=(const myString &rhs) { return !(*this == rhs); }
 
     const char * operator()() const;
     const char * operator()(const char *) const;
     const char * c_str() const;
     operator bool() const;
     operator String() const; 
-
 
 protected:
     char *buffer {nullptr};
