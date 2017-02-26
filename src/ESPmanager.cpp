@@ -480,14 +480,14 @@ ESPMAN_ERR_t ESPmanager::begin()
     _tasker.add( std::bind( &ESPmanager::_APlogic, this, _1 )).setRepeat(true).setTimeout(500);
 
 
-    _tasker.add( [this](Task & t) {
+    // _tasker.add( [this](Task & t) {
 
-        ESP_LOG(LOG_DEBUG, "HELLO"); 
-        ESP_LOG(LOG_DEBUG, myStringf("HELLO %s", "sailor"));
-        ESP_LOG(LOG_DEBUG, myStringf_P( PSTR("HELLO %s from progmem"), "sailor")); 
+    //     ESP_LOG(LOG_DEBUG, "HELLO"); 
+    //     ESP_LOG(LOG_DEBUG, myStringf("HELLO %s", "sailor"));
+    //     ESP_LOG(LOG_DEBUG, myStringf_P( PSTR("HELLO %s from progmem"), "sailor")); 
 
 
-    }).setRepeat(true).setTimeout(1000); 
+    // }).setRepeat(true).setTimeout(1000); 
 
 
 #if defined(Debug_ESPManager)
