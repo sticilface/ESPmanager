@@ -156,19 +156,19 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 #ifdef Debug_ESPManager
 
-    Debug_ESPManager.println("SPIFFS FILES:");
+    Debug_ESPManager.println(F("SPIFFS FILES:"));
     {
         Dir dir = _fs.openDir("/");
         while (dir.next()) {
             String fileName = dir.fileName();
             size_t fileSize = dir.fileSize();
-            Debug_ESPManager.printf("     FS File: %s\n", fileName.c_str());
+            Debug_ESPManager.printf_P(PSTR("     FS File: %s\n"), fileName.c_str());
         }
         Debug_ESPManager.printf("\n");
     }
 
     File f = _fs.open(SETTINGS_FILE, "r");
-    Debug_ESPManager.printf("ESP MANAGER Settings [%u]B:\n", f.size());
+    Debug_ESPManager.printf_P(PSTR("ESP MANAGER Settings [%u]B:\n"), f.size());
     if (f) {
         for (int i = 0; i < f.size(); i++) {
             Debug_ESPManager.write(f.read());
@@ -480,14 +480,14 @@ ESPMAN_ERR_t ESPmanager::begin()
     _tasker.add( std::bind( &ESPmanager::_APlogic, this, _1 )).setRepeat(true).setTimeout(500);
 
 
-    // _tasker.add( [this](Task & t) {
+    _tasker.add( [this](Task & t) {
 
-    //     ESP_LOG(LOG_DEBUG, "HELLO"); 
-    //     ESP_LOG(LOG_DEBUG, myStringf("HELLO %s", "sailor"));
-    //     ESP_LOG(LOG_DEBUG, myStringf_P( PSTR("HELLO %s from progmem"), "sailor")); 
+        ESP_LOG(LOG_DEBUG, "HELLO"); 
+        ESP_LOG(LOG_DEBUG, myStringf("HELLO %s", "sailor"));
+        ESP_LOG(LOG_DEBUG, myStringf_P( PSTR("HELLO %s from progmem"), "sailor")); 
 
 
-    // }).setRepeat(true).setTimeout(1000); 
+    }).setRepeat(true).setTimeout(1000); 
 
 
 #if defined(Debug_ESPManager)
