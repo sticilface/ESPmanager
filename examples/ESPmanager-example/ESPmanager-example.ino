@@ -79,11 +79,14 @@ void setup()
 
 
 
+
 	HTTP.begin();
+
 
 	Serial.print(F("Free Heap: "));
 	Serial.println(ESP.getFreeHeap());
 
+	Serial.printf("Device Ready IP: %s\n", WiFi.localIP().toString().c_str());
 
 }
 
