@@ -135,6 +135,62 @@ static const char * string_syslogIP = "syslogIP";
 static const char * string_syslogPort = "syslogPort";
 static const char * string_syslogProto = "syslogProto";
 
+//  use flash Strings instead 
+
+ const char fstring_CORS[] PROGMEM =  "Access-Control-Allow-Origin";
+ const char fstring_CACHE_CONTROL[] PROGMEM =  "Cache-Control";
+ const char fstring_UPGRADE[] PROGMEM =  "upgrade";
+ const char fstring_UPDATE[] PROGMEM =  "update";
+ const char fstring_CONSOLE[] PROGMEM =  "console";
+ const char fstring_ERROR[] PROGMEM =  "ERROR [%i]";
+ const char fstring_ERROR2[] PROGMEM =  "ERROR [%i] [%i]";
+ const char fstring_ERROR2_toString[] PROGMEM =  "ERROR [%s] [%s]";
+ const char fstring_ERROR_toString[] PROGMEM =  "ERROR [%s]";
+ const char fstring_deviceid[] PROGMEM =  "deviceid";
+ const char fstring_settingsversion[] PROGMEM =  "settingversion";
+
+ const char fstring_host[] PROGMEM =  "host";
+ const char fstring_General[] PROGMEM =  "General";
+ const char fstring_mDNS[] PROGMEM =  "mDNS";
+ const char fstring_updateURL[] PROGMEM =  "updateURL";
+ const char fstring_updateFreq[] PROGMEM =  "updateFreq";
+ const char fstring_OTApassword[] PROGMEM =  "OTApassword";
+ const char fstring_GUIusername[] PROGMEM =  "GUIusername";
+ const char fstring_GUIpassword[] PROGMEM =  "GUIpassword";
+ const char fstring_GUIhash[] PROGMEM =  "GUIhash";
+ const char fstring_OTAport[] PROGMEM =  "OTAport";
+ const char fstring_STA[] PROGMEM =  "STA";
+ const char fstring_AP[] PROGMEM =  "AP";
+ const char fstring_enabled[] PROGMEM =  "enabled";
+ const char fstring_ssid[] PROGMEM =  "ssid";
+ const char fstring_pass[] PROGMEM =  "pass";
+ const char fstring_changed[] PROGMEM =  "changed";
+ const char fstring_usePerminantSettings[] PROGMEM =  "usePerminantSettings";
+
+ const char fstring_IP[] PROGMEM =  "IP";
+ const char fstring_GW[] PROGMEM =  "GW";
+ const char fstring_SN[] PROGMEM =  "SN";
+ const char fstring_MAC[] PROGMEM =  "MAC";
+ const char fstring_autoconnect[] PROGMEM =  "autoconnect";
+ const char fstring_autoreconnect[] PROGMEM =  "autoreconnect";
+ const char fstring_mode[] PROGMEM =  "mode";
+ const char fstring_ap_boot_mode[] PROGMEM =  "ap_boot_mode";
+ const char fstring_no_sta_mode[] PROGMEM =  "no_sta_mode";
+ const char fstring_OTAupload[] PROGMEM =  "OTAupload";
+
+ const char fstring_visible[] PROGMEM =  "visible";
+ const char fstring_channel[] PROGMEM =  "channel";
+ const char fstring_saveandreboot[] PROGMEM =  "Save and Reboot to Apply";
+ const char fstring_yes[] PROGMEM =  "yes";
+
+ const char fstring_DNS1[] PROGMEM =  "DNS1";
+ const char fstring_DNS2[] PROGMEM =  "DNS2";
+
+ const char fstring_syslog[] PROGMEM =  "syslog";
+ const char fstring_usesyslog[] PROGMEM =  "usesyslog";
+ const char fstring_syslogIP[] PROGMEM =  "syslogIP";
+ const char fstring_syslogPort[] PROGMEM =  "syslogPort";
+ const char fstring_syslogProto[] PROGMEM =  "syslogProto";
 
 
 // static const char * string_
