@@ -180,6 +180,8 @@ public:
     myString(myString &&str);
     myString(const __FlashStringHelper *str); 
     myString(String str);
+    myString(nullptr_t ptr);
+
 
     virtual ~myString();
 

@@ -134,6 +134,8 @@ ESPMAN::myString::myString(const char *cstr)
     }
 }
 
+ESPMAN::myString::myString(nullptr_t ptr): buffer(nullptr) { }
+
 ESPMAN::myString::myString(const ESPMAN::myString &str)
     : buffer(nullptr)
 {
@@ -264,11 +266,11 @@ const char * ESPMAN::myString::operator()(const char *) const
 
 const char * ESPMAN::myString::c_str() const
 {
-    if (buffer) {
+    //if (buffer) {
         return static_cast<const char *>(buffer);
-    } else {
-        return _nullString;
-    }
+    // } else {
+    //     return _nullString;
+    // }
 };
 
 ESPMAN::myString::operator bool() const
