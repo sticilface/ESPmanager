@@ -80,60 +80,60 @@ enum no_sta_mode_t : int8_t {
 };
 
 
-static const char * string_CORS = "Access-Control-Allow-Origin";
-static const char * string_CACHE_CONTROL = "Cache-Control";
-static const char * string_UPGRADE = "upgrade";
-static const char * string_UPDATE = "update";
-static const char * string_CONSOLE = "console";
-static const char * string_ERROR = "ERROR [%i]";
-static const char * string_ERROR2 = "ERROR [%i] [%i]";
-static const char * string_ERROR2_toString = "ERROR [%s] [%s]";
-static const char * string_ERROR_toString = "ERROR [%s]";
-static const char * string_deviceid = "deviceid";
-static const char * string_settingsversion = "settingversion";
+// static const char * string_CORS = "Access-Control-Allow-Origin";
+// static const char * string_CACHE_CONTROL = "Cache-Control";
+// static const char * string_UPGRADE = "upgrade";
+// static const char * string_UPDATE = "update";
+// static const char * string_CONSOLE = "console";
+// static const char * string_ERROR = "ERROR [%i]";
+// static const char * string_ERROR2 = "ERROR [%i] [%i]";
+// static const char * string_ERROR2_toString = "ERROR [%s] [%s]";
+// static const char * string_ERROR_toString = "ERROR [%s]";
+// static const char * string_deviceid = "deviceid";
+// static const char * string_settingsversion = "settingversion";
 
-static const char * string_host = "host";
-static const char * string_General = "General";
-static const char * string_mDNS = "mDNS";
-static const char * string_updateURL = "updateURL";
-static const char * string_updateFreq = "updateFreq";
-static const char * string_OTApassword = "OTApassword";
-static const char * string_GUIusername = "GUIusername";
-static const char * string_GUIpassword = "GUIpassword";
-static const char * string_GUIhash = "GUIhash";
-static const char * string_OTAport = "OTAport";
-static const char * string_STA = "STA";
-static const char * string_AP = "AP";
-static const char * string_enabled = "enabled";
-static const char * string_ssid = "ssid";
-static const char * string_pass = "pass";
-static const char * string_changed = "changed";
-static const char * string_usePerminantSettings = "usePerminantSettings";
+// static const char * string_host = "host";
+// static const char * string_General = "General";
+// static const char * string_mDNS = "mDNS";
+// static const char * string_updateURL = "updateURL";
+// static const char * string_updateFreq = "updateFreq";
+// static const char * string_OTApassword = "OTApassword";
+// static const char * string_GUIusername = "GUIusername";
+// static const char * string_GUIpassword = "GUIpassword";
+// static const char * string_GUIhash = "GUIhash";
+// static const char * string_OTAport = "OTAport";
+// static const char * string_STA = "STA";
+// static const char * string_AP = "AP";
+// static const char * string_enabled = "enabled";
+// static const char * string_ssid = "ssid";
+// static const char * string_pass = "pass";
+// static const char * string_changed = "changed";
+// static const char * string_usePerminantSettings = "usePerminantSettings";
 
-static const char * string_IP = "IP";
-static const char * string_GW = "GW";
-static const char * string_SN = "SN";
-static const char * string_MAC = "MAC";
-static const char * string_autoconnect = "autoconnect";
-static const char * string_autoreconnect = "autoreconnect";
-static const char * string_mode = "mode";
-static const char * string_ap_boot_mode = "ap_boot_mode";
-static const char * string_no_sta_mode = "no_sta_mode";
-static const char * string_OTAupload = "OTAupload";
+// static const char * string_IP = "IP";
+// static const char * string_GW = "GW";
+// static const char * string_SN = "SN";
+// static const char * string_MAC = "MAC";
+//static const char * string_autoconnect = "autoconnect";
+//static const char * string_autoreconnect = "autoreconnect";
+//static const char * string_mode = "mode";
+//static const char * string_ap_boot_mode = "ap_boot_mode";
+//static const char * string_no_sta_mode = "no_sta_mode";
+//static const char * string_OTAupload = "OTAupload";
 
-static const char * string_visible = "visible";
-static const char * string_channel = "channel";
-static const char * string_saveandreboot = "Save and Reboot to Apply";
-static const char * string_yes = "yes";
+//static const char * string_visible = "visible";
+//static const char * string_channel = "channel";
+//static const char * string_saveandreboot = "Save and Reboot to Apply";
+//static const char * string_yes = "yes";
 
-static const char * string_DNS1 = "DNS1";
-static const char * string_DNS2 = "DNS2";
+//static const char * string_DNS1 = "DNS1";
+//static const char * string_DNS2 = "DNS2";
 
-static const char * string_syslog = "syslog";
-static const char * string_usesyslog = "usesyslog";
-static const char * string_syslogIP = "syslogIP";
-static const char * string_syslogPort = "syslogPort";
-static const char * string_syslogProto = "syslogProto";
+//static const char * string_syslog = "syslog";
+//static const char * string_usesyslog = "usesyslog";
+//static const char * string_syslogIP = "syslogIP";
+//static const char * string_syslogPort = "syslogPort";
+//static const char * string_syslogProto = "syslogProto";
 
 //  use flash Strings instead 
 

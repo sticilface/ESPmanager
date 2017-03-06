@@ -848,8 +848,8 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
         AsyncResponseStream *response = request->beginResponseStream("text/json");
 
         if (response) {
-            response->addHeader(ESPMAN::string_CORS, "*");
-            response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
+            response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
+            response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
             root.printTo(*response);
             request->send(response);
         } else {
@@ -1566,9 +1566,9 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
     ESPMan_Debugf("HIT\n" );
 
 
-    if ( request->hasParam("url", true)) {
+    if ( request->hasParam(F("url"), true)) {
 
-        String path = request->getParam("url", true)->value();
+        String path = request->getParam(F("url"), true)->value();
 
         ESPMan_Debugf("path = %s\n", path.c_str());
 
@@ -1700,7 +1700,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
 #ifdef Debug_ESPManager
-    if (request->hasParam("body", true) && request->getParam("body", true)->value() == "diag") {
+    if (request->hasParam(F("body"), true) && request->getParam(F("body"), true)->value() == "diag") {
 
         // String pass = request->getParam("diag")->value();
         //
@@ -1717,7 +1717,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
 
-    if (request->hasParam("purgeunzipped")) {
+    if (request->hasParam(F("purgeunzipped"))) {
         // if (request->getParam("body")->value() == "purgeunzipped") {
         ESPMan_Debugf("PURGE UNZIPPED FILES\n");
         _removePreGzFiles();
@@ -1729,12 +1729,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     /*------------------------------------------------------------------------------------------------------------------
                                                                     Reboot command
        ------------------------------------------------------------------------------------------------------------------*/
-    if (request->hasParam("body", true)) {
+    if (request->hasParam(F("body"), true)) {
 
         //ESPMan_Debugln(F("Has Body..."));
 
 
-        String plainCommand = request->getParam("body", true)->value();
+        String plainCommand = request->getParam(F("body"), true)->value();
 
         // Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
 
@@ -1931,31 +1931,31 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //root[string_changed] = (set.changed) ? true : false;
 
 
-            JsonObject& generalobject = root.createNestedObject(string_General);
+            JsonObject& generalobject = root.createNestedObject(FPSTR(fstring_General));
 
-            generalobject[string_deviceid] = set.GEN.host();
+            generalobject[FPSTR(fstring_deviceid)] = set.GEN.host();
             //generalobject[F("OTAenabled")] = (_OTAenabled) ? true : false;
 
-            generalobject[string_OTApassword] = (set.GEN.OTApassword) ? true : false;
-            generalobject[string_GUIhash] =  (set.GEN.GUIhash) ? true : false;
-            generalobject[string_OTAport] = set.GEN.OTAport;
-            generalobject[string_ap_boot_mode] = (int)_ap_boot_mode;
-            generalobject[string_no_sta_mode] = (int)_no_sta_mode;
+            generalobject[FPSTR(fstring_OTApassword)] = (set.GEN.OTApassword) ? true : false;
+            generalobject[FPSTR(fstring_GUIhash)] =  (set.GEN.GUIhash) ? true : false;
+            generalobject[FPSTR(fstring_OTAport)] = set.GEN.OTAport;
+            generalobject[FPSTR(fstring_ap_boot_mode)] = (int)_ap_boot_mode;
+            generalobject[FPSTR(fstring_no_sta_mode)] = (int)_no_sta_mode;
             //generalobject[F("OTAusechipID")] = _OTAusechipID;
-            generalobject[string_mDNS] = (set.GEN.mDNSenabled) ? true : false;
+            generalobject[FPSTR(fstring_mDNS)] = (set.GEN.mDNSenabled) ? true : false;
             //generalobject[string_usePerminantSettings] = (set.GEN.usePerminantSettings) ? true : false;
-            generalobject[string_OTAupload] = (set.GEN.OTAupload) ? true : false;
-            generalobject[string_updateURL] = (set.GEN.updateURL) ? set.GEN.updateURL() : "";
-            generalobject[string_updateFreq] = set.GEN.updateFreq;
+            generalobject[FPSTR(fstring_OTAupload)] = (set.GEN.OTAupload) ? true : false;
+            generalobject[FPSTR(fstring_updateURL)] = (set.GEN.updateURL) ? set.GEN.updateURL() : "";
+            generalobject[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
 
-            JsonObject& GenericObject = root.createNestedObject("generic");
+            JsonObject& GenericObject = root.createNestedObject(F("generic"));
 
             GenericObject[F("channel")] = WiFi.channel();
             GenericObject[F("sleepmode")] = (int)WiFi.getSleepMode();
             GenericObject[F("phymode")] = (int)WiFi.getPhyMode();
 
 
-            JsonObject& STAobject = root.createNestedObject(string_STA);
+            JsonObject& STAobject = root.createNestedObject(FPSTR(fstring_STA));
 
 
             STAobject[F("connectedssid")] = WiFi.SSID();
@@ -1964,27 +1964,27 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             STAobject[F("state")] = (mode == WIFI_STA || mode == WIFI_AP_STA) ? true : false;
 
-            STAobject[string_channel] = WiFi.channel();
+            STAobject[FPSTR(fstring_channel)] = WiFi.channel();
 
             STAobject[F("RSSI")] = WiFi.RSSI();
 
             //String ip;
 
-            STAobject[string_IP] = WiFi.localIP().toString();
+            STAobject[FPSTR(fstring_IP)] = WiFi.localIP().toString();
 
-            STAobject[string_GW] = WiFi.gatewayIP().toString();
+            STAobject[FPSTR(fstring_GW)] = WiFi.gatewayIP().toString();
 
-            STAobject[string_SN] = WiFi.subnetMask().toString();
+            STAobject[FPSTR(fstring_SN)] = WiFi.subnetMask().toString();
 
-            STAobject[string_DNS1] = WiFi.dnsIP(0).toString();
+            STAobject[FPSTR(fstring_DNS1)] = WiFi.dnsIP(0).toString();
 
-            STAobject[string_DNS2] = WiFi.dnsIP(1).toString();
+            STAobject[FPSTR(fstring_DNS2)] = WiFi.dnsIP(1).toString();
 
-            STAobject[string_MAC] = WiFi.macAddress();
+            STAobject[FPSTR(fstring_MAC)] = WiFi.macAddress();
 
-            JsonObject& APobject = root.createNestedObject("AP");
+            JsonObject& APobject = root.createNestedObject(F("AP"));
 
-            APobject[string_ssid] = set.GEN.host();
+            APobject[FPSTR(fstring_ssid)] = set.GEN.host();
 
 
             //APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
@@ -1994,21 +1994,21 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //APobject[string_mode] = (int)_ap_mode;
 
 
-            APobject[string_IP] = (WiFi.softAPIP() == IPAddress(0, 0, 0, 0)) ? F("192.168.4.1") : WiFi.softAPIP().toString();
+            APobject[FPSTR(fstring_IP)] = (WiFi.softAPIP() == IPAddress(0, 0, 0, 0)) ? F("192.168.4.1") : WiFi.softAPIP().toString();
 
 
-            APobject[string_visible] = (set.AP.visible) ? true : false;
-            APobject[string_pass] = (set.AP.pass()) ? set.AP.pass() : "";
+            APobject[FPSTR(fstring_visible)] = (set.AP.visible) ? true : false;
+            APobject[FPSTR(fstring_pass)] = (set.AP.pass()) ? set.AP.pass() : "";
 
             softap_config config;
 
             if (wifi_softap_get_config( &config)) {
 
-                APobject[string_channel] = config.channel;
+                APobject[FPSTR(fstring_channel)] = config.channel;
 
             }
 
-            APobject[string_MAC] = WiFi.softAPmacAddress();
+            APobject[FPSTR(fstring_MAC)] = WiFi.softAPmacAddress();
             APobject[F("StationNum")] = WiFi.softAPgetStationNum();
 
 
@@ -2131,8 +2131,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // char shortcommit[8] = {0};
             // strncpy(shortcommit, commitTag, 7);
             // root[F( "COMMIT")] = shortcommit;
-            root[string_updateURL] = set.GEN.updateURL();
-            root[string_updateFreq] = set.GEN.updateFreq;
+            root[FPSTR(fstring_updateURL)] = set.GEN.updateURL();
+            root[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
             //sendJsontoHTTP(root, request);
             //return;
 
@@ -2283,14 +2283,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             return;
         }
 
-        if (plainCommand == string_syslog) {
+        if (plainCommand == FPSTR(fstring_syslog)) {
 
-            JsonObject& syslogobject = root.createNestedObject(string_syslog);
+            JsonObject& syslogobject = root.createNestedObject( FPSTR(fstring_syslog));
 
-            syslogobject[string_usesyslog] = set.GEN.usesyslog;
-            syslogobject[string_syslogIP] = set.GEN.syslogIP.toString();
-            syslogobject[string_syslogPort] = set.GEN.syslogPort;
-            syslogobject[string_syslogProto] = set.GEN.syslogProto;
+            syslogobject[FPSTR(fstring_usesyslog)] = set.GEN.usesyslog;
+            syslogobject[FPSTR(fstring_syslogIP)] = set.GEN.syslogIP.toString();
+            syslogobject[FPSTR(fstring_syslogPort)] = set.GEN.syslogPort;
+            syslogobject[FPSTR(fstring_syslogProto)] = set.GEN.syslogProto;
 
 
         }
@@ -2313,13 +2313,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
 
-    if (request->hasParam(string_ssid, true) && request->hasParam(string_pass, true)) {
+    if (request->hasParam( FPSTR(fstring_ssid), true) && request->hasParam( FPSTR(fstring_pass), true)) {
 
         bool APChannelchange  = false;
         int channel = -1;
 
-        String ssid = request->getParam(string_ssid, true)->value();
-        String psk = request->getParam(string_pass, true)->value();
+        String ssid = request->getParam(FPSTR(fstring_ssid), true)->value();
+        String psk = request->getParam(FPSTR(fstring_pass), true)->value();
 
         if (ssid.length() > 0) {
             // _HTTP.arg("pass").length() > 0) {  0 length passwords should be ok.. for open
@@ -2330,8 +2330,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     bool safety = false;
 
-                    if (request->hasParam("removesaftey", true))  {
-                        safety = (request->getParam("removesaftey", true)->value() == "No") ? false : true;
+                    if (request->hasParam(F("removesaftey"), true))  {
+                        safety = (request->getParam(F("removesaftey"), true)->value() == "No") ? false : true;
                     }
 
                     settings_t::STA_t * newsettings = new settings_t::STA_t(set.STA);
@@ -2347,10 +2347,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         int currentchannel = WiFi.channel();
 
 
-                        if (request->hasParam("STAchannel_desired", true)) {
+                        if (request->hasParam(F("STAchannel_desired"), true)) {
 
 
-                            int desired_channal = request->getParam("STAchannel_desired", true)->value().toInt();
+                            int desired_channal = request->getParam(F("STAchannel_desired"), true)->value().toInt();
 
                             if (desired_channal != currentchannel && desired_channal >= 0 && currentchannel >= 0) {
 
@@ -2505,7 +2505,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 //*******************************************
 
     //  This is outside the loop...  wifiresult is a static to return previous result...
-    if (  request->hasParam("body", true) && request->getParam("body", true)->value() == "WiFiresult") {
+    if (  request->hasParam(F("body"), true) && request->getParam(F("body"), true)->value() == "WiFiresult") {
 
 
 
@@ -2529,7 +2529,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
        ------------------------------------------------------------------------------------------------------------------*/
 
 
-    if (request->hasParam("enable-STA", true)) {
+    if (request->hasParam(F("enable-STA"), true)) {
 
         bool changes = false;
 
@@ -2545,7 +2545,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     ENABLED
              */
 
-            bool enable = request->getParam("enable-STA", true)->value().equals("on");
+            bool enable = request->getParam(F("enable-STA"), true)->value().equals("on");
 
             if (enable != newsettings->enabled) {
                 newsettings->enabled = enable;
@@ -2555,9 +2555,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             /*
                     DHCP and Config
              */
-            if (request->hasParam("enable-dhcp", true)) {
+            if (request->hasParam(F("enable-dhcp"), true)) {
 
-                bool dhcp = request->getParam("enable-dhcp", true)->value().equals("on");
+                bool dhcp = request->getParam(F("enable-dhcp"), true)->value().equals("on");
 
                 //
 
@@ -2592,15 +2592,15 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     bool SNres {false};
                     bool DNSres {false};
 
-                    if (request->hasParam(string_IP, true) &&
-                            request->hasParam(string_GW, true) &&
-                            request->hasParam(string_SN, true) &&
-                            request->hasParam(string_DNS1, true) ) {
+                    if (request->hasParam( FPSTR(fstring_IP), true) &&
+                            request->hasParam( FPSTR(fstring_GW), true) &&
+                            request->hasParam( FPSTR(fstring_SN), true) &&
+                            request->hasParam( FPSTR(fstring_DNS1), true) ) {
 
-                        IPres = newsettings->IP.fromString( request->getParam(string_IP, true)->value() );
-                        GWres = newsettings->GW.fromString( request->getParam(string_GW, true)->value() );
-                        SNres = newsettings->SN.fromString( request->getParam(string_SN, true)->value() );
-                        DNSres = newsettings->DNS1.fromString( request->getParam(string_DNS1, true)->value() );
+                        IPres = newsettings->IP.fromString( request->getParam(FPSTR(fstring_IP), true)->value() );
+                        GWres = newsettings->GW.fromString( request->getParam(FPSTR(fstring_GW), true)->value() );
+                        SNres = newsettings->SN.fromString( request->getParam(FPSTR(fstring_SN), true)->value() );
+                        DNSres = newsettings->DNS1.fromString( request->getParam(FPSTR(fstring_DNS1), true)->value() );
                     }
 
 
@@ -2614,9 +2614,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         newsettings->hasConfig = true;
                         newsettings->dhcp = false;
 
-                        if (request->hasParam(string_DNS2, true)) {
+                        if (request->hasParam(FPSTR(fstring_DNS2), true)) {
 
-                            bool res = newsettings->DNS2.fromString ( request->getParam(string_DNS2, true)->value() );
+                            bool res = newsettings->DNS2.fromString ( request->getParam(FPSTR(fstring_DNS2), true)->value() );
                             if (res) {
                                 ESPMan_Debugf("DNS 2 %s\n",  newsettings->DNS2.toString().c_str() );
                                 if (newsettings->DNS2 != _settings->STA.DNS2 ) {
@@ -2637,9 +2637,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             /*
                     autoconnect and reconnect
              */
-            if (request->hasParam(string_autoconnect, true)) {
+            if (request->hasParam(FPSTR(fstring_autoconnect), true)) {
 
-                bool autoconnect = request->getParam(string_autoconnect, true)->value().equals("on");
+                bool autoconnect = request->getParam(FPSTR(fstring_autoconnect), true)->value().equals("on");
 
                 if (autoconnect != newsettings->autoConnect) {
                     newsettings->autoConnect = autoconnect;
@@ -2647,8 +2647,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 }
             }
 
-            if (request->hasParam(string_autoreconnect, true)) {
-                bool autoreconnect = request->getParam(string_autoreconnect, true)->value().equals("on");
+            if (request->hasParam(FPSTR(fstring_autoreconnect), true)) {
+                bool autoreconnect = request->getParam(FPSTR(fstring_autoreconnect), true)->value().equals("on");
 
                 if (autoreconnect != newsettings->autoReconnect) {
                     newsettings->autoReconnect = autoreconnect;
@@ -2656,11 +2656,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 }
             }
 
-            if (request->hasParam(string_MAC, true) && request->getParam(string_MAC, true)->value().length() != 0) {
+            if (request->hasParam(FPSTR(fstring_MAC), true) && request->getParam(FPSTR(fstring_MAC), true)->value().length() != 0) {
 
 
 
-                if ( StringtoMAC(newsettings->MAC, request->getParam(string_MAC, true)->value() ) ) {
+                if ( StringtoMAC(newsettings->MAC, request->getParam(FPSTR(fstring_MAC), true)->value() ) ) {
 
 
                     ESPMan_Debugf("New STA MAC parsed sucessfully\n");
@@ -2774,7 +2774,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                      AP config
        ------------------------------------------------------------------------------------------------------------------*/
 
-    if (request->hasParam("enable-AP", true)) {
+    if (request->hasParam(F("enable-AP"), true)) {
 
         bool changes = false;
         bool abortchanges = false;
@@ -2789,16 +2789,16 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             newsettings->ssid = set.GEN.host();
 
-            bool enabled = request->getParam("enable-AP", true)->value().equals("on");
+            bool enabled = request->getParam(F("enable-AP"), true)->value().equals("on");
 
             if (enabled != newsettings->enabled) {
                 newsettings->enabled = enabled;
                 changes = true;
             }
 
-            if (request->hasParam(string_pass, true)) {
+            if (request->hasParam(FPSTR(fstring_pass), true)) {
 
-                String S_pass = request->getParam(string_pass, true)->value();
+                String S_pass = request->getParam(FPSTR(fstring_pass), true)->value();
                 const char * pass = S_pass.c_str();
 
                 if (pass && strnlen(pass, 100) > 0 && (strnlen(pass, 100) > 63 || strnlen(pass, 100) < 8)) {
@@ -2819,8 +2819,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             }
 
 
-            if (request->hasParam(string_channel, true)) {
-                int channel = request->getParam(string_channel, true)->value().toInt();
+            if (request->hasParam(FPSTR(fstring_channel), true)) {
+                int channel = request->getParam(FPSTR(fstring_channel), true)->value().toInt();
 
                 if (channel > 13) {
                     channel = 13;
@@ -2835,10 +2835,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             }
 
-            if (request->hasParam(string_IP, true)) {
+            if (request->hasParam(FPSTR(fstring_IP), true)) {
 
                 IPAddress newIP;
-                bool result = newIP.fromString(request->getParam(string_IP, true)->value());
+                bool result = newIP.fromString(request->getParam(FPSTR(fstring_IP), true)->value());
 
 
                 if (result) {
@@ -2980,9 +2980,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                      Device Name
        ------------------------------------------------------------------------------------------------------------------*/
 
-    if ( request->hasParam(string_deviceid, true)) {
+    if ( request->hasParam(FPSTR(fstring_deviceid), true)) {
 
-        String newidString = request->getParam(string_deviceid, true)->value();
+        String newidString = request->getParam(FPSTR(fstring_deviceid), true)->value();
         const char * newid = newidString.c_str();
 
         ESPMan_Debugf( "Device ID func hit %s\n", newid  );
@@ -3018,11 +3018,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     //     save_flag = true;
     // }
 
-    if ( request->hasParam(string_OTAupload, true)) {
+    if ( request->hasParam(FPSTR(fstring_OTAupload), true)) {
 
         // save_flag = true;
 
-        bool command =  request->getParam(string_OTAupload, true)->value().equals( "on");
+        bool command =  request->getParam(FPSTR(fstring_OTAupload), true)->value().equals( "on");
 
         if (command != set.GEN.OTAupload) {
 
@@ -3038,24 +3038,24 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     } // end of OTA enable
 
 
-    if ( request->hasParam(string_OTApassword, true)) {
+    if ( request->hasParam(FPSTR(fstring_OTApassword), true)) {
 
-        char pass_confirm[25];
+        char pass_confirm[40] = {0};
 
-        strcpy(pass_confirm, string_OTApassword);
-        strcat(pass_confirm, "_confirm");
+        strncpy_P(pass_confirm ,fstring_OTApassword, 30);
+        strncat_P(pass_confirm , PSTR("_confirm"), 9);
 
         if (request->hasParam(pass_confirm, true) ) {
 
-            String S_pass = request->getParam(string_OTApassword, true)->value();
+            String S_pass = request->getParam(FPSTR(fstring_OTApassword), true)->value();
             String S_confirm = request->getParam(pass_confirm, true)->value();
 
             const char * pass = S_pass.c_str();
             const char * confirm = S_confirm.c_str();
 
-            if (pass && confirm && !strcmp(pass, confirm))  {
+            if (pass && confirm && !strncmp(pass, confirm, 40))  {
 
-                ESPMan_Debugf("asswords Match\n");
+                ESPMan_Debugf("Passwords Match\n");
                 set.changed = true;
                 MD5Builder md5;
                 md5.begin();
@@ -3082,12 +3082,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
        ARG: 2, "setAPsetmac" = "1A%3AFE%3A34%3AA4%3A4C%3A73"
      */
 
-    if ( request->hasParam(string_mDNS, true)) {
+    if ( request->hasParam(FPSTR(fstring_mDNS), true)) {
 
 
         save_flag = true;
 
-        bool command = request->getParam(string_mDNS, true)->value().equals("on");
+        bool command = request->getParam(FPSTR(fstring_mDNS), true)->value().equals("on");
 
         if (command != set.GEN.mDNSenabled ) {
             set.GEN.mDNSenabled = command;
@@ -3102,11 +3102,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                        PORTAL
        ------------------------------------------------------------------------------------------------------------------*/
 
-    if ( request->hasParam("enablePortal", true)) {
+    if ( request->hasParam(F("enablePortal"), true)) {
 
         // save_flag = true;
 
-        bool command =  request->getParam("enablePortal", true)->value().equals( "on");
+        bool command =  request->getParam(F("enablePortal"), true)->value().equals( "on");
 
         if (command != _settings->GEN.portal) {
 
@@ -3132,9 +3132,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 #ifdef ESPMANAGER_SYSLOG
 
-    if ( request->hasParam(string_usesyslog, true)) {
+    if ( request->hasParam(FPSTR(fstring_usesyslog), true)) {
 
-        bool value = request->getParam(string_usesyslog, true)->value().equals( "on");
+        bool value = request->getParam(FPSTR(fstring_usesyslog), true)->value().equals( "on");
 
         if (value != _settings->GEN.usesyslog) {
             _settings->GEN.usesyslog = value;
@@ -3146,10 +3146,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     }
 
-    if ( request->hasParam(string_syslogIP, true)) {
+    if ( request->hasParam(FPSTR(fstring_syslogIP), true)) {
 
         IPAddress value;
-        bool result = value.fromString(request->getParam(string_syslogIP, true)->value()) ;
+        bool result = value.fromString(request->getParam(FPSTR(fstring_syslogIP), true)->value()) ;
 
         if (result && value != _settings->GEN.syslogIP) {
             _settings->GEN.syslogIP = value;
@@ -3159,9 +3159,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     }
 
-    if ( request->hasParam(string_syslogPort, true)) {
+    if ( request->hasParam(FPSTR(fstring_syslogPort), true)) {
 
-        int value = request->getParam(string_syslogPort, true)->value().toInt();
+        int value = request->getParam(FPSTR(fstring_syslogPort), true)->value().toInt();
         if (value != _settings->GEN.syslogPort) {
             _settings->GEN.syslogPort = value;
             set.changed = true;
@@ -3170,9 +3170,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
     }
 
-    if ( request->hasParam(string_syslogProto, true)) {
+    if ( request->hasParam(FPSTR(fstring_syslogProto), true)) {
 
-        int value = request->getParam(string_syslogProto, true)->value().toInt();
+        int value = request->getParam(FPSTR(fstring_syslogProto), true)->value().toInt();
         if (value != _settings->GEN.syslogProto) {
             _settings->GEN.syslogProto = value;
             set.changed = true;
@@ -3190,9 +3190,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                        AP reboot behaviour
        ------------------------------------------------------------------------------------------------------------------*/
 
-    if (request->hasParam(string_ap_boot_mode, true) ) {
+    if (request->hasParam(FPSTR(fstring_ap_boot_mode), true) ) {
 
-        int rebootvar = request->getParam(string_ap_boot_mode, true)->value().toInt();
+        int rebootvar = request->getParam(FPSTR(fstring_ap_boot_mode), true)->value().toInt();
 
 
         ap_boot_mode_t value = (ap_boot_mode_t)rebootvar;
@@ -3206,9 +3206,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
     }
 
-    if (request->hasParam(string_no_sta_mode, true) ) {
+    if (request->hasParam(FPSTR(fstring_no_sta_mode), true) ) {
 
-        int var = request->getParam(string_no_sta_mode, true)->value().toInt();
+        int var = request->getParam(FPSTR(fstring_no_sta_mode), true)->value().toInt();
 
         no_sta_mode_t value = (no_sta_mode_t)var;
 
@@ -3242,9 +3242,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
        ------------------------------------------------------------------------------------------------------------------*/
     
 
-    if (request->hasParam(string_updateURL, true) ) {
+    if (request->hasParam(FPSTR(fstring_updateURL), true) ) {
 
-        String S_newpath = request->getParam(string_updateURL, true)->value();
+        String S_newpath = request->getParam(FPSTR(fstring_updateURL), true)->value();
 
         const char * newpath = S_newpath.c_str();
 
@@ -3257,9 +3257,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
     }
 
-    if (request->hasParam(string_updateFreq, true) ) {
+    if (request->hasParam(FPSTR(fstring_updateFreq), true) ) {
 
-        int updateFreq = request->getParam(string_updateFreq, true)->value().toInt();
+        int updateFreq = request->getParam(FPSTR(fstring_updateFreq), true)->value().toInt();
 
         if (updateFreq < 0) {
             updateFreq = 0;
@@ -3273,7 +3273,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     }
 
-    if (request->hasParam("PerformUpdate", true) ) {
+    if (request->hasParam(F("PerformUpdate"), true) ) {
 
         String path = String();  
 
@@ -3294,7 +3294,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     // DynamicJsonBuffer jsonbuffer;
     // JsonObject & root = jsonbuffer.createObject();
 
-    root[string_changed] = (set.changed) ? true : false;
+    root[FPSTR(fstring_changed)] = (set.changed) ? true : false;
     root[F("heap")] = ESP.getFreeHeap();
 
 
@@ -3903,32 +3903,32 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
           General Settings
      */
 
-    if (root.containsKey(string_General)) {
+    if (root.containsKey(FPSTR(fstring_General))) {
 
-        JsonObject & settingsJSON = root[string_General];
+        JsonObject & settingsJSON = root[FPSTR(fstring_General)];
 
-        if (settingsJSON.containsKey(string_settingsversion)) {
-            settingsversion = settingsJSON[string_settingsversion];
+        if (settingsJSON.containsKey(FPSTR(fstring_settingsversion))) {
+            settingsversion = settingsJSON[FPSTR(fstring_settingsversion)];
         }
 
-        if (settingsJSON.containsKey(string_host)) {
-            set.GEN.host = settingsJSON[string_host].as<const char *>();
+        if (settingsJSON.containsKey(FPSTR(fstring_host))) {
+            set.GEN.host = settingsJSON[FPSTR(fstring_host)].as<const char *>();
         }
 
-        if (settingsJSON.containsKey(string_mDNS)) {
-            set.GEN.mDNSenabled = settingsJSON[string_mDNS];
+        if (settingsJSON.containsKey(FPSTR(fstring_mDNS))) {
+            set.GEN.mDNSenabled = settingsJSON[FPSTR(fstring_mDNS)];
         }
 
-        if (settingsJSON.containsKey(string_updateURL)) {
-            set.GEN.updateURL = settingsJSON[string_updateURL].as<const char *>();
+        if (settingsJSON.containsKey(FPSTR(fstring_updateURL))) {
+            set.GEN.updateURL = settingsJSON[FPSTR(fstring_updateURL)].as<const char *>();
         }
 
-        if (settingsJSON.containsKey(string_updateFreq)) {
-            set.GEN.updateFreq = settingsJSON[string_updateFreq];
+        if (settingsJSON.containsKey(FPSTR(fstring_updateFreq))) {
+            set.GEN.updateFreq = settingsJSON[FPSTR(fstring_updateFreq)];
         }
 
-        if (settingsJSON.containsKey(string_OTApassword)) {
-            set.GEN.OTApassword = settingsJSON[string_OTApassword].as<const char *>();
+        if (settingsJSON.containsKey(FPSTR(fstring_OTApassword))) {
+            set.GEN.OTApassword = settingsJSON[FPSTR(fstring_OTApassword)].as<const char *>();
         }
 
         // if (settingsJSON.containsKey(string_GUIusername)) {
@@ -3940,8 +3940,8 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
         //         if (set.GEN.GUIpassword) { free(set.GEN.GUIpassword); };
         //         set.GEN.GUIpassword = strdup(settingsJSON[string_GUIpassword]);
         // }
-        if (settingsJSON.containsKey(string_GUIhash)) {
-            set.GEN.GUIhash = settingsJSON[string_GUIhash].as<const char *>();
+        if (settingsJSON.containsKey(FPSTR(fstring_GUIhash))) {
+            set.GEN.GUIhash = settingsJSON[FPSTR(fstring_GUIhash)].as<const char *>();
         }
 
         // if (settingsJSON.containsKey(string_usePerminantSettings)) {
@@ -3952,42 +3952,42 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
         //     set.GEN.usePerminantSettings = false;
         // }
 
-        if (settingsJSON.containsKey(string_ap_boot_mode)) {
+        if (settingsJSON.containsKey(FPSTR(fstring_ap_boot_mode))) {
 
-            int val = settingsJSON[string_ap_boot_mode];
+            int val = settingsJSON[FPSTR(fstring_ap_boot_mode)];
             set.GEN.ap_boot_mode = (ap_boot_mode_t)val;
             //ESPMan_Debugf("[_getAllSettings] set.GEN.ap_boot_mode = %i\n", val);
         }
-        if (settingsJSON.containsKey(string_no_sta_mode)) {
-            int val = settingsJSON[string_no_sta_mode];
+        if (settingsJSON.containsKey(FPSTR(fstring_no_sta_mode))) {
+            int val = settingsJSON[FPSTR(fstring_no_sta_mode)];
             set.GEN.no_sta_mode = (no_sta_mode_t)val;
             //ESPMan_Debugf("[_getAllSettings] set.GEN.no_sta_mode = %i\n", val);
         }
 
-        if (settingsJSON.containsKey(string_OTAupload)) {
-            set.GEN.OTAupload = settingsJSON[string_OTAupload];
+        if (settingsJSON.containsKey(FPSTR(fstring_OTAupload))) {
+            set.GEN.OTAupload = settingsJSON[FPSTR(fstring_OTAupload)];
         }
 
 #ifdef ESPMANAGER_SYSLOG
 
-        if (settingsJSON.containsKey(string_usesyslog)) {
+        if (settingsJSON.containsKey( FPSTR(fstring_usesyslog))) {
 
-            set.GEN.usesyslog = settingsJSON[string_usesyslog];
+            set.GEN.usesyslog = settingsJSON[FPSTR(fstring_usesyslog)];
 
             if (set.GEN.usesyslog) {
 
-                if (settingsJSON.containsKey(string_syslogIP) &&  settingsJSON.containsKey(string_syslogPort) ) {
+                if (settingsJSON.containsKey(FPSTR(fstring_syslogIP)) &&  settingsJSON.containsKey(FPSTR(fstring_syslogPort)) ) {
 
-                    set.GEN.syslogPort = settingsJSON[string_syslogPort];
+                    set.GEN.syslogPort = settingsJSON[FPSTR(fstring_syslogPort)];
 
                     for (uint8_t i = 0; i < 4; i++) {
-                        set.GEN.syslogIP[i] = settingsJSON[string_syslogIP][i];
+                        set.GEN.syslogIP[i] = settingsJSON[ FPSTR(fstring_syslogIP)][i];
                     }
                 }
 
-                if (settingsJSON.containsKey(string_syslogProto)) {
+                if (settingsJSON.containsKey(FPSTR(fstring_syslogProto))) {
 
-                    set.GEN.syslogProto = settingsJSON[string_syslogProto];
+                    set.GEN.syslogProto = settingsJSON[FPSTR(fstring_syslogProto)];
                 }
 
 
@@ -4003,39 +4003,39 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
            STA settings
      */
 
-    if (root.containsKey(string_STA)) {
+    if (root.containsKey(FPSTR(fstring_STA))) {
 
 
-        JsonObject & STAjson = root[string_STA];
+        JsonObject & STAjson = root[FPSTR(fstring_STA)];
 
-        if (STAjson.containsKey(string_enabled)) {
-            set.STA.enabled = STAjson[string_enabled];
+        if (STAjson.containsKey(FPSTR(fstring_enabled))) {
+            set.STA.enabled = STAjson[FPSTR(fstring_enabled)];
         }
 
-        if (STAjson.containsKey(string_ssid)) {
-            if (strnlen(STAjson[string_ssid], 100) < MAX_SSID_LENGTH) {
+        if (STAjson.containsKey(FPSTR(fstring_ssid))) {
+            if (strnlen(STAjson[FPSTR(fstring_ssid)], 100) < MAX_SSID_LENGTH) {
 
-                set.STA.ssid = STAjson[string_ssid].as<const char *>();
+                set.STA.ssid = STAjson[FPSTR(fstring_ssid)].as<const char *>();
                 //strncpy( &settings.ssid[0], STAjson["ssid"], strlen(STAjson["ssid"]) );
             }
         }
 
-        if (STAjson.containsKey(string_pass)) {
-            if (strnlen(STAjson[string_pass], 100) < MAX_PASS_LENGTH) {
-                set.STA.pass = STAjson[string_pass].as<const char *>();
+        if (STAjson.containsKey(FPSTR(fstring_pass))) {
+            if (strnlen(STAjson[FPSTR(fstring_pass)], 100) < MAX_PASS_LENGTH) {
+                set.STA.pass = STAjson[FPSTR(fstring_pass)].as<const char *>();
                 //strncpy( &settings.pass[0], STAjson["pass"], strlen(STAjson["pass"]) );
             }
         }
 
-        if (STAjson.containsKey(string_IP) && STAjson.containsKey(string_GW) && STAjson.containsKey(string_SN) && STAjson.containsKey(string_DNS1)) {
+        if (STAjson.containsKey(FPSTR(fstring_IP)) && STAjson.containsKey(FPSTR(fstring_GW)) && STAjson.containsKey(FPSTR(fstring_SN)) && STAjson.containsKey(FPSTR(fstring_DNS1))) {
             //set.STA.hasConfig = true;
-            set.STA.IP = IPAddress( STAjson[string_IP][0], STAjson[string_IP][1], STAjson[string_IP][2], STAjson[string_IP][3] );
-            set.STA.GW = IPAddress( STAjson[string_GW][0], STAjson[string_GW][1], STAjson[string_GW][2], STAjson[string_GW][3] );
-            set.STA.SN = IPAddress( STAjson[string_SN][0], STAjson[string_SN][1], STAjson[string_SN][2], STAjson[string_SN][3] );
-            set.STA.DNS1 = IPAddress( STAjson[string_DNS1][0], STAjson[string_DNS1][1], STAjson[string_DNS1][2], STAjson[string_DNS1][3] );
+            set.STA.IP = IPAddress( STAjson[FPSTR(fstring_IP)][0], STAjson[FPSTR(fstring_IP)][1], STAjson[FPSTR(fstring_IP)][2], STAjson[FPSTR(fstring_IP) ][3] );
+            set.STA.GW = IPAddress( STAjson[FPSTR(fstring_GW)][0], STAjson[FPSTR(fstring_GW)][1], STAjson[FPSTR(fstring_GW)][2], STAjson[FPSTR(fstring_GW) ][3] );
+            set.STA.SN = IPAddress( STAjson[FPSTR(fstring_SN)][0], STAjson[FPSTR(fstring_SN)][1], STAjson[FPSTR(fstring_SN)][2], STAjson[FPSTR(fstring_SN) ][3] );
+            set.STA.DNS1 = IPAddress( STAjson[FPSTR(fstring_DNS1)][0], STAjson[FPSTR(fstring_DNS1)][1], STAjson[FPSTR(fstring_DNS1)][2], STAjson[ FPSTR(fstring_DNS1) ][3] );
 
-            if ( STAjson.containsKey(string_DNS2)) {
-                set.STA.DNS2 = IPAddress( STAjson[string_DNS2][0], STAjson[string_DNS2][1], STAjson[string_DNS2][2], STAjson[string_DNS2][3] );
+            if ( STAjson.containsKey(FPSTR(fstring_DNS2))) {
+                set.STA.DNS2 = IPAddress( STAjson[FPSTR(fstring_DNS2)][0], STAjson[FPSTR(fstring_DNS2)][1], STAjson[FPSTR(fstring_DNS2)][2], STAjson[FPSTR(fstring_DNS2)][3] );
             }
 
             if (set.STA.IP == INADDR_NONE) {
@@ -4052,20 +4052,20 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
             ESPMan_Debugf("dhcp set true\n");
         }
 
-        if (STAjson.containsKey(string_autoconnect)) {
-            set.STA.autoConnect = STAjson[string_autoconnect];
+        if (STAjson.containsKey(FPSTR(fstring_autoconnect))) {
+            set.STA.autoConnect = STAjson[FPSTR(fstring_autoconnect)];
         }
 
-        if (STAjson.containsKey(string_autoreconnect)) {
-            set.STA.autoReconnect = STAjson[string_autoreconnect];
+        if (STAjson.containsKey(FPSTR(fstring_autoreconnect))) {
+            set.STA.autoReconnect = STAjson[FPSTR(fstring_autoreconnect)];
         }
 
-        if (STAjson.containsKey(string_MAC)) {
+        if (STAjson.containsKey(FPSTR(fstring_MAC))) {
 
             set.STA.hasMAC = true;
 
             for (uint8_t i = 0; i < 6; i++) {
-                set.STA.MAC[i] = STAjson[string_MAC][i];
+                set.STA.MAC[i] = STAjson[FPSTR(fstring_MAC)][i];
             }
 
         }
@@ -4076,46 +4076,46 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
     /*
            AP settings
      */
-    if (root.containsKey(string_AP)) {
+    if (root.containsKey(FPSTR(fstring_AP))) {
 
-        JsonObject & APjson = root[string_AP];
+        JsonObject & APjson = root[FPSTR(fstring_AP)];
 
-        if (APjson.containsKey(string_enabled)) {
-            set.AP.enabled = APjson[string_enabled];
+        if (APjson.containsKey(FPSTR(fstring_enabled))) {
+            set.AP.enabled = APjson[FPSTR(fstring_enabled)];
             //Serial.printf("set.AP.enabled = %s\n", (set.AP.enabled)? "true": "false");
         }
 
-        if (APjson.containsKey(string_pass)) {
+        if (APjson.containsKey( FPSTR(fstring_pass))) {
             //settings.hasPass = true;
-            if (strnlen(APjson[string_pass], 100) < MAX_PASS_LENGTH) {
+            if (strnlen(APjson[FPSTR(fstring_pass)], 100) < MAX_PASS_LENGTH) {
 
-                set.AP.pass = APjson[string_pass].as<const char *>();
+                set.AP.pass = APjson[FPSTR(fstring_pass)].as<const char *>();
             }
         }
 
-        if (APjson.containsKey(string_IP)) {
+        if (APjson.containsKey(FPSTR(fstring_IP))) {
             set.STA.hasConfig = true;
-            set.STA.IP = IPAddress( APjson[string_IP][0], APjson[string_IP][1], APjson[string_IP][2], APjson[string_IP][3] );
-            set.STA.GW = IPAddress( APjson[string_GW][0], APjson[string_GW][1], APjson[string_GW][2], APjson[string_GW][3] );
-            set.STA.SN = IPAddress( APjson[string_SN][0], APjson[string_SN][1], APjson[string_SN][2], APjson[string_SN][3] );
+            set.STA.IP = IPAddress( APjson[FPSTR(fstring_IP)][0], APjson[FPSTR(fstring_IP)][1], APjson[FPSTR(fstring_IP)][2], APjson[FPSTR(fstring_IP)][3] );
+            set.STA.GW = IPAddress( APjson[FPSTR(fstring_GW)][0], APjson[FPSTR(fstring_GW)][1], APjson[FPSTR(fstring_GW)][2], APjson[FPSTR(fstring_GW)][3] );
+            set.STA.SN = IPAddress( APjson[FPSTR(fstring_SN)][0], APjson[FPSTR(fstring_SN)][1], APjson[FPSTR(fstring_SN)][2], APjson[FPSTR(fstring_SN)][3] );
 
 
         }
 
-        if (APjson.containsKey(string_visible)) {
+        if (APjson.containsKey(FPSTR(fstring_visible))) {
             set.AP.visible = true;
         }
 
-        if (APjson.containsKey(string_channel)) {
-            set.AP.channel = APjson[string_channel];
+        if (APjson.containsKey(FPSTR(fstring_channel))) {
+            set.AP.channel = APjson[FPSTR(fstring_channel)];
         }
 
-        if (APjson.containsKey(string_MAC)) {
+        if (APjson.containsKey(FPSTR(fstring_MAC))) {
 
             set.AP.hasMAC = true;
 
             for (uint8_t i = 0; i < 6; i++) {
-                set.AP.MAC[i] = APjson[string_MAC][i];
+                set.AP.MAC[i] = APjson[FPSTR(fstring_MAC)][i];
             }
 
         }
@@ -4142,24 +4142,24 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     /*
             General Settings
      */
-    JsonObject & settingsJSON = root.createNestedObject(string_General);
+    JsonObject & settingsJSON = root.createNestedObject(FPSTR(fstring_General));
 
-    settingsJSON[string_mDNS] = set.GEN.mDNSenabled;
+    settingsJSON[FPSTR(fstring_mDNS)] = set.GEN.mDNSenabled;
 
-    settingsJSON[string_settingsversion] = SETTINGS_FILE_VERSION;
+    settingsJSON[FPSTR(fstring_settingsversion)] = SETTINGS_FILE_VERSION;
 
     if (set.GEN.host) {
-        settingsJSON[string_host] = set.GEN.host();
+        settingsJSON[FPSTR(fstring_host)] = set.GEN.host();
     }
 
     if (set.GEN.updateURL) {
-        settingsJSON[string_updateURL] = set.GEN.updateURL();
+        settingsJSON[FPSTR(fstring_updateURL)] = set.GEN.updateURL();
     }
 
-    settingsJSON[string_updateFreq] = set.GEN.updateFreq;
+    settingsJSON[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
 
     if (set.GEN.OTApassword) {
-        settingsJSON[string_OTApassword] = set.GEN.OTApassword();
+        settingsJSON[FPSTR(fstring_OTApassword)] = set.GEN.OTApassword();
     }
 
     // if (set.GEN.GUIusername) {
@@ -4171,7 +4171,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     // }
 
     if (set.GEN.GUIhash) {
-        settingsJSON[string_GUIhash] = set.GEN.GUIhash();
+        settingsJSON[FPSTR(fstring_GUIhash)] = set.GEN.GUIhash();
     }
 
     // static const char * string_usesyslog = "usesyslog";
@@ -4181,17 +4181,17 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     // IPAddress syslogIP;
     // uint16_t syslogPort{514};
 
-    settingsJSON[string_usesyslog] = set.GEN.usesyslog;
+    settingsJSON[FPSTR(fstring_usesyslog)] = set.GEN.usesyslog;
 
     if (set.GEN.usesyslog) {
-        JsonArray & IP = settingsJSON.createNestedArray(string_syslogIP);
+        JsonArray & IP = settingsJSON.createNestedArray(FPSTR(fstring_syslogIP));
         IP.add(set.GEN.syslogIP[0]);
         IP.add(set.GEN.syslogIP[1]);
         IP.add(set.GEN.syslogIP[2]);
         IP.add(set.GEN.syslogIP[3]);
-        settingsJSON[string_syslogPort] = set.GEN.syslogPort;
+        settingsJSON[FPSTR(fstring_syslogPort)] = set.GEN.syslogPort;
 
-        settingsJSON[string_syslogProto] = set.GEN.syslogProto;
+        settingsJSON[FPSTR(fstring_syslogProto)] = set.GEN.syslogProto;
 
     }
 
@@ -4199,10 +4199,10 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     //settingsJSON[string_usePerminantSettings] = (set.GEN.usePerminantSettings) ? true : false;
 
-    settingsJSON[string_ap_boot_mode] = (int)set.GEN.ap_boot_mode;
-    settingsJSON[string_no_sta_mode] = (int)set.GEN.no_sta_mode;
+    settingsJSON[FPSTR(fstring_ap_boot_mode)] = (int)set.GEN.ap_boot_mode;
+    settingsJSON[FPSTR(fstring_no_sta_mode)] = (int)set.GEN.no_sta_mode;
 
-    settingsJSON[string_OTAupload] = set.GEN.OTAupload;
+    settingsJSON[FPSTR(fstring_OTAupload)] = set.GEN.OTAupload;
 
 
 
@@ -4210,44 +4210,44 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
             STA Settings
     *****************************************/
 
-    JsonObject & STAjson = root.createNestedObject(string_STA);
+    JsonObject & STAjson = root.createNestedObject(FPSTR(fstring_STA));
 
-    STAjson[string_enabled] = set.STA.enabled;
+    STAjson[FPSTR(fstring_enabled)] = set.STA.enabled;
 
     if (set.STA.ssid) {
-        STAjson[string_ssid] = set.STA.ssid();
+        STAjson[FPSTR(fstring_ssid)] = set.STA.ssid();
     }
 
     if (set.STA.pass) {
-        STAjson[string_pass] = set.STA.pass();
+        STAjson[FPSTR(fstring_pass)] = set.STA.pass();
 
     }
 
     if (set.STA.hasConfig) {
 
-        JsonArray & IP = STAjson.createNestedArray(string_IP);
+        JsonArray & IP = STAjson.createNestedArray(FPSTR(fstring_IP));
         IP.add(set.STA.IP[0]);
         IP.add(set.STA.IP[1]);
         IP.add(set.STA.IP[2]);
         IP.add(set.STA.IP[3]);
-        JsonArray & GW = STAjson.createNestedArray(string_GW);
+        JsonArray & GW = STAjson.createNestedArray(FPSTR(fstring_GW));
         GW.add(set.STA.GW[0]);
         GW.add(set.STA.GW[1]);
         GW.add(set.STA.GW[2]);
         GW.add(set.STA.GW[3]);
-        JsonArray & SN = STAjson.createNestedArray(string_SN);
+        JsonArray & SN = STAjson.createNestedArray(FPSTR(fstring_SN));
         SN.add(set.STA.SN[0]);
         SN.add(set.STA.SN[1]);
         SN.add(set.STA.SN[2]);
         SN.add(set.STA.SN[3]);
-        JsonArray & DNS1 = STAjson.createNestedArray(string_DNS1);
+        JsonArray & DNS1 = STAjson.createNestedArray(FPSTR(fstring_DNS1));
         DNS1.add(set.STA.DNS1[0]);
         DNS1.add(set.STA.DNS1[1]);
         DNS1.add(set.STA.DNS1[2]);
         DNS1.add(set.STA.DNS1[3]);
 
         if (set.STA.DNS2 != INADDR_NONE) {
-            JsonArray & DNS2 = STAjson.createNestedArray(string_DNS2);
+            JsonArray & DNS2 = STAjson.createNestedArray(FPSTR(fstring_DNS2));
             DNS2.add(set.STA.DNS2[0]);
             DNS2.add(set.STA.DNS2[1]);
             DNS2.add(set.STA.DNS2[2]);
@@ -4259,7 +4259,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     }
 
     if (set.STA.hasMAC) {
-        JsonArray & MAC = STAjson.createNestedArray(string_MAC);
+        JsonArray & MAC = STAjson.createNestedArray(FPSTR(fstring_MAC));
 
         for (uint8_t i = 0; i < 6; i++) {
             MAC.add(set.STA.MAC[i]);
@@ -4268,8 +4268,8 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     }
 
 
-    STAjson[string_autoconnect] = set.STA.autoConnect;
-    STAjson[string_autoreconnect] = set.STA.autoReconnect;
+    STAjson[FPSTR(fstring_autoconnect)] = set.STA.autoConnect;
+    STAjson[FPSTR(fstring_autoreconnect)] = set.STA.autoReconnect;
 
 
 
@@ -4277,9 +4277,9 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
             AP Settings
     ****************************************/
 
-    JsonObject & APjson = root.createNestedObject(string_AP);;
+    JsonObject & APjson = root.createNestedObject(FPSTR(fstring_AP));
 
-    APjson[string_enabled] = set.AP.enabled;
+    APjson[FPSTR(fstring_enabled)] = set.AP.enabled;
 
     //  disbale this for now.. all set via host.
     //
@@ -4288,23 +4288,23 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     // }
 
     if (set.AP.pass) {
-        APjson[string_pass] = set.AP.pass();
+        APjson[FPSTR(fstring_pass)] = set.AP.pass();
 
     }
 
     if (set.AP.hasConfig) {
 
-        JsonArray & IP = APjson.createNestedArray(string_IP);
+        JsonArray & IP = APjson.createNestedArray(FPSTR(fstring_IP));
         IP.add(set.AP.IP[0]);
         IP.add(set.AP.IP[1]);
         IP.add(set.AP.IP[2]);
         IP.add(set.AP.IP[3]);
-        JsonArray & GW = APjson.createNestedArray(string_GW);
+        JsonArray & GW = APjson.createNestedArray(FPSTR(fstring_GW));
         GW.add(set.AP.GW[0]);
         GW.add(set.AP.GW[1]);
         GW.add(set.AP.GW[2]);
         GW.add(set.AP.GW[3]);
-        JsonArray & SN = APjson.createNestedArray(string_SN);
+        JsonArray & SN = APjson.createNestedArray(FPSTR(fstring_SN));
         SN.add(set.AP.SN[0]);
         SN.add(set.AP.SN[1]);
         SN.add(set.AP.SN[2]);
@@ -4313,7 +4313,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     }
 
     if (set.AP.hasMAC) {
-        JsonArray & MAC = APjson.createNestedArray(string_MAC);
+        JsonArray & MAC = APjson.createNestedArray(FPSTR(fstring_MAC));
 
         for (uint8_t i = 0; i < 6; i++) {
             MAC.add(set.AP.MAC[i]);
@@ -4321,8 +4321,8 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     }
 
-    APjson[string_visible] = set.AP.visible;
-    APjson[string_channel] = set.AP.channel;
+    APjson[FPSTR(fstring_visible)] = set.AP.visible;
+    APjson[FPSTR(fstring_channel)] = set.AP.channel;
 
 
     File f = _fs.open(SETTINGS_FILE, "w");
@@ -4439,8 +4439,8 @@ void ESPmanager::factoryReset()
 void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text)
 {
     AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text);
-    response->addHeader(ESPMAN::string_CORS, "*");
-    response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
+            response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
+            response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
     request->send(response);
 }
 
