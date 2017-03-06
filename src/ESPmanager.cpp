@@ -1518,9 +1518,9 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
     ESPMan_Debugf("HIT\n" );
 
 
-    if ( request->hasParam("url", true)) {
+    if ( request->hasParam(F("url"), true)) {
 
-        String path = request->getParam("url", true)->value();
+        String path = request->getParam(F("url"), true)->value();
 
         ESPMan_Debugf("path = %s\n", path.c_str());
 
@@ -1649,7 +1649,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
 #ifdef Debug_ESPManager
-    if (request->hasParam("body", true) && request->getParam("body", true)->value() == "diag") {
+    if (request->hasParam(F("body"), true) && request->getParam(F("body"), true)->value() == "diag") {
 
         // String pass = request->getParam("diag")->value();
         //
@@ -1666,7 +1666,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 #endif
 
 
-    if (request->hasParam("purgeunzipped")) {
+    if (request->hasParam(F("purgeunzipped"))) {
         // if (request->getParam("body")->value() == "purgeunzipped") {
         ESPMan_Debugf("PURGE UNZIPPED FILES\n");
         _removePreGzFiles();
@@ -1678,12 +1678,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     /*------------------------------------------------------------------------------------------------------------------
                                                                     Reboot command
        ------------------------------------------------------------------------------------------------------------------*/
-    if (request->hasParam("body", true)) {
+    if (request->hasParam(F("body"), true)) {
 
         //ESPMan_Debugln(F("Has Body..."));
 
 
-        String plainCommand = request->getParam("body", true)->value();
+        String plainCommand = request->getParam(F("body"), true)->value();
 
         // Serial.printf("Plaincommand = %s\n", plainCommand.c_str());
 
@@ -2267,8 +2267,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     bool safety = false;
 
-                    if (request->hasParam("removesaftey", true))  {
-                        safety = (request->getParam("removesaftey", true)->value() == "No") ? false : true;
+                    if (request->hasParam(F("removesaftey"), true))  {
+                        safety = (request->getParam(F("removesaftey"), true)->value() == "No") ? false : true;
                     }
 
                     settings_t::STA_t * newsettings = new settings_t::STA_t(set.STA);
@@ -2284,10 +2284,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         int currentchannel = WiFi.channel();
 
 
-                        if (request->hasParam("STAchannel_desired", true)) {
+                        if (request->hasParam(F("STAchannel_desired"), true)) {
 
 
-                            int desired_channal = request->getParam("STAchannel_desired", true)->value().toInt();
+                            int desired_channal = request->getParam(F("STAchannel_desired"), true)->value().toInt();
 
                             if (desired_channal != currentchannel && desired_channal >= 0 && currentchannel >= 0) {
 
@@ -2439,7 +2439,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 //*******************************************
 
     //  This is outside the loop...  wifiresult is a static to return previous result...
-    if (  request->hasParam("body", true) && request->getParam("body", true)->value() == "WiFiresult") {
+    if (  request->hasParam(F("body"), true) && request->getParam(F("body"), true)->value() == "WiFiresult") {
 
 
 
@@ -2463,7 +2463,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
        ------------------------------------------------------------------------------------------------------------------*/
 
 
-    if (request->hasParam("enable-STA", true)) {
+    if (request->hasParam(F("enable-STA"), true)) {
 
         bool changes = false;
 
@@ -2479,7 +2479,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     ENABLED
              */
 
-            bool enable = request->getParam("enable-STA", true)->value().equals("on");
+            bool enable = request->getParam(F("enable-STA"), true)->value().equals("on");
 
             if (enable != newsettings->enabled) {
                 newsettings->enabled = enable;
@@ -2489,9 +2489,9 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             /*
                     DHCP and Config
              */
-            if (request->hasParam("enable-dhcp", true)) {
+            if (request->hasParam(F("enable-dhcp"), true)) {
 
-                bool dhcp = request->getParam("enable-dhcp", true)->value().equals("on");
+                bool dhcp = request->getParam(F("enable-dhcp"), true)->value().equals("on");
 
                 //
 
@@ -2702,7 +2702,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                      AP config
        ------------------------------------------------------------------------------------------------------------------*/
 
-    if (request->hasParam("enable-AP", true)) {
+    if (request->hasParam(F("enable-AP"), true)) {
 
         bool changes = false;
         bool abortchanges = false;
@@ -2717,7 +2717,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             newsettings->ssid = set.GEN.host();
 
-            bool enabled = request->getParam("enable-AP", true)->value().equals("on");
+            bool enabled = request->getParam(F("enable-AP"), true)->value().equals("on");
 
             if (enabled != newsettings->enabled) {
                 newsettings->enabled = enabled;
@@ -3018,11 +3018,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                        PORTAL
        ------------------------------------------------------------------------------------------------------------------*/
 
-    if ( request->hasParam("enablePortal", true)) {
+    if ( request->hasParam(F("enablePortal"), true)) {
 
         // save_flag = true;
 
-        bool command =  request->getParam("enablePortal", true)->value().equals( "on");
+        bool command =  request->getParam(F("enablePortal"), true)->value().equals( "on");
 
         if (command != _settings->GEN.portal) {
 
@@ -3189,7 +3189,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     }
 
-    if (request->hasParam("PerformUpdate", true) ) {
+    if (request->hasParam(F("PerformUpdate"), true) ) {
 
         String path = String();  
 
