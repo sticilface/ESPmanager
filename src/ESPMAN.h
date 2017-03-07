@@ -256,10 +256,12 @@ public:
     operator bool() const;
     operator String() const; 
 
+    static const char * _nullString;// = "NULL";
+
+
 protected:
     char *buffer {nullptr};
 private:
-    const char * _nullString = "NULL";
 
 };
 

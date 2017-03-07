@@ -312,6 +312,8 @@ ESPMAN::myString::operator String() const
     return String(buffer);
 }
 
+const char * ESPMAN::myString::_nullString = "null";
+
 ESPMAN::myString::~myString()
 {
     if (buffer) {
