@@ -338,6 +338,30 @@ ESPMAN::myStringf::myStringf(const char * format, ...)
     }
 }
 
+ESPMAN::myStringf::myStringf(const __FlashStringHelper * format, ...)
+    : myString()
+{
+    PGM_P formatP = reinterpret_cast<PGM_P>(format);
+    if (!formatP) {
+        return; 
+    }
+    va_list arg;
+    va_start(arg, format);
+    size_t len = vsnprintf_P(nullptr, 0, formatP, arg);
+    va_end(arg);
+
+    if (len) {
+        buffer = (char*)malloc(len + 1);
+        if (buffer) {
+            va_start(arg, format);
+            vsnprintf_P(buffer, len + 1, formatP, arg);
+            va_end(arg);
+        }
+    }    
+}
+
+
+
 ESPMAN::myStringf_P::myStringf_P(PGM_P formatP, ...)
     : myString()
 {

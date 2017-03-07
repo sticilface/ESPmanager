@@ -4527,7 +4527,7 @@ void ESPmanager::_removePreGzFiles()
             String withOutgz = fileName.substring(0, fileName.length() - 3 );
 
             if (_fs.exists(withOutgz)) {
-//                ESPMan_Debugf("_removePreGzFiles() : Removing unzipped file %s\n", withOutgz.c_str());
+                ESPMan_Debugf("_removePreGzFiles() : Removing unzipped file %s\n", withOutgz.c_str());
                 _fs.remove(withOutgz);
             }
 
@@ -4639,7 +4639,7 @@ void ESPmanager::_log(uint16_t pri, myString  msg)
 {
     log(pri,msg); 
     Serial.printf("[%3u] %s\n", pri ,msg.c_str()); 
-    event_send( F("LOG"), myStringf_P( PSTR("[%3u] %s"), msg.c_str())); 
+    event_send( F("LOG"), myStringf( F("[%3u] %s"), pri, msg.c_str())); 
     
 }
 

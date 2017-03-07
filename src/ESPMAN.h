@@ -266,6 +266,7 @@ private:
 class myStringf : public myString {
 public:
     myStringf(const char *, ...);
+    myStringf(const __FlashStringHelper *, ...);
 private:
 
 }; 
