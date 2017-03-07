@@ -112,8 +112,9 @@ public:
   inline String getSketchMD5();
 
   AsyncEventSource & getEvent();
-  size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4)));
-  size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4)));
+ // size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4))) {}
+ // size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4))) {}
+  bool event_send(myString topic, myString msg ); 
 
   ESPMAN_ERR_t upgrade(String path = String());
   void factoryReset();
