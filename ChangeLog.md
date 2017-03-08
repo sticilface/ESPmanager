@@ -28,6 +28,11 @@
 - Use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
 - Use ArduinoJson Stream as input, rather than read SPIFFS file into memory. 
 - Remove myString to const char * comparison.  Use `myString(const char *)` instead. 
+- add `myString.c_str()` method to mimic String impl.
+- add `nullptr_t` initiliasation for myString so you can pass it `nullptr` to create empty string. 
+- `events_send` replaces `events_printf` and `events_printf_P` you now pass it two myString instances which allows use of the derived classes myStringf and myStringf_P. 
+- myStringf supports `__FlashStringHelper`
+- All strings are now moved to PROGMEM.  Saves approx 400 Bytes of RAM. 
 
 
 # V2.1
