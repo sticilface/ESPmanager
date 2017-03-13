@@ -22,6 +22,7 @@ manager.log( "Simple Error" );
 manager.log( myStringf( "MSG: %s, error code %u", "String Error", 120) ); 
 manager.log( myStringf_P( PSTR("MSG: %s, error code %u"), "String Error", 120) );  //  String stored in FLASH. 
 ```
+- Added manual SSID specification. Fixes https://github.com/sticilface/ESPmanager/issues/13
 
 ## Improvements
 - Use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
