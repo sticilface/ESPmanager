@@ -6,13 +6,12 @@ function getBaseUrl() {
 var _currentdevice;
 var globalwifi;
 
-
 var _home_device = getBaseUrl();
 
 
 
 
-//_home_device = "http://192.168.1.210/espman/";
+//_home_device = "http://192.168.1.168/espman/";
 
 
 
@@ -326,9 +325,9 @@ function getGenvars() {
         }
 
 
-    if (result.hasOwnProperty("ESPMANAGER_GIT_TAG")) {
-        $("#git_ver").empty().append("<p><small> Git Version:" + result.ESPMANAGER_GIT_TAG + "</small></p>")
-    }
+        if (result.hasOwnProperty("ESPMANAGER_GIT_TAG")) {
+            $("#git_ver").empty().append("<p><small> Git Version:" + result.ESPMANAGER_GIT_TAG + "</small></p>")
+        }
 
 
 
@@ -529,6 +528,12 @@ $(document).on("pagecreate", "#generalpage", function() {
 
 });
 
+$(document).on('change', '#wifinetworks-data', function(event, ui) {
+    // console.log(this); 
+    // console.log("selected", $('input[name=ssid]:radio:checked').val()  );
+    $("#ssid-1").val($('input[name=ssid]:radio:checked').val());
+});
+
 $("#general-1-submit").bind("click", function(event, ui) {
     $.post(_home_device + "data.esp", $(this.form).serialize(), function(e) {
         datatosave(e);
@@ -643,7 +648,7 @@ function StartWifiScan() {
 $(document).on("pagecreate", "#wifipage", function() {
 
     // Variables
-    var staticwifi;
+    //var staticwifi;
 
     getWiFiVars(false);
 
@@ -788,26 +793,34 @@ $(document).on("pagecreate", "#wifipage", function() {
         }
 
         console.log("data = ", data);
+        var xhrCount = 0;
 
         $.post(_home_device + "data.esp", data, function(data, success) {
             if (data == "accepted") {
                 var startTime = new Date().getTime();
                 $.mobile.loading('show');
-                timer = setInterval(function() {
-                    $.post(_home_device + "data.esp", "WiFiresult", function(data, success2) {
-                        if (data > 1) {
-                            //if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied");
-                            if (data == "2") alert(data + " :ERROR Reverted to previous settings");
-                            if (data == "3") alert(data + " :Settings applied: NOT CONNECTED");
-                            $.mobile.loading('hide');
-                            clearTimeout(timer);
-                            if (data == "4") {
-                                getWiFiVars(false);
 
+                timer = setInterval(function() {
+                    var seqNumber = ++xhrCount;
+                    $.post(_home_device + "data.esp", "WiFiresult", function(data, success2) {
+                        //console.log ("seqNumber = " + seqNumber + "  xhrCount = " + xhrCount);
+                        if (seqNumber == xhrCount) {
+
+                            if (data > 1) {
+                                //if (data == "1") alert(data + " :WiFi Settings Sucessfully Applied");
+                                if (data == "2") popUpMessage("ERROR Reverted to previous settings");
+                                if (data == "3") popUpMessage("ERROR Unable to connect");
+                                $.mobile.loading('hide');
+                                clearTimeout(timer);
+                                if (data == "4") {
+                                    getWiFiVars(false);
+
+                                }
                             }
+                            //setTimeout(5000);
                         }
-                        //setTimeout(5000);
                     }, "text");
+
                     if (new Date().getTime() - startTime > 65000) {
                         $.mobile.loading('hide');
                         alert("TIMEOUT: NO RESPONSE FROM ESP");
@@ -824,7 +837,9 @@ $(document).on("pagecreate", "#wifipage", function() {
 
     function WiFiMoreinfo() {
         radioanswer = $('.wifiradio:checked').val();
-        $.each(staticwifi, function(i, object) {
+        console.log("Wifi info for: ", radioanswer);
+        console.log("_networks ", _networks);
+        $.each(_networks, function(i, object) {
             if (object.ssid === radioanswer) {
                 $("#wifiinsert").empty();
                 $("#wifiinsert").append(
@@ -883,7 +898,8 @@ function getWiFiVars(scan) {
 
 
             if ("networks" in result) {
-                staticwifi = result.networks;
+                _networks = result.networks;
+                console.log("_networks is ASSIGNED:", _networks);
                 $("#wifinetworks-data").empty();
                 $("#wifinetworks-data").append("<legend>Select WiFi Network:</legend>");
                 $.each(result.networks, function(i, object) {
@@ -980,7 +996,7 @@ function getWiFiVars(scan) {
  ****************************************************/
 //<!-- About page -->
 //var results;
-//var staticwifi;
+//var staticwifi; //  used to keep wifi network list
 function GetAboutVars() {
     $.post(_home_device + "data.esp", "AboutPage", function(results) {
             datatosave(results);
@@ -1288,8 +1304,8 @@ $(document).on("pageshow", "#upgradepage", function() {
 
     $("#checkforupdatebutton").click(function() {
 
-        var data = $(this).closest("form").find('input,select').filter(':visible').serializeArray(); 
-        data.push({name: 'PerformUpdate', value: true});
+        var data = $(this).closest("form").find('input,select').filter(':visible').serializeArray();
+        data.push({ name: 'PerformUpdate', value: true });
 
         $.post(_home_device + "data.esp", data);
 

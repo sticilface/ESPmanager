@@ -387,9 +387,12 @@ $(function() {
                 <div id="WiFi_networks" class="ui-content">
                     <!--   SECOND TAB -->
                     <div id="wifi_status"></div>
+            
+                    <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
+
                     <form id="wifinetworks-form">
-                        <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data">
-                        </fieldset>
+                        <label for="ssid-1">SSID:</label>
+                        <input type="text" name="ssid" id="ssid-1" value="" data-clear-btn="true">
                         <label for="pass-1">Password:</label>
                         <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">
                         <input type="button" value="More Info" id="ssid-1-moreinfo">

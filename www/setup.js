@@ -18,7 +18,8 @@ var channel = 1;
 var password = "";
 
 
-//_home_device = "http://192.168.1.240/espman/"; // tvlights
+//_home_device = "http://192.168.1.168/espman/"; // wemos
+
 
 //_home_device = "http://192.168.4.1/espman/";
 
@@ -29,7 +30,11 @@ var password = "";
 // });
 
 
-
+$(document).on('change', '#wifinetworks-data', function(event, ui) {
+    // console.log(this); 
+    // console.log("selected", $('input[name=ssid]:radio:checked').val()  );
+    $("#ssid-1").val($('input[name=ssid]:radio:checked').val());
+});
 
 $("#mainpage").on("pagebeforeshow", function() {
 
@@ -279,6 +284,7 @@ function sendSettings() {
     $.post(_home_device + "data.esp", { "deviceid": devicename }, function(result) {
 
         console.log("Devicename Set");
+        var xhrCount = 0;
 
         $.post(_home_device + "data.esp", { "ssid": ssid, "pass": password, "STAchannel_desired": channel }, function(data, success) {
 
@@ -288,25 +294,30 @@ function sendSettings() {
                 console.log("WiFi Data Accepted Applying");
                 var startTime = new Date().getTime();
                 $.mobile.loading('show');
+
+
                 var timer = setInterval(function() {
                     console.log("checking");
-
+                    var seqNumber = ++xhrCount;
                     $.post(_home_device + "data.esp", "WiFiresult", function(data) {
                         console.log("WiFiResult", data);
 
-                        if (data > 1) {
-                            //if (data == "1") alert(data + " :Waiting for IP Address");
-                            if (data == "2") alert(data + " :ERROR Reverted to previous settings");
-                            if (data == "3") alert(data + " :Settings applied: NOT CONNECTED");
-                            $.mobile.loading('hide');
-                            clearInterval(timer);
+                        if (seqNumber == xhrCount) {
 
-                            if (data == "4") {
-                                $.post(_home_device + "data.esp", "generalpage", function(data) {
-                                    _data = data;
-                                    console.log("data", data);
-                                    $.mobile.navigate("#finalpage");
-                                });
+                            if (data > 1) {
+                                //if (data == "1") alert(data + " :Waiting for IP Address");
+                                if (data == "2") popUpMessage("ERROR Reverted to previous settings");
+                                if (data == "3") popUpMessage("ERROR Unable to connect");
+                                $.mobile.loading('hide');
+                                clearInterval(timer);
+
+                                if (data == "4") {
+                                    $.post(_home_device + "data.esp", "generalpage", function(data) {
+                                        _data = data;
+                                        console.log("data", data);
+                                        $.mobile.navigate("#finalpage");
+                                    });
+                                }
                             }
                         }
                         //refreshAPlist();
@@ -357,7 +368,7 @@ $("#confirm_endpage").on("click", function(event) {
             }
 
             if (waiting == false) {
-                sendSettings(); 
+                sendSettings();
             }
 
 

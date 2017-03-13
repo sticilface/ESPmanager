@@ -192,6 +192,8 @@ enum no_sta_mode_t : int8_t {
  const char fstring_syslogPort[] PROGMEM =  "syslogPort";
  const char fstring_syslogProto[] PROGMEM =  "syslogProto";
 
+ const char fstring_OK[] PROGMEM =  "OK";
+
 
 // static const char * string_
 // static const char * string_

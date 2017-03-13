@@ -243,26 +243,18 @@ ESPMAN_ERR_t ESPmanager::begin()
             for (int i = 0; i < sizeof(ap); i++) {
                 data[i] = f.read();
             }
-
-            Serial.println("AP settings taken from .wizard file");
             
-
             ap.enabled = true;
             ap.ssid = _settings->GEN.host;
             ap.channel = WiFi.channel();
 
             if (!ap.pass && _settings->STA.pass) { 
-                Serial.println("* - settings AP password to  set.STA.pass"); 
                 ap.pass = _settings->STA.pass; 
             } else if (!ap.pass) {
                 ap.pass = F(DEFAULT_AP_PASS); 
-                Serial.println("* - settings AP password to DEFAULT_AP_PASS"); 
             }
 
-            _dumpAP(ap); 
-
             if (!_initialiseAP(ap)) {
-                ESPMan_Debugf("AP re started\n");
                 if (_settings->GEN.portal) {
                     enablePortal();
                 }
@@ -272,8 +264,6 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 
     } else if (_settings->configured) {
-
-
 
         ESPMan_Debugf("settings->configured = true \n");
         AP_ERROR = _initialiseAP();
@@ -1600,7 +1590,7 @@ void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 
     }
 
-    _sendTextResponse(request, 200, "OK");
+    _sendTextResponse(request, 200, FPSTR(fstring_OK));
 
     // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
     // response->addHeader( ESPMAN::string_CORS, "*");
@@ -1791,7 +1781,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     set.changed = false;
                     if (_fs.remove("/.wizard")) {
 
-                        _sendTextResponse(request, 200, "OK");
+                        _sendTextResponse(request, 200, FPSTR(fstring_OK));
 
                         _tasker.add( [this](Task & t) {
                             ESPMan_Debugf("REBOOTING....\n");
@@ -1808,7 +1798,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if ( plainCommand == F("reboot") || plainCommand == F("restart")) {
             ESPMan_Debugf("Rebooting...\n");
 
-            _sendTextResponse(request, 200, "OK");
+            _sendTextResponse(request, 200, FPSTR(fstring_OK));
 
             _tasker.add( [this](Task & t) {
                 //event_printf(NULL, "Rebooting");
@@ -2145,15 +2135,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //event_printf(NULL, "Formatting SPIFFS");
 
             event_send(nullptr, F("Formatting SPIFFS")); 
-
-
-            _sendTextResponse(request, 200, "OK");
-
-
-            // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
-            // response->addHeader(ESPMAN::string_CORS, "*");
-            // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-            // request->send(response);
+            _sendTextResponse(request, 200, FPSTR(fstring_OK));
 
             _tasker.add( [this](Task & t) {
 
@@ -2236,11 +2218,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     f.write(  data[i]);
                 }
 
-                _sendTextResponse(request, 200, "OK");
+                _sendTextResponse(request, 200, FPSTR(fstring_OK));
                 return;
             } else {
 
-                _sendTextResponse(request, 200, myString(F("File Error")).c_str());
+                _sendTextResponse(request, 200, F("File Error") );
 
                 return;
             }
@@ -2396,11 +2378,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             if (_currentconfig && wifi_softap_get_config(_currentconfig)) {
                                 _currentconfig->channel = channel; 
-
                                 result = wifi_softap_set_config_current(_currentconfig); 
-
                             }
-
 
                             if (result) {
                                 ESPMan_Debugf_raw("Waiting For AP reconnect\n");
@@ -2475,10 +2454,19 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                 save_flag = true;
                             }
 
+                        } else if (ERROR == NO_CHANGES ) {
+                            ESPMan_Debugf_raw("CALLBACK: No changes....\n");
+                            WiFiresult = 1;
                         } else {
                             WiFiresult = 2;
                             ESPMan_Debugf_raw("ERROR: %i\n", ERROR);
-                            WiFi.enableSTA(false); //  turns it off....
+                            //WiFi.enableSTA(false); //  turns it off....
+                            if (_settings) {
+                                if (!_initialiseSTA(_settings->STA)) //  go back to old settings... 
+                                {
+                                    event_send(nullptr, F("Old Settings Restored"));
+                                }
+                            }
                         }
 
                         //event_printf_P(NULL, PSTR("WiFi Settings Updated"));
@@ -2494,12 +2482,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     }); //  end of lambda...
 
-                    _sendTextResponse(request, 200, "accepted");
-
-                    // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "accepted");
-                    // response->addHeader( ESPMAN::string_CORS, "*");
-                    // response->addHeader( ESPMAN::string_CACHE_CONTROL, "no-store");
-                    // request->send(response);
+                    _sendTextResponse(request, 200, F("accepted"));
 
                     return;
                 }
@@ -2509,7 +2492,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 //*******************************************
 
     //  This is outside the loop...  wifiresult is a static to return previous result...
-    if (  request->hasParam(F("body"), true) && request->getParam(F("body"), true)->value() == "WiFiresult") {
+    if (  request->hasParam(F("body"), true) && request->getParam(F("body"), true)->value() == F("WiFiresult")) {
 
 
 
@@ -3569,8 +3552,6 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
         }
     }
 
-
-
     if (!set.ssid) {
         return NO_STA_SSID;
     }
@@ -3634,8 +3615,6 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
         }
     }
 
-
-
     if (set.autoReconnect) {
         if (!WiFi.setAutoReconnect(true)) {
             return FAILED_SET_AUTORECONNECT;
@@ -3651,47 +3630,44 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
     // Serial.println("-------  POST CONFIG ------");
     // WiFi.printDiag(Serial);
 
-    if (WiFi.isConnected() && WiFi.SSID() == set.ssid.c_str() && WiFi.psk() == set.pass.c_str()  ) {
+    if (WiFi.isConnected() && WiFi.SSID() == set.ssid && WiFi.psk() == set.pass  ) {
         ESPMan_Debugf( "Reconnecting WiFi... \n" );
-        WiFi.reconnect();
+        return NO_CHANGES;
+    } else if ( WiFi.isConnected() && WiFi.SSID() == set.ssid ) {
+        ESPMan_Debugf( "Already connected to this network... \n" );
+        //WiFi.reconnect();
+        return NO_CHANGES; 
     } else {
 
         if (  set.ssid && set.pass  ) {
-            ESPMan_Debugf( "ssid = %s, pass = %s\n", set.ssid.c_str(), set.pass.c_str()  );
+            ESPMan_Debugf( "Using ssid = %s, pass = %s\n", set.ssid.c_str(), set.pass.c_str()  );
             if (!WiFi.begin( set.ssid.c_str(), set.pass.c_str())) {
                 return ERROR_WIFI_BEGIN;
             }
 
         } else if ( set.ssid ) {
-            ESPMan_Debugf( "ssid = %s\n", set.ssid.c_str());
+            ESPMan_Debugf( "Using ssid = %s\n", set.ssid.c_str());
             if (!WiFi.begin( set.ssid.c_str())) {
                 return ERROR_WIFI_BEGIN;
             }
         }
     }
 
-    ESPMan_Debugf("Begin Done\n");
+    ESPMan_Debugf("Begin Done: Now Connecting\n");
 
     uint32_t start_time = millis();
 
     uint8_t result = WL_DISCONNECTED;
 
-    // if (_dns) {
-    //     _dns->stop();
-    // }
-
-    //WiFiUDP::stopAll();
-
     while (result = WiFi.waitForConnectResult(), result != WL_CONNECTED) {
         delay(10);
-        if (millis() - start_time > 60000) {
+        if (millis() - start_time > 30000) {
             ESPMan_Debugf("ABORTING CONNECTION TIMEOUT\n");
+            result = CONNECT_FAILED; 
             break;
 
         }
     }
-
-
 
     if (portal_enabled) {
         enablePortal();
@@ -4449,9 +4425,9 @@ void ESPmanager::factoryReset()
     _fs.remove("/.wizard");
 }
 
-void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text)
+void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, myString text)
 {
-    AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text);
+    AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text.c_str() );
     response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
     response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
     request->send(response);

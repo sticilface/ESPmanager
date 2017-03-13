@@ -56,7 +56,7 @@
 #define ESPMANAGER_SAVESTACK /* 0 Bytes - */
 #define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
 //#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/ 
-#define Debug_ESPManager Serial /* 1760 bytes  */ 
+//#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 #include <ESPmanSysLog.h>
 
@@ -88,6 +88,7 @@ static File _DebugFile;
 #pragma message("DEBUG enabled for ESPManager.")
 #else
 #define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
+#define ESPMan_Debugf_raw(_1, ...) { }
 #endif
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
@@ -168,7 +169,7 @@ private:
   ESPMAN_ERR_t _initialiseSTA(); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::STA_settings_t settings);
   ESPMAN_ERR_t _initialiseSTA( settings_t::STA_t & settings);
   ESPMAN_ERR_t _emergencyMode(bool shutdown = false, int channel = -1);
-  void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text);
+  void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, myString text);
 
   void _removePreGzFiles();
   void _initialiseTasks();

@@ -70,12 +70,16 @@
         <!-- /header -->
         <div role="main" class="ui-content">
             <div id="wifi_status"></div>
+            <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
+
             <form id="wifinetworks-form">
-                <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
+                <label for="ssid-1">SSID:</label>
+                <input type="text" name="ssid" id="ssid-1" value="" data-clear-btn="true">
                 <label for="pass-1">Password:</label>
                 <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">
                 <input type="button" value="More Info" id="ssid-1-moreinfo">
                 <input type="button" value="Rescan" id="ssid-1-rescan">
+                <!-- <input type="button" value="Connect" id="ssid-1-submit"> -->
             </form>
             <br>
             <div data-role="controlgroup" data-type="horizontal" align="center">
