@@ -55,8 +55,8 @@
 #define ESPMANAGER_SYSLOG /* 16 Bytes */
 #define ESPMANAGER_SAVESTACK /* 0 Bytes - */
 #define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
-//#define ESPMANAGER_LOG   /*  experimental logging */ 
-//#define Debug_ESPManager Serial /* 1760 bytes  */ 
+//#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/ 
+#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 #include <ESPmanSysLog.h>
 
@@ -64,13 +64,15 @@
 #include "SaveStack.h"
 #endif
 
+#define DEFAULT_AP_PASS "esprocks"
+
 #define SETTINGS_FILE "/espman/settings.json"
 // #define SALT_LENGTH 20
 #define ESPMANVERSION "2.2-async"
 #define SETTINGS_FILE_VERSION 2
 
 
-//  New logging methods... just send the message to the logging function, otherwise squash it all... 
+//  New logging methods... just send the message to the logging function, otherwise squash it all... NOT in use yet... 
 #ifdef ESPMANAGER_LOG
   #define ESP_LOG(a,b) { _log(a,b) ; }
 #else 
@@ -81,6 +83,8 @@
 static File _DebugFile;
 //#define ESPMan_Debugf(...) Debug_ESPManager.printf(__VA_ARGS__) //  33,268 K RAM left
 #define ESPMan_Debugf(_1, ...) { Debug_ESPManager.printf_P( PSTR( "[%s, line %u] " _1), __func__, __LINE__ ,##__VA_ARGS__); } //  this saves around 5K RAM...  39,604 K ram left
+#define ESPMan_Debugf_raw(_1, ...) { Debug_ESPManager.printf_P( PSTR(_1) , ##__VA_ARGS__); }
+
 #pragma message("DEBUG enabled for ESPManager.")
 #else
 #define ESPMan_Debugf(...) {}  // leaves 40,740 K, so flash debug uses 1.1K of ram... 
@@ -163,7 +167,7 @@ private:
   ESPMAN_ERR_t _initialiseAP(bool override = false); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::AP_settings_t settings);
   ESPMAN_ERR_t _initialiseSTA(); //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::STA_settings_t settings);
   ESPMAN_ERR_t _initialiseSTA( settings_t::STA_t & settings);
-  ESPMAN_ERR_t _emergencyMode(bool shutdown = false);
+  ESPMAN_ERR_t _emergencyMode(bool shutdown = false, int channel = -1);
   void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text);
 
   void _removePreGzFiles();

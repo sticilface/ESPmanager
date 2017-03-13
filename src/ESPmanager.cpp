@@ -244,9 +244,23 @@ ESPMAN_ERR_t ESPmanager::begin()
                 data[i] = f.read();
             }
 
+            Serial.println("AP settings taken from .wizard file");
+            
+
             ap.enabled = true;
             ap.ssid = _settings->GEN.host;
             ap.channel = WiFi.channel();
+
+            if (!ap.pass && _settings->STA.pass) { 
+                Serial.println("* - settings AP password to  set.STA.pass"); 
+                ap.pass = _settings->STA.pass; 
+            } else if (!ap.pass) {
+                ap.pass = F(DEFAULT_AP_PASS); 
+                Serial.println("* - settings AP password to DEFAULT_AP_PASS"); 
+            }
+
+            _dumpAP(ap); 
+
             if (!_initialiseAP(ap)) {
                 ESPMan_Debugf("AP re started\n");
                 if (_settings->GEN.portal) {
@@ -1829,7 +1843,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 //************************
             if (plainCommand == F("PerformWiFiScan")) {
 
-
                 int wifiScanState = WiFi.scanComplete();
 
                 DynamicJsonBuffer jsonBuffer;
@@ -1838,6 +1851,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if (wifiScanState == -2) {
                     WiFi.scanNetworks(true);
                     //_sendTextResponse(request, 200, "started");
+                     event_send(nullptr, F("WiFi Scan Started") ); 
                     root[F("scan")] = "started";
                 } else if (wifiScanState == -1) {
                     root[F("scan")] = "running";
@@ -1971,32 +1985,18 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //String ip;
 
             STAobject[FPSTR(fstring_IP)] = WiFi.localIP().toString();
-
             STAobject[FPSTR(fstring_GW)] = WiFi.gatewayIP().toString();
-
             STAobject[FPSTR(fstring_SN)] = WiFi.subnetMask().toString();
-
             STAobject[FPSTR(fstring_DNS1)] = WiFi.dnsIP(0).toString();
-
             STAobject[FPSTR(fstring_DNS2)] = WiFi.dnsIP(1).toString();
-
             STAobject[FPSTR(fstring_MAC)] = WiFi.macAddress();
-
             JsonObject& APobject = root.createNestedObject(F("AP"));
-
             APobject[FPSTR(fstring_ssid)] = set.GEN.host();
-
-
             //APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
             APobject[F("state")] = set.AP.enabled;
-
             //APobject[F("APenabled")] = (int)set.AP.mode;
             //APobject[string_mode] = (int)_ap_mode;
-
-
             APobject[FPSTR(fstring_IP)] = (WiFi.softAPIP() == IPAddress(0, 0, 0, 0)) ? F("192.168.4.1") : WiFi.softAPIP().toString();
-
-
             APobject[FPSTR(fstring_visible)] = (set.AP.visible) ? true : false;
             APobject[FPSTR(fstring_pass)] = (set.AP.pass()) ? set.AP.pass() : "";
 
@@ -2237,21 +2237,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 }
 
                 _sendTextResponse(request, 200, "OK");
-
-
-                // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
-                // response->addHeader(ESPMAN::string_CORS, "*");
-                // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-                // request->send(response);
                 return;
             } else {
 
-                _sendTextResponse(request, 200, "File Error");
+                _sendTextResponse(request, 200, myString(F("File Error")).c_str());
 
-                // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "File Error");
-                // response->addHeader(ESPMAN::string_CORS, "*");
-                // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-                // request->send(response);
                 return;
             }
 
@@ -2267,11 +2257,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             _sendTextResponse(request, 200, "Factory Reset Done");
 
-
-            // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Factory Reset Done!");
-            // response->addHeader(ESPMAN::string_CORS, "*");
-            // response->addHeader(ESPMAN::string_CACHE_CONTROL, "no-store");
-            // request->send(response);
 
             _tasker.add( [this](Task & t) {
                 factoryReset();
@@ -2308,10 +2293,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
     */
-
-
-
-
 
     if (request->hasParam( FPSTR(fstring_ssid), true) && request->hasParam( FPSTR(fstring_pass), true)) {
 
@@ -2376,33 +2357,54 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         using namespace ESPMAN;
 
                         WiFiresult = 0;
-                        ESPMan_Debugf("Called\n");
-
                         uint32_t starttime = millis();
 
                         if (APChannelchange) {
 
                             uint8_t connected_station_count = WiFi.softAPgetStationNum();
 
-                            ESPMan_Debugf("Changing AP channel to %u :", channel);
+                            ESPMan_Debugf_raw("Changing AP channel to %u :", channel);
 
                             //event_printf(NULL, "Changing AP Channel...");
                             //event_printf_P(NULL, PSTR("Changing AP Channel..."));
                             event_send(nullptr, F("Changing AP Channel..."));
 
-                            delay(10);
-                            WiFi.enableAP(false);
-                            settings_t set;
-                            set.AP.ssid = set.GEN.host();
-                            set.AP.channel = channel;
-                            set.AP.enabled = true;
-                            bool result = _initialiseAP(set.AP);
+                            // delay(10);
+                            // WiFi.enableAP(false);
+                            // settings_t set;
+                            // set.AP.ssid = set.GEN.host();
+                            // set.AP.channel = channel;
+                            // set.AP.enabled = true;
+                            // bool result = _initialiseAP(set.AP);
 
-                            if (!result) {
-                                ESPMan_Debugf("Waiting For AP reconnect\n");
+                            
+                        /*   struct softap_config {
+                            uint8 ssid[32];
+                            uint8 password[64];
+                            uint8 ssid_len;
+                            uint8 channel;  // support 1 ~ 13
+                            uint8 authmode;
+                            uint8 ssid_hidden;
+                            uint8 max_connection;
+                            uint16 beacon_interval;  // 100 ~ 60000 ms, default 100
+                        */
+
+                            //bool result = _emergencyMode(true, channel); 
+                            bool result = false; 
+
+                            struct softap_config * _currentconfig = new softap_config; 
+
+                            if (_currentconfig && wifi_softap_get_config(_currentconfig)) {
+                                _currentconfig->channel = channel; 
+
+                                result = wifi_softap_set_config_current(_currentconfig); 
+
+                            }
+
+
+                            if (result) {
+                                ESPMan_Debugf_raw("Waiting For AP reconnect\n");
                                 starttime = millis();
-
-
 
                                 uint32_t dottimer = millis();
 
@@ -2415,12 +2417,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                     //yield();
                                     delay(10);
                                     if (millis() - dottimer > 1000) {
-                                        ESPMan_Debugf(".");
+
+                                        ESPMan_Debugf_raw(".");
+                                        
                                         dottimer = millis();
                                     }
 
                                     if (millis() - starttime > 60000) {
-                                        ESPMan_Debugf("Error waiting for AP reconnect\n");
+                                        ESPMan_Debugf_raw("Error waiting for AP reconnect\n");
                                         WiFiresult = 2;
                                         WiFi.enableSTA(false);
                                         if (newsettings) {
@@ -2437,7 +2441,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                             } else {
-                                ESPMan_Debugf("Error: %i\n", result);
+                                ESPMan_Debugf_raw("Error: %i\n", result);
                             }
 
 
@@ -2454,7 +2458,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         int ERROR = _initialiseSTA(*newsettings);
 
                         if (!ERROR) {
-                            ESPMan_Debugf("CALLBACK: Settings successfull\n");
+                            ESPMan_Debugf_raw("CALLBACK: Settings successfull\n");
                             WiFiresult = 1;
 
                             if (!_settings) {
@@ -2467,13 +2471,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                                 _settings->STA = *newsettings;
                                 //Serial.print("\ndone\n\n");
                                 _settings->changed = true;
-                                ESPMan_Debugf("CALLBACK: Settings Applied\n");
+                                ESPMan_Debugf_raw("CALLBACK: Settings Applied\n");
                                 save_flag = true;
                             }
 
                         } else {
                             WiFiresult = 2;
-                            ESPMan_Debugf("ERROR: %i\n", ERROR);
+                            ESPMan_Debugf_raw("ERROR: %i\n", ERROR);
                             WiFi.enableSTA(false); //  turns it off....
                         }
 
@@ -3488,11 +3492,11 @@ ESPMAN_ERR_t ESPmanager::_initialiseAP( settings_t::AP_t & settings )
 
     if (!settings.ssid) {
         char buf[33] = {'\0'};
-        snprintf(&buf[0], 32, "esp8266-%06x", ESP.getChipId());
+        snprintf_P(&buf[0], 32, PSTR("esp8266-%06x"), ESP.getChipId());
         settings.ssid = buf;
     }
 
-    ESPMan_Debugf("ENABLING AP : channel %u, name %s, channel = %u, hidden = %u \n", settings.channel, settings.ssid.c_str(), settings.channel ,  !settings.visible );
+    ESPMan_Debugf("ENABLING AP : channel %u, name %s, channel = %u, hidden = %u, pass = %s \n", settings.channel, settings.ssid.c_str(), settings.channel ,!settings.visible , settings.pass() );
 
 
     if (!WiFi.softAP(settings.ssid.c_str(), (settings.pass)? settings.pass.c_str() : nullptr , settings.channel, !settings.visible )) {
@@ -3770,14 +3774,15 @@ bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
 
 //  allows creating of a seperate config
 //  need to add in captive portal to setttings....
-ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown)
+ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown, int channel)
 {
     using namespace ESPMAN;
     ESPMan_Debugf("***** EMERGENCY mode **** \n");
 
-    uint32_t channel = WiFi.channel(); // cache the channel for AP.
-
-    //channel = 1; // cache the channel for AP.
+    if (channel == -1) {
+        channel = WiFi.channel(); 
+        channel = 1;
+    } 
 
     if (shutdown) {
         WiFi.disconnect(true); //  Disable STA. makes AP more stable, stops 1sec reconnect
@@ -3792,11 +3797,19 @@ ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown)
     set.AP.ssid = set.GEN.host;
     set.AP.channel = channel;
 
-
+    if (!set.AP.pass && set.STA.pass) { 
+        Serial.println("* - settings AP password to  set.STA.pass"); 
+        set.AP.pass = set.STA.pass; 
+    } else if (!set.AP.pass) {
+        set.AP.pass = F(DEFAULT_AP_PASS); 
+        Serial.println("* - settings AP password to DEFAULT_AP_PASS"); 
+    }
 
     // if (set.GEN.usePerminantSettings && _perminant_host) {
     //     set.AP.ssid = _perminant_host;
     // }
+
+    Serial.printf("AP pass = %s\n", set.AP.pass.c_str()); 
 
     set.AP.enabled = true;
 
@@ -4346,24 +4359,24 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 void ESPmanager::_dumpGEN(settings_t::GEN_t & settings)
 {
 
-    ESPMan_Debugf("---- GEN ----\n");
-    ESPMan_Debugf("host = %s\n", (settings.host()) ? settings.host() : "null" );
-    ESPMan_Debugf("updateURL = %s\n", (settings.updateURL()) ? settings.updateURL() : "null" );
-    ESPMan_Debugf("updateFreq = %u\n", (uint32_t)settings.updateFreq );
-    ESPMan_Debugf("OTAport = %u\n", (uint32_t)settings.OTAport );
-    ESPMan_Debugf("mDNSenabled = %s\n", (settings.mDNSenabled) ? "true" : "false" );
+    ESPMan_Debugf_raw("---- GEN ----\n");
+    ESPMan_Debugf_raw("host = %s\n", (settings.host) ? settings.host() : "null" );
+    ESPMan_Debugf_raw("updateURL = %s\n", (settings.updateURL) ? settings.updateURL() : "null" );
+    ESPMan_Debugf_raw("updateFreq = %u\n", (uint32_t)settings.updateFreq );
+    ESPMan_Debugf_raw("OTAport = %u\n", (uint32_t)settings.OTAport );
+    ESPMan_Debugf_raw("mDNSenabled = %s\n", (settings.mDNSenabled) ? "true" : "false" );
 
-    ESPMan_Debugf("OTApassword = %s\n", (settings.OTApassword()) ? settings.OTApassword() : "null" );
-    ESPMan_Debugf("GUIhash = %s\n", (settings.GUIhash()) ? settings.GUIhash() : "null" );
-    ESPMan_Debugf("ap_boot_mode = %i\n", (int8_t)settings.ap_boot_mode );
-    ESPMan_Debugf("no_sta_mode = %i\n", (int8_t)settings.no_sta_mode );
-    ESPMan_Debugf("IDEupload = %s\n", (settings.OTAupload) ? "true" : "false" );
+    ESPMan_Debugf_raw("OTApassword = %s\n", (settings.OTApassword()) ? settings.OTApassword() : "null" );
+    ESPMan_Debugf_raw("GUIhash = %s\n", (settings.GUIhash()) ? settings.GUIhash() : "null" );
+    ESPMan_Debugf_raw("ap_boot_mode = %i\n", (int8_t)settings.ap_boot_mode );
+    ESPMan_Debugf_raw("no_sta_mode = %i\n", (int8_t)settings.no_sta_mode );
+    ESPMan_Debugf_raw("IDEupload = %s\n", (settings.OTAupload) ? "true" : "false" );
 
 #ifdef ESPMANAGER_SYSLOG
-    ESPMan_Debugf("usesyslog = %s\n", (settings.usesyslog) ? "true" : "false" );
-    ESPMan_Debugf("syslogIP = %u.%u.%u.%u\n", settings.syslogIP[0], settings.syslogIP[1], settings.syslogIP[2], settings.syslogIP[3] );
-    ESPMan_Debugf("syslogPort = %u\n", settings.syslogPort );
-    ESPMan_Debugf("syslogProto = %u\n", settings.syslogProto );
+    ESPMan_Debugf_raw("usesyslog = %s\n", (settings.usesyslog) ? "true" : "false" );
+    ESPMan_Debugf_raw("syslogIP = %u.%u.%u.%u\n", settings.syslogIP[0], settings.syslogIP[1], settings.syslogIP[2], settings.syslogIP[3] );
+    ESPMan_Debugf_raw("syslogPort = %u\n", settings.syslogPort );
+    ESPMan_Debugf_raw("syslogProto = %u\n", settings.syslogProto );
 
 #endif
 
@@ -4373,16 +4386,16 @@ void ESPmanager::_dumpGEN(settings_t::GEN_t & settings)
 void ESPmanager::_dumpAP(settings_t::AP_t & settings)
 {
 
-    ESPMan_Debugf("---- AP ----\n");
-    ESPMan_Debugf("enabled = %s\n", (settings.enabled) ? "true" : "false" );
-    ESPMan_Debugf("ssid = %s\n", (settings.ssid()) ? settings.ssid() : "null" );
-    ESPMan_Debugf("pass = %s\n", (settings.pass()) ? settings.pass() : "null" );
-    ESPMan_Debugf("hasConfig = %s\n", (settings.hasConfig) ? "true" : "false" );
-    ESPMan_Debugf("IP = %s\n", settings.IP.toString().c_str() );
-    ESPMan_Debugf("GW = %s\n", settings.GW.toString().c_str() );
-    ESPMan_Debugf("SN = %s\n", settings.SN.toString().c_str() );
-    ESPMan_Debugf("visible = %s\n", (settings.visible) ? "true" : "false" );
-    ESPMan_Debugf("channel = %u\n", settings.channel );
+    ESPMan_Debugf_raw("---- AP ----\n");
+    ESPMan_Debugf_raw("enabled = %s\n", (settings.enabled) ? "true" : "false" );
+    ESPMan_Debugf_raw("ssid = %s\n", (settings.ssid) ? settings.ssid.c_str() : "null" );
+    ESPMan_Debugf_raw("pass = %s\n", (settings.pass) ? settings.pass.c_str() : "null" );
+    ESPMan_Debugf_raw("hasConfig = %s\n", (settings.hasConfig) ? "true" : "false" );
+    ESPMan_Debugf_raw("IP = %s\n", settings.IP.toString().c_str() );
+    ESPMan_Debugf_raw("GW = %s\n", settings.GW.toString().c_str() );
+    ESPMan_Debugf_raw("SN = %s\n", settings.SN.toString().c_str() );
+    ESPMan_Debugf_raw("visible = %s\n", (settings.visible) ? "true" : "false" );
+    ESPMan_Debugf_raw("channel = %u\n", settings.channel );
 
 
 }
@@ -4390,19 +4403,19 @@ void ESPmanager::_dumpAP(settings_t::AP_t & settings)
 void ESPmanager::_dumpSTA(settings_t::STA_t & settings)
 {
 
-    ESPMan_Debugf("---- STA ----\n");
-    ESPMan_Debugf("enabled = %s\n", (settings.enabled) ? "true" : "false" );
-    ESPMan_Debugf("ssid = %s\n", (settings.ssid()) ? settings.ssid() : "null" );
-    ESPMan_Debugf("pass = %s\n", (settings.pass()) ? settings.pass() : "null" );
-    ESPMan_Debugf("dhcp = %s\n", (settings.dhcp) ? "true" : "false" );
-    ESPMan_Debugf("hasConfig = %s\n", (settings.hasConfig) ? "true" : "false" );
-    ESPMan_Debugf("IP = %s\n", settings.IP.toString().c_str() );
-    ESPMan_Debugf("GW = %s\n", settings.GW.toString().c_str() );
-    ESPMan_Debugf("SN = %s\n", settings.SN.toString().c_str() );
-    ESPMan_Debugf("DNS1 = %s\n", settings.DNS1.toString().c_str() );
-    ESPMan_Debugf("DNS2 = %s\n", settings.DNS2.toString().c_str() );
-    ESPMan_Debugf("autoConnect = %s\n", (settings.autoConnect) ? "true" : "false" );
-    ESPMan_Debugf("autoReconnect = %s\n", (settings.autoReconnect) ? "true" : "false" );
+    ESPMan_Debugf_raw("---- STA ----\n");
+    ESPMan_Debugf_raw("enabled = %s\n", (settings.enabled) ? "true" : "false" );
+    ESPMan_Debugf_raw("ssid = %s\n", (settings.ssid()) ? settings.ssid() : "null" );
+    ESPMan_Debugf_raw("pass = %s\n", (settings.pass()) ? settings.pass() : "null" );
+    ESPMan_Debugf_raw("dhcp = %s\n", (settings.dhcp) ? "true" : "false" );
+    ESPMan_Debugf_raw("hasConfig = %s\n", (settings.hasConfig) ? "true" : "false" );
+    ESPMan_Debugf_raw("IP = %s\n", settings.IP.toString().c_str() );
+    ESPMan_Debugf_raw("GW = %s\n", settings.GW.toString().c_str() );
+    ESPMan_Debugf_raw("SN = %s\n", settings.SN.toString().c_str() );
+    ESPMan_Debugf_raw("DNS1 = %s\n", settings.DNS1.toString().c_str() );
+    ESPMan_Debugf_raw("DNS2 = %s\n", settings.DNS2.toString().c_str() );
+    ESPMan_Debugf_raw("autoConnect = %s\n", (settings.autoConnect) ? "true" : "false" );
+    ESPMan_Debugf_raw("autoReconnect = %s\n", (settings.autoReconnect) ? "true" : "false" );
 
 }
 
@@ -4412,10 +4425,10 @@ void ESPmanager::_dumpSettings()
     _getAllSettings();
 
     if (_settings) {
-        ESPMan_Debugf(" IP Addr %u.%u.%u.%u\n", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
-        ESPMan_Debugf("---- Settings ----\n");
-        ESPMan_Debugf("configured = %s\n", (_settings->configured) ? "true" : "false" );
-        ESPMan_Debugf("changed = %s\n", (_settings->changed) ? "true" : "false" );
+        ESPMan_Debugf_raw(" IP Addr %u.%u.%u.%u\n", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3] );
+        ESPMan_Debugf_raw("---- Settings ----\n");
+        ESPMan_Debugf_raw("configured = %s\n", (_settings->configured) ? "true" : "false" );
+        ESPMan_Debugf_raw("changed = %s\n", (_settings->changed) ? "true" : "false" );
         //ESPMan_Debugf("usePerminantSettings = %s\n", (settings->GEN.usePerminantSettings) ? "true" : "false" );
 
         _dumpGEN(_settings->GEN);
@@ -4439,8 +4452,8 @@ void ESPmanager::factoryReset()
 void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const char * text)
 {
     AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text);
-            response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
-            response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
+    response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
+    response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
     request->send(response);
 }
 

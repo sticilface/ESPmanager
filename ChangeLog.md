@@ -34,6 +34,9 @@
 - myStringf supports `__FlashStringHelper`
 - All strings are now moved to PROGMEM.  Saves approx 400 Bytes of RAM. 
 
+## Breaking Changes
+- New default password for AP and setup wizard.  This is because by default the ESP was unsecured.  If your WiFi failed then anyone could join it, and potentially as the WiFi password is stored in plain text on the SPIFFS partition this could lead to a security problem.  Now the default password is `esprocks` and if the ESP is configured to join a WiFi network the AP password is the same as the STA password, unless you have specified an AP password. 
+
 
 # V2.1
 

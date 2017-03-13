@@ -5,7 +5,11 @@ Full wifi and OTA manager for ESP8266 Arduino IDE, with integrated update manage
 
 Uses Jquerymobile and AJAX to run everything. 
 
-V2.1 Released please see [Changelog](https://github.com/sticilface/ESPmanager/blob/master/ChangeLog.md)  
+V2.2 Released please see [Changelog](https://github.com/sticilface/ESPmanager/blob/master/ChangeLog.md)  
+
+## Cool new features include:
++ Syslogging
++ Saving crashdump to SPIFFS file
  
 ## Dependancies
 + [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer)
@@ -22,7 +26,7 @@ This project uses SPIFFS, JqueryMobile, AJAX, ArduinoJson and handles lots of as
 - Upload sketch data directory as shown [here](http://esp8266.github.io/Arduino/versions/2.3.0/doc/filesystem.html#uploading-files-to-file-system)   
 - Upload the sketch via serial.  
 - Reboot the ESP.  
-- Join the ESP AP. 
+- Join the ESP AP, default password is `esprocks`. 
 - Now visit any URL (www.a.com) and it will redirect you to the setup wizard.  Follow the instructions....... then click launch. 
 - One gotya might be if the wifi channel you are joining is different to the wifi channel the AP is in.  In which case a warning will popup, and after 10 seconds or so your computer will disconnect and most likely reconnect to your home wifi.  You need to reconnect to the ESP access point, for the config to continue.  This is expected behaviour!  
 - Visit http://x.x.x.x/espman/ if you want to change further settings. 
