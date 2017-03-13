@@ -15,6 +15,7 @@ env:
   - PLATFORMIO_CI_SRC="$TRAVIS_BUILD_DIR/examples/ESPmanager-example/ESPmanager-example.ino" PLATFORMIO_BUILD_FLAGS="-D Debug_ESPManager=Serial"
 install:
   - pip install -U platformio
+  - platformio platform install https://github.com/platformio/platform-espressif8266.git#feature/stage
  # finsih sdk updates 
   - cd $TRAVIS_BUILD_DIR
   # - echo "10606" > ~/.platformio/packages/framework-arduinoespressif/version.txt
@@ -22,6 +23,6 @@ install:
   - platformio lib -g install "ESPAsyncTCP" "ESPAsyncWebServer" "ArduinoJson"
 
 script:
-  - platformio ci --board="esp12e" --build-dir="/tmp/build" 
+  - platformio ci --platform="espressif8266_stage" --board="esp12e" --build-dir="/tmp/build" 
     --lib="$TRAVIS_BUILD_DIR" 
 
