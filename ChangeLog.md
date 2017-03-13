@@ -10,19 +10,18 @@
 - Add Error to String responses. `myString getError(code)`
 - Big improvements to myString.  Lots of implicit convertions, use with FLASH strings, and PSTR(). Derived classes that allow printf and printf_P with convertion back to myString.  Addition of c_str(). move semantics to allow efficient copying of tempories. implicit convertion to String. 
 - Added SysLog implementation.  Allows sending of data, and priorities and unique appNames to a syslog server from sketch.  Configured in web interface
-  -- Access through 
-  ```cpp
-  bool ESPManager::log(myString  msg); 
-  bool ESPManager::log(uint16_t pri, myString  msg); 
-  bool ESPManager::log(myString appName, myString  msg);
-  bool ESPManager::log(uint16_t pri, myString appName, myString  msg);
-  ```
-  You can use const char *, printf and printf_P to send log messages as follows
-  ```cpp
-  manager.log( "Simple Error" );
-  manager.log( myStringf( "MSG: %s, error code %u", "String Error", 120) ); 
-  manager.log( myStringf_P( PSTR("MSG: %s, error code %u"), "String Error", 120) );  //  String stored in FLASH. 
-  ```
+```cpp
+bool ESPManager::log(myString  msg); 
+bool ESPManager::log(uint16_t pri, myString  msg); 
+bool ESPManager::log(myString appName, myString  msg);
+bool ESPManager::log(uint16_t pri, myString appName, myString  msg);
+```
+You can use const char *, printf and printf_P to send log messages as follows
+```cpp
+manager.log( "Simple Error" );
+manager.log( myStringf( "MSG: %s, error code %u", "String Error", 120) ); 
+manager.log( myStringf_P( PSTR("MSG: %s, error code %u"), "String Error", 120) );  //  String stored in FLASH. 
+```
 
 ## Improvements
 - Use `strnlen` instead of `strlen`.  Avoid buffer overruns. 
