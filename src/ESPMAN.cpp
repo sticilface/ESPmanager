@@ -128,7 +128,7 @@ bool ESPMAN::JSONpackage::save(const char * file)
 ESPMAN::myString::myString(const char *cstr)
     : buffer(nullptr)
 {
-    //Serial.printf("%p created from const char *\n", this);
+    //Serial.printf("%p created from const char * :%s\n", this, cstr);
     if (cstr) {
         buffer = strdup(cstr);
     }
@@ -139,7 +139,7 @@ ESPMAN::myString::myString(nullptr_t ptr): buffer(nullptr) { }
 ESPMAN::myString::myString(const ESPMAN::myString &str)
     : buffer(nullptr)
 {
-    //Serial.printf("%p copied by &\n", &str);
+    //Serial.printf("%p copied by & from %p = %s\n", this , &str, str.c_str() );
     if (str.buffer) {
         buffer = strdup(str.buffer);
     }
@@ -148,7 +148,7 @@ ESPMAN::myString::myString(const ESPMAN::myString &str)
 ESPMAN::myString::myString(ESPMAN::myString &&str)
     : buffer(nullptr)
 {
-    //Serial.printf("%p copied by &&\n", &str);
+    //Serial.printf("%p copied by && from %p = %s\n", this , &str, str.c_str() );
     if (str.buffer) {
         buffer = str.buffer;
         str.buffer = nullptr;
@@ -158,7 +158,6 @@ ESPMAN::myString::myString(ESPMAN::myString &&str)
 ESPMAN::myString::myString(const __FlashStringHelper *str)
     : buffer(nullptr)
 {
-    //Serial.printf("%p created from __FlashStringHelper \n", this);
 
     if (!str) {
         return;
@@ -170,14 +169,16 @@ ESPMAN::myString::myString(const __FlashStringHelper *str)
     if (len) {
         buffer = (char*)malloc(len + 1);
         strcpy_P(buffer, p);
+        //Serial.printf("%p created from __FlashStringHelper = %s\n", this, buffer);
     }
+
 
 }
 
 ESPMAN::myString::myString(String str)
     : buffer(nullptr)
 {
-    //Serial.printf("%p copied by &&\n", &str);
+    //Serial.printf("%p copied by plain copy from %p\n", this, &str);
     size_t len = str.length();
     if (len) {
         buffer = (char*)malloc(len + 1);
@@ -201,7 +202,6 @@ ESPMAN::myString & ESPMAN::myString::operator =(const char *cstr)
 
 ESPMAN::myString & ESPMAN::myString::operator =(const __FlashStringHelper *str)
 {
-    //Serial.printf("[ESPMAN::myString::operator =(const char *cstr)] cstr = %s\n", (cstr)? cstr : "null");
 
     if (buffer) { free(buffer); }
     if (str) {
@@ -212,6 +212,8 @@ ESPMAN::myString & ESPMAN::myString::operator =(const __FlashStringHelper *str)
         if (len) {
             buffer = (char*)malloc(len + 1);
             strcpy_P(buffer, p);
+            //Serial.printf("%p[ESPMAN::myString::operator =const __FlashStringHelper *str] cstr = %s\n", this , buffer);
+
         }
 
     } else {

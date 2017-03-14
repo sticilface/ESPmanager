@@ -103,6 +103,7 @@ public:
   ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS);
   ~ESPmanager();
   ESPMAN_ERR_t begin();
+  ESPMAN_ERR_t begin(myString ssid, myString pass); 
   void handle();
   static String formatBytes(size_t bytes);
   static bool StringtoMAC(uint8_t *mac, const String & input);
@@ -112,30 +113,22 @@ public:
   String getHostname();
   myString getError(ESPMAN_ERR_t err); 
   myString getError(int err) { return getError( (ESPMAN_ERR_t)err ); }
-
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
-
   AsyncEventSource & getEvent();
- // size_t event_printf(const char * topic, const char * format, ... ) __attribute__((format(printf, 3, 4))) {}
- // size_t event_printf_P(const char * topic, PGM_P format, ... ) __attribute__((format(printf, 3, 4))) {}
   bool event_send(myString topic, myString msg ); 
-
-  ESPMAN_ERR_t upgrade(String path = String());
+  ESPMAN_ERR_t upgrade(String path = String(), bool runasync = true);
   void factoryReset();
   int save();
   bool portal() { return _dns; }
-
   ESPMAN_ERR_t enablePortal();
   void disablePortal();
-
   ASyncTasker & getTaskManager() { return _tasker; }
   ASyncTasker & tasker() { return _tasker; }
 
 #ifdef ESPMANAGER_SYSLOG
 
   SysLog * logger() { return _syslog; }
-
   bool log(myString  msg); 
   bool log(uint16_t pri, myString  msg); 
   bool log(myString appName, myString  msg);
@@ -159,8 +152,6 @@ private:
 #endif
 
   SysLog * _syslog{nullptr};
-
-
   ESPMAN_ERR_t _getAllSettings(); //  gets settings to settings ptr, uses new if it doesn't exist.  overwrite current data
   ESPMAN_ERR_t _getAllSettings(settings_t & set); //only populates the set... used to retrieve certain vailue...
   ESPMAN_ERR_t _saveAllSettings(settings_t & set);
@@ -174,45 +165,24 @@ private:
   void _removePreGzFiles();
   void _initialiseTasks();
   void _APlogic(Task & t);
-
   void _log(uint16_t pri, myString  msg); 
-
-  // String _hash(const char * pass);
-  // bool _hashCheck(const char * password, const char * hash) ;
-
 
   FS & _fs;
   AsyncWebServer & _HTTP;
   AsyncEventSource _events;
   DNSServer * _dns{nullptr};
   bool save_flag {false};
-//       bool _mDNSenabled {true};
   uint32_t _APtimer {0};
   uint32_t _APtimer2 {0};
   int _wifinetworksfound {0};
-//       bool _OTAupload {true};
-//       std::function<bool(void)> _syncCallback {nullptr};
   ap_boot_mode_t _ap_boot_mode {NO_STA_BOOT};
   no_sta_mode_t _no_sta_mode {NO_STA_NOTHING};
-
-
   bool _APenabledAtBoot {false};
   settings_t * _settings {nullptr};
-//        uint32_t _updateFreq = 0;
-//        uint32_t _updateTimer = 0;
-
-//        uint32_t _randomvalue;
-
   const byte DNS_PORT = 53;
   int8_t WiFiresult = -1;
-
-  //AsyncWebRewrite * _portalreWrite = nullptr;
-
   ASyncTasker _tasker;
-
   Task * _dnsTask{nullptr};
-
-
 
 #ifdef Debug_ESPManager
 
