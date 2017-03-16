@@ -24,8 +24,12 @@ extern "C" {
 }
 
 extern UMM_HEAP_INFO ummHeapInfo;
-
 extern "C" uint32_t _SPIFFS_start;
+
+static const char _compile_date_time[] = __DATE__ " " __TIME__;
+static const uint16_t _ESPdeviceFinderPort = 8888;  
+static const uint32_t _ESPdeviceTimeout = 1200000;// 300000;  //  when is the devicefinder deleted. 
+
 
 
 //#define LAST_MODIFIED_DATE "Mon, 20 Jun 2016 14:00:00 GMT"
@@ -76,13 +80,6 @@ ESPmanager::ESPmanager(
 
 }
 
-// void ESPmanager::test(Task & t)
-// {
-
-// }
-
-
-
 
 ESPmanager::~ESPmanager()
 {
@@ -119,6 +116,10 @@ ESPMAN_ERR_t ESPmanager::begin()
     ESPMan_Debugf("Device MAC: %s\n", WiFi.macAddress().c_str() );
 
     wifi_set_sleep_type(NONE_SLEEP_T); // workaround no modem sleep.
+
+    if (_appName.length() == 0) {
+        _appName = F("ESPManager");
+    }
 
     if (!_fs.begin()) {
         return ERROR_SPIFFS_MOUNT;
@@ -535,6 +536,32 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 #endif
 
+
+//  autodiscover code
+
+    _devicefinder = new ESPdeviceFinder;
+
+    if (_devicefinder) {
+
+    myString host = getHostname();
+    _devicefinder->cacheResults(false); 
+    _devicefinder->setAppName( "ESPmanager" );
+    _devicefinder->begin(host.c_str(), _ESPdeviceFinderPort);
+
+    _tasker.add( [this](Task & t) {
+
+        if (_devicefinder) {
+            _devicefinder->loop();
+        }
+
+        if (t.count > 2000) {
+            t.setTimeout(1000);  //  run for 20 seconds quickly... then back off...
+        }
+
+    }).setTimeout(10).setRepeat(true);  
+
+    }
+  
 
 }
 
@@ -2281,7 +2308,54 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         }
 
+        if (plainCommand == F("discover")) {
+
+            ESPMan_Debugf("Discover Devices\n");
+            
+            if (_devicefinder && !_deviceFinderTimer) {
+                _devicefinder->cacheResults(true);
+                _devicefinder->ping();
+                _deviceFinderTimer = millis(); 
+
+                _tasker.add( [this](Task & t) {
+
+                    if (millis() - _deviceFinderTimer > _ESPdeviceTimeout) {
+                        t.setRepeat(false);
+                        if (_devicefinder) {
+                            uint32_t pre_heap = ESP.getFreeHeap(); 
+                            _devicefinder->cacheResults(false);
+                            ESPMan_Debugf("Removing Found Devices after %us freeing %u\n", _ESPdeviceTimeout / 1000, ESP.getFreeHeap() - pre_heap  );
+                        }
+                        _deviceFinderTimer = 0; 
+                    } 
+                }).setTimeout(1000).setRepeat(true);
+
+            }
+
+            if (_devicefinder) {
+
+                _devicefinder->ping();
+                _populateFoundDevices(root);
+            }
+
+        }
+
+        if (plainCommand == F("getDevices")) {
+
+            _populateFoundDevices(root);
+
+            //  reset the timer so as to not delete the results. 
+            if (_deviceFinderTimer) {
+                _deviceFinderTimer = millis(); 
+            }
+            
+
+        }
+
+
     } //  end of if plaincommand
+
+
 
 
 
@@ -4052,7 +4126,6 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
         } else {
             set.STA.dhcp = true;
             set.STA.hasConfig = false;
-            ESPMan_Debugf("dhcp set true\n");
         }
 
         if (STAjson.containsKey(FPSTR(fstring_autoconnect))) {
@@ -4204,7 +4277,6 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     settingsJSON[FPSTR(fstring_ap_boot_mode)] = (int)set.GEN.ap_boot_mode;
     settingsJSON[FPSTR(fstring_no_sta_mode)] = (int)set.GEN.no_sta_mode;
-
     settingsJSON[FPSTR(fstring_OTAupload)] = set.GEN.OTAupload;
 
 
@@ -4643,6 +4715,40 @@ void ESPmanager::_log(uint16_t pri, myString  msg)
     log(pri, msg);
     event_send( F("LOG"), myStringf( F("[%3u] %s"), pri, msg.c_str()));
 
+}
+
+void ESPmanager::_populateFoundDevices(JsonObject & root)
+{
+    if (_devicefinder) {
+
+        String host = getHostname();
+
+        root[F("founddevices")] = _devicefinder->count();
+
+        if (_devicefinder->count()) {
+            JsonArray & devicelist = root.createNestedArray(F("devices"));
+
+            JsonObject & listitem = devicelist.createNestedObject();
+            listitem[F("name")] = host;
+            listitem[F("IP")] = WiFi.localIP().toString();
+            //listitem[F("appname")] = _appName;
+
+            for (uint8_t i = 0; i < _devicefinder->count(); i++) {
+                JsonObject & listitem = devicelist.createNestedObject();
+                const char * name = _devicefinder->getName(i);
+                //const char * appName = _devicefinder->getAppName(i);
+
+                IPAddress IP = _devicefinder->getIP(i);
+
+                listitem[F("name")] = name;
+                //listitem[F("appname")] = appName;
+                listitem[F("IP")] = IP.toString();
+                //ESPMan_Debugf("Found [%s]@ %s\n", name, IP.toString().c_str());
+            }
+        } else {
+            ESPMan_Debugf("No Devices Found\n");
+        }
+    }
 }
 
 

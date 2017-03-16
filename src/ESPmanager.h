@@ -48,7 +48,9 @@
 #include <functional>
 #include <ArduinoJson.h>
 #include "Tasker/src/Tasker.h"
+#include "ESPdeviceFinder/src/ESPdeviceFinder.h"
 #include "ESPMAN.h"   //  has to go after
+#include <ESPmanSysLog.h>
 
 
 //  These are the Features that can be turned off to save more FLASH and RAM space. 
@@ -58,7 +60,6 @@
 //#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/ 
 //#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
-#include <ESPmanSysLog.h>
 
 #ifdef ESPMANAGER_SAVESTACK
 #include "SaveStack.h"
@@ -67,7 +68,6 @@
 #define DEFAULT_AP_PASS "esprocks"
 
 #define SETTINGS_FILE "/espman/settings.json"
-// #define SALT_LENGTH 20
 #define ESPMANVERSION "2.2-async"
 #define SETTINGS_FILE_VERSION 2
 
@@ -91,9 +91,6 @@ static File _DebugFile;
 #define ESPMan_Debugf_raw(_1, ...) { }
 #endif
 
-static const char _compile_date_time[] = __DATE__ " " __TIME__;
-
-
 using namespace ESPMAN;
 
 
@@ -113,9 +110,14 @@ public:
   String getHostname();
   myString getError(ESPMAN_ERR_t err); 
   myString getError(int err) { return getError( (ESPMAN_ERR_t)err ); }
+  
+  //void setAppName(const char * name ) { _appName = name ; }  // don't store any of these... at the moment it should be a constant in the app... 
+  
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
   AsyncEventSource & getEvent();
+
+
   bool event_send(myString topic, myString msg ); 
   ESPMAN_ERR_t upgrade(String path = String(), bool runasync = true);
   void factoryReset();
@@ -162,6 +164,8 @@ private:
   ESPMAN_ERR_t _emergencyMode(bool shutdown = false, int channel = -1);
   void _sendTextResponse(AsyncWebServerRequest * request, uint16_t code, myString text);
 
+  void _populateFoundDevices(JsonObject & root); 
+
   void _removePreGzFiles();
   void _initialiseTasks();
   void _APlogic(Task & t);
@@ -183,6 +187,10 @@ private:
   int8_t WiFiresult = -1;
   ASyncTasker _tasker;
   Task * _dnsTask{nullptr};
+
+  ESPdeviceFinder * _devicefinder{nullptr}; 
+  uint32_t _deviceFinderTimer{0}; 
+  String _appName; 
 
 #ifdef Debug_ESPManager
 

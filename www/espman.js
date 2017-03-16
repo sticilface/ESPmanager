@@ -13,10 +13,7 @@ var _home_device = getBaseUrl();
 
 //_home_device = "http://192.168.1.168/espman/";
 
-
-
-
-console.log(_home_device);
+console.log("Home Device:" +  _home_device);
 
 /****************************************************
  *                    Events
@@ -501,6 +498,118 @@ function sethost(e) {
 
 
 }
+
+function populatedevicelist(data) {
+
+    function SortByName(a, b) {
+        var aName = a.name.toLowerCase();
+        var bName = b.name.toLowerCase();
+        return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
+    }
+
+    if (data.length > 1) {
+       data.sort(SortByName);
+    }
+
+    $('#device_list').empty(); 
+    $("#discover_status").empty();
+
+    $.each(data, function(key, value) {
+
+        if (value.hasOwnProperty("name") && value.hasOwnProperty("IP")) {
+
+        name = value.name.trim();
+        //app =  value.appname.trim();
+        ip = value.IP;
+        // $("#device_list_fieldset").append("<input type=\"radio\" data-mini=\"true\" name=\"device\" class=\"deviceselectclass\" id=\"radio-choice-v-" + key + "a\" value=\"" +
+        //     ip + "\"" + isconnected + "><label for=\"radio-choice-v-" + key + "a\">" + name + "</label>");
+        var extra; 
+        if (key === 0) {
+            extra = " (This device)";
+        } else {
+            extra = ""; 
+        }
+
+        $('#device_list').append(name + " (<a href=\"http://" + ip + "\">" + ip + "</a>)" + extra + "<br>"); 
+    }
+
+    });
+
+    //$("#device_list_fieldset").enhanceWithin();
+
+}
+
+var discover_timer; 
+
+function performdeviceScan(cmd) {
+
+    if (cmd == "discover") {
+        $("#discover_status").empty().append("Searching for devices (wait 30 seconds)"); 
+        $('#device_list').empty();
+
+        if (!discover_timer) {
+         discover_timer = setInterval(function(){
+             performdeviceScan("getDevices");
+        }, 5000);
+            console.log("Create timer", discover_timer);           
+        } else {
+            console.log("Timer already Running", discover_timer);   
+        }
+
+
+
+    }
+
+
+    $.post(_home_device + "data.esp", cmd, function(result) {
+        
+        if ("devices" in result) {
+
+           //console.log("devices", result.devices);
+           $("#discover_status").empty(); 
+
+           populatedevicelist(result.devices); 
+
+        } else {
+            $("#discover_status").empty().append("Searching for devices (wait 30 seconds)"); 
+            $('#device_list').empty();
+
+        }
+
+
+
+
+    }).success(function() {
+            //$("#discover_status").empty(); 
+    }).error(function() {
+            $("#discover_status").empty().append("Error"); 
+    }).complete(function() {});
+}
+
+$(document).on("pageshow", "#discover", function() {
+
+
+    performdeviceScan("discover");
+    $('#device_list').empty();
+
+}); // end of general page..
+
+$(document).on("pagehide", "#discover", function() {
+    console.log("clear timer", discover_timer);
+    clearTimeout(discover_timer); 
+    discover_timer = 0; 
+
+}); // end of general page..
+
+
+
+$(document).on('click', '#scan_btn', function(e) {
+    //$.post(_home_device + "getDevices", "getDevices");
+    
+
+    performdeviceScan("discover"); 
+
+});
 
 
 /****************************************************

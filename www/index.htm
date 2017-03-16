@@ -144,6 +144,7 @@ $(function() {
             <a href="#syslog
 " data-role="button" class="ui-btn">Syslog</a>
             <a href="#console" data-role="button" class="ui-btn">Console</a>
+            <a href="#discover" data-role="button" class="ui-btn">Discover</a>
             <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
             <div id="git_ver"></div>
         </div>
@@ -387,9 +388,7 @@ $(function() {
                 <div id="WiFi_networks" class="ui-content">
                     <!--   SECOND TAB -->
                     <div id="wifi_status"></div>
-            
                     <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
-
                     <form id="wifinetworks-form">
                         <label for="ssid-1">SSID:</label>
                         <input type="text" name="ssid" id="ssid-1" value="" data-clear-btn="true">
@@ -577,6 +576,11 @@ $(function() {
         <!-- /content -->
     </div>
     <!-- /page -->
+    <!-- ***********************************************************************
+
+         Upgrade Page
+
+*********************************************************************** -->
     <div data-role="page" id="console" data-close-btn="right" data-dialog="true">
         <div data-role="header">
             <h1>Console Messages</h1>
@@ -668,16 +672,36 @@ $(function() {
                 <a href="#generalpage" data-role="button" data-theme="a" data-icon="save" data-iconpos="notext" class="submitbutton ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">APPLY</a>
             </form>
         </div>
-        <!--  PAGE BOUNDARY -->
-        <!-- /page -->
-        <script src="/espman.js" inline inline-compress></script>
-        <style>
-        .myToolTip:link {
-            color: #333;
-            text-decoration: none;
-            font-weight: 400;
-        }
-        </style>
+    </div>
+    <!--  PAGE BOUNDARY -->
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         Discover Page
+
+*********************************************************************** -->
+    <div data-role="page" data-close-btn="right" id="discover">
+        <div data-role="header">
+            <h1>Discover Other ESPManager Devices</h1>
+        </div>
+        <div role="main" class="ui-content">
+            <div id="discover_status">Please Wait</div>
+            <div id="device_list"></div>
+             <div data-role="controlgroup" data-type="horizontal" align="center">
+                <a id="scan_btn" class="ui-btn  ui-btn-b" align="center">SCAN</a>
+            </div>           
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <script src="/espman.js" inline inline-compress></script>
+    <style>
+    .myToolTip:link {
+        color: #333;
+        text-decoration: none;
+        font-weight: 400;
+    }
+    </style>
 </body>
 
 </html>
