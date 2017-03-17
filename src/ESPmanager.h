@@ -54,9 +54,10 @@
 
 
 //  These are the Features that can be turned off to save more FLASH and RAM space. 
-#define ESPMANAGER_SYSLOG /* 16 Bytes */
-#define ESPMANAGER_SAVESTACK /* 0 Bytes - */
-#define ESPMAN_USE_UPDATER   /* 912 Bytes  */ 
+//#define ESPMANAGER_SYSLOG         /* 16 Bytes   RAM */
+//#define ESPMANAGER_SAVESTACK      /* 0 Bytes    RAM */
+//#define ESPMANAGER_UPDATER        /* 912 Bytes  RAM */ 
+//#define ESPMANAGER_DEVICEFINDER   /*  200 Bytes RAM */ 
 //#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/ 
 //#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
@@ -130,12 +131,15 @@ public:
 
 #ifdef ESPMANAGER_SYSLOG
 
+public:
   SysLog * logger() { return _syslog; }
   bool log(myString  msg); 
   bool log(uint16_t pri, myString  msg); 
   bool log(myString appName, myString  msg);
   bool log(uint16_t pri, myString appName, myString  msg);
-
+private:
+  void _log(uint16_t pri, myString  msg); 
+  
 #endif
 
 
@@ -144,7 +148,7 @@ private:
   void _HandleDataRequest(AsyncWebServerRequest * request);
   void _handleFileUpload(AsyncWebServerRequest * request, String filename, size_t index, uint8_t *data, size_t len, bool final);
   
-#ifdef ESPMAN_USE_UPDATER
+#ifdef ESPMANAGER_UPDATER
   ESPMAN_ERR_t _upgrade(const char * path);
   ESPMAN_ERR_t   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
   ESPMAN_ERR_t   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
@@ -169,7 +173,7 @@ private:
   void _removePreGzFiles();
   void _initialiseTasks();
   void _APlogic(Task & t);
-  void _log(uint16_t pri, myString  msg); 
+  
 
   FS & _fs;
   AsyncWebServer & _HTTP;

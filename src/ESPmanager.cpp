@@ -429,7 +429,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     _HTTP.addHandler(&_events);
 
-#ifdef ESPMAN_USE_UPDATER
+#ifdef ESPMANAGER_UPDATER
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
 #endif
 
@@ -986,7 +986,7 @@ ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 }
 
 
-#ifdef ESPMAN_USE_UPDATER
+#ifdef ESPMANAGER_UPDATER
 ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 {
     using namespace ESPMAN;
@@ -1373,7 +1373,7 @@ int ESPmanager::save()
 
 
 
-#ifdef ESPMAN_USE_UPDATER
+#ifdef ESPMANAGER_UPDATER
 
 ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true, bool overwrite)
 {
@@ -3836,6 +3836,14 @@ bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
     return false;
 }
 
+void ESPmanager::_log(uint16_t pri, myString  msg)
+{
+    log(pri, msg);
+    event_send( F("LOG"), myStringf( F("[%3u] %s"), pri, msg.c_str()));
+
+}
+
+
 #endif
 
 
@@ -4710,12 +4718,6 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
 }
 
 
-void ESPmanager::_log(uint16_t pri, myString  msg)
-{
-    log(pri, msg);
-    event_send( F("LOG"), myStringf( F("[%3u] %s"), pri, msg.c_str()));
-
-}
 
 void ESPmanager::_populateFoundDevices(JsonObject & root)
 {

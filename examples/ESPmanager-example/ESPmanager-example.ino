@@ -48,6 +48,7 @@ void setup()
 
 	Serial.println("");
 	Serial.println(F("Example ESPconfig - using ESPAsyncWebServer"));
+	Serial.println("Version: " ESPMANVERSION); 
 
 	Serial.printf("Sketch size: %u\n", ESP.getSketchSize());
 	Serial.printf("Free size: %u\n", ESP.getFreeSketchSpace());
