@@ -11,7 +11,7 @@ var _home_device = getBaseUrl();
 
 
 
-//_home_device = "http://192.168.1.168/espman/";
+_home_device = "http://192.168.1.168/espman/";
 
 console.log("Home Device:" +  _home_device);
 
@@ -507,8 +507,13 @@ function populatedevicelist(data) {
         return ((aName < bName) ? -1 : ((aName > bName) ? 1 : 0));
     }
 
+    var thisdevice;  
+
     if (data.length > 1) {
-       data.sort(SortByName);
+        thisdevice = data[0]; 
+        data.sort(SortByName);
+    } else {
+        return; 
     }
 
     $('#device_list').empty(); 
@@ -519,13 +524,11 @@ function populatedevicelist(data) {
         if (value.hasOwnProperty("name") && value.hasOwnProperty("IP")) {
 
         name = value.name.trim();
-        //app =  value.appname.trim();
         ip = value.IP;
-        // $("#device_list_fieldset").append("<input type=\"radio\" data-mini=\"true\" name=\"device\" class=\"deviceselectclass\" id=\"radio-choice-v-" + key + "a\" value=\"" +
-        //     ip + "\"" + isconnected + "><label for=\"radio-choice-v-" + key + "a\">" + name + "</label>");
+
         var extra; 
-        if (key === 0) {
-            extra = " (This device)";
+        if (thisdevice.hasOwnProperty("IP") && thisdevice.IP == ip) {
+            extra = "  => This device";
         } else {
             extra = ""; 
         }
