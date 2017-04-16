@@ -1,0 +1,64 @@
+\hypertarget{class_e_s_pdevice_finder}{}\section{E\+S\+Pdevice\+Finder Class Reference}
+\label{class_e_s_pdevice_finder}\index{E\+S\+Pdevice\+Finder@{E\+S\+Pdevice\+Finder}}
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{struct_e_s_pdevice_finder_1_1_u_d_p__item}{U\+D\+P\+\_\+item}
+\end{DoxyCompactItemize}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a200ecda9bb2d679f4b5d6f99fa76c7ab}\label{class_e_s_pdevice_finder_a200ecda9bb2d679f4b5d6f99fa76c7ab}} 
+typedef std\+::list$<$ std\+::unique\+\_\+ptr$<$ \hyperlink{struct_e_s_pdevice_finder_1_1_u_d_p__item}{U\+D\+P\+\_\+item} $>$ $>$ {\bfseries U\+D\+P\+List}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a539a9d277870c704fd16c3489734ea37}\label{class_e_s_pdevice_finder_a539a9d277870c704fd16c3489734ea37}} 
+void {\bfseries begin} (const char $\ast$host=nullptr, uint16\+\_\+t port=0)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_adfd99b6f9fbb3f5f05eb7af1c73faa21}\label{class_e_s_pdevice_finder_adfd99b6f9fbb3f5f05eb7af1c73faa21}} 
+void {\bfseries end} ()
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a562a409039e8e51c690669c7be3d44c6}\label{class_e_s_pdevice_finder_a562a409039e8e51c690669c7be3d44c6}} 
+void {\bfseries set\+Host} (String host)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a42ceb57b393c73104b2326d3b01be2ab}\label{class_e_s_pdevice_finder_a42ceb57b393c73104b2326d3b01be2ab}} 
+void {\bfseries set\+App\+Name} (String app\+Name)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_ac3d5d4e47e6e74f4ebbf58edd1b5df86}\label{class_e_s_pdevice_finder_ac3d5d4e47e6e74f4ebbf58edd1b5df86}} 
+void {\bfseries set\+Port} (uint16\+\_\+t port)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_abdb88ce6e272673b4ad53d2e60ef4d38}\label{class_e_s_pdevice_finder_abdb88ce6e272673b4ad53d2e60ef4d38}} 
+void {\bfseries set\+Multicast\+IP} (I\+P\+Address addr)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a24122d858746c2a78263643749744f63}\label{class_e_s_pdevice_finder_a24122d858746c2a78263643749744f63}} 
+void {\bfseries filter\+By\+App\+Name} (bool value)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a70330e8122313e4fd6758c157dde9eb9}\label{class_e_s_pdevice_finder_a70330e8122313e4fd6758c157dde9eb9}} 
+void {\bfseries loop} ()
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a1d04d6073b194a78cffa11738bef8a1a}\label{class_e_s_pdevice_finder_a1d04d6073b194a78cffa11738bef8a1a}} 
+void {\bfseries ping} ()
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a4a91d0e2f05a76d2d73a9ecc5bb53d3a}\label{class_e_s_pdevice_finder_a4a91d0e2f05a76d2d73a9ecc5bb53d3a}} 
+uint8\+\_\+t {\bfseries count} ()
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a75fb47fe700aab08dc30740e093421e8}\label{class_e_s_pdevice_finder_a75fb47fe700aab08dc30740e093421e8}} 
+const char $\ast$ {\bfseries get\+Name} (uint8\+\_\+t i)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a169118a96c267f8ce73cecffdab2759b}\label{class_e_s_pdevice_finder_a169118a96c267f8ce73cecffdab2759b}} 
+I\+P\+Address {\bfseries get\+IP} (uint8\+\_\+t i)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_a391e961c110cba87d250a0f151ee51a2}\label{class_e_s_pdevice_finder_a391e961c110cba87d250a0f151ee51a2}} 
+void {\bfseries cache\+Results} (bool val)
+\item 
+\mbox{\Hypertarget{class_e_s_pdevice_finder_adbc71125eedd3791e9443b14cd1a320f}\label{class_e_s_pdevice_finder_adbc71125eedd3791e9443b14cd1a320f}} 
+void {\bfseries clear\+Results} ()
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\+E\+S\+Pdevice\+Finder/src/E\+S\+Pdevice\+Finder.\+h\item 
+src/\+E\+S\+Pdevice\+Finder/src/E\+S\+Pdevice\+Finder.\+cpp\end{DoxyCompactItemize}

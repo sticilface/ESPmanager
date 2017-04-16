@@ -1,0 +1,55 @@
+\hypertarget{class_tasker}{}\section{Tasker$<$ Task\+Type, Loop\+Method $>$ Class Template Reference}
+\label{class_tasker}\index{Tasker$<$ Task\+Type, Loop\+Method $>$@{Tasker$<$ Task\+Type, Loop\+Method $>$}}
+Inheritance diagram for Tasker$<$ Task\+Type, Loop\+Method $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_tasker}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tasker_a3e9340a4891ee26049746f6a37fa1d65}\label{class_tasker_a3e9340a4891ee26049746f6a37fa1d65}} 
+typedef Loop\+Method {\bfseries loop\+\_\+m}
+\item 
+\mbox{\Hypertarget{class_tasker_ace2643f69a2c9298541577a25178d6cf}\label{class_tasker_ace2643f69a2c9298541577a25178d6cf}} 
+typedef Task\+Type {\bfseries task\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_tasker_ab1b011929f82e45e6de96be3ad816680}\label{class_tasker_ab1b011929f82e45e6de96be3ad816680}} 
+Task\+Type \& {\bfseries add} (tasker\+Cb\+\_\+t Cb, bool use\+Micros=false)
+\item 
+\mbox{\Hypertarget{class_tasker_a8823e80ee99db02faf92e800c1a0189c}\label{class_tasker_a8823e80ee99db02faf92e800c1a0189c}} 
+Task\+Type \& {\bfseries add\+Before} (tasker\+Cb\+\_\+t Cb, bool use\+Micros=false)
+\item 
+\mbox{\Hypertarget{class_tasker_a82d870310017354b4a7185fedcd74a08}\label{class_tasker_a82d870310017354b4a7185fedcd74a08}} 
+Task\+Type \& {\bfseries add\+After} (tasker\+Cb\+\_\+t Cb, bool use\+Micros=false)
+\item 
+\mbox{\Hypertarget{class_tasker_a2b1027cad18c0b510c252c78e07cd23e}\label{class_tasker_a2b1027cad18c0b510c252c78e07cd23e}} 
+bool {\bfseries go\+To\+Task} (Task\+Type \&task, bool run\+Immediately=false)
+\item 
+\mbox{\Hypertarget{class_tasker_ac04ba2b621aaf631fa0bcffb429dbcda}\label{class_tasker_ac04ba2b621aaf631fa0bcffb429dbcda}} 
+bool {\bfseries remove} (Task\+Type \&task)
+\item 
+\mbox{\Hypertarget{class_tasker_af9f0f1b6152e21adb2075d29890365d3}\label{class_tasker_af9f0f1b6152e21adb2075d29890365d3}} 
+void {\bfseries debug\+Out} (Stream \&stream, uint index\+Num=0, uint position=0)
+\item 
+\mbox{\Hypertarget{class_tasker_a9bc456b890c556f028f27d0ce85507e8}\label{class_tasker_a9bc456b890c556f028f27d0ce85507e8}} 
+{\footnotesize template$<$class Tasker\+Type $>$ }\\Tasker\+Type $\ast$ {\bfseries add\+Sub\+Tasker} (bool do\+Not\+Delete=false)
+\item 
+\mbox{\Hypertarget{class_tasker_ac243549b2515839aae51a1b818611e14}\label{class_tasker_ac243549b2515839aae51a1b818611e14}} 
+bool {\bfseries is\+Empty} ()
+\item 
+\mbox{\Hypertarget{class_tasker_a55d556448981dd30f79056c6a5eebc9a}\label{class_tasker_a55d556448981dd30f79056c6a5eebc9a}} 
+void {\bfseries test} ()
+\item 
+\mbox{\Hypertarget{class_tasker_ae2b2459b894cd113d57a417963fe1ec9}\label{class_tasker_ae2b2459b894cd113d57a417963fe1ec9}} 
+void {\bfseries set\+Parent} (\hyperlink{class_tasker_base}{Tasker\+Base} $\ast$ptr)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\+Tasker/src/\hyperlink{_tasker_class_8h}{Tasker\+Class.\+h}\end{DoxyCompactItemize}

@@ -1,0 +1,101 @@
+This is an attempt at a task schedular for E\+S\+P8266. Written in c++.
+
+Most of the complexities are hidden under the hood, it seems to work very well.
+
+\section*{Key features\+:}
+
+
+\begin{DoxyItemize}
+\item Non\+Blocking. The loop is not blocked, as long as you do not call delay() in your functions.
+\item Flexible. All tasks are std\+::function calls so can use std\+::bind or lambdas.
+\item A\+Sync\+Tasker -\/ Creates a task instance that runs all tasks concurrently, usefull for driving displays whilst checking buttons etc. non premtive multitasking!
+\begin{DoxyItemize}
+\item This feature has a timeout feature so each loop cycle it will visit each task to see if it needs running. If one task takes more than the timeout then it exits, continuing where it left of next loop. This allows you to maintain say wifi or other tasks as well.
+\end{DoxyItemize}
+\item Sync\+Tasker -\/ Creates a sequential \hyperlink{class_tasker}{Tasker} that waits for previous event to finish before starting the next.
+\begin{DoxyItemize}
+\item This is good for running a sequence of events that depend on the previous finishing. This tasker can be set to repeat which will continue to loop around. See Blink example using this.
+\end{DoxyItemize}
+\item add\+Sub\+Tasker$<$class Tasker\+Type$>$(\+Tasker\+Type tasker) -\/ This function is very powerfull. It creates a new tasker, and adds the required loop functions to the parent tasker, and returns a pointer back to this new \hyperlink{class_tasker}{Tasker}. Available to any \hyperlink{class_tasker}{Tasker} instance. This allows you in any task to spawn a new tasker to run sync, or async along side existing tasks!! all non blocking!
+\item Templated Tasks and loop methods, allow you to design your own \hyperlink{class_task}{Task} types and loop methods if required, the basic typedefs are created for you {\ttfamily A\+Sync\+Tasker} and {\ttfamily Sync\+Tasker}. Plans are to implement light weight methods and tasks that don\textquotesingle{}t occupy much R\+AM. So you can develop using the verbose outputs, and switch to lightweight for production.
+\end{DoxyItemize}
+
+\subsubsection*{Examples}
+
+Basic 
+\begin{DoxyCode}
+\textcolor{preprocessor}{#include <\hyperlink{_tasker_8h}{Tasker.h}>}
+
+\hyperlink{class_tasker}{ASyncTasker} tasker; 
+
+\textcolor{keywordtype}{void} setup() \{
+  Serial.begin(115200);
+  Serial.print(\textcolor{stringliteral}{"\(\backslash\)nBOOTING...."});
+    \textcolor{comment}{// prints hello after 10 seconds. }
+    tasker.add( [] (\hyperlink{class_task}{Task} & t) \{
+        Serial.println(\textcolor{stringliteral}{"hello"}); 
+    \}).setTimeout(10000); 
+   \textcolor{comment}{// prints hello again after 20 seconds }
+    tasker.add( [] (\hyperlink{class_task}{Task} & t) \{
+        Serial.println(\textcolor{stringliteral}{"hello again"}); 
+    \}).setTimeout(20000);  
+Serial.println(\textcolor{stringliteral}{"READY\(\backslash\)n"});
+\}
+
+\textcolor{keywordtype}{void} loop() \{
+tasker.loop();
+\}
+\end{DoxyCode}
+
+
+These two tasks run at the same time. This next example adds two tasks to a Sync\+Tasker, which waits for the first task to run before running the next. Declare {\ttfamily Sync\+Tasker tasker;} instead of {\ttfamily A\+Sync\+Tasker tasker;} then each task will follow the next. \subsubsection*{Tasks}
+
+Tasks are created internally with std\+::unique\+\_\+ptr, they are deleted when they are complete. A reference is returned to the pointer at creation allowing you to set and change parameters, but do not convert to a pointer, as the lifetime of the object is not guarunteed! you have been warned! I may implement a method to check if a task is still running...
+
+Each task callback is called with a reference to the task, so all task properties are changable within the callback. This allows you to test a condition and then change it at run time. eg 
+\begin{DoxyCode}
+\hyperlink{class_task}{Task} & t = tasker.add( [] (\hyperlink{class_task}{Task} & t) \{
+     Serial.println(\textcolor{stringliteral}{"hello again"}); 
+     t.setRepeat(\textcolor{keyword}{false}); \textcolor{comment}{//  changes to no repeating, and deletes the task.}
+     uint32\_t count = t.count; \textcolor{comment}{// returns the run number. }
+     t.setTimeout(1000); \textcolor{comment}{//  change the timout to 1 second from 20 seconds! }
+ \}).setTimeout(20000).setRepeat(\textcolor{keyword}{true}); 
+\end{DoxyCode}
+
+
+Tasks can also be named {\ttfamily .set\+Name(const char $\ast$)}, good for debugging as the name will appear in the debug output. \#\#\# Creating subtasks 
+\begin{DoxyCode}
+auto subtasker = tasker.addSubTasker<SyncTasker>();
+\end{DoxyCode}
+ This gives you a pointer to the sub tasker, behind the scenes it adds a loop() to the parent tasker, which is automatically deleted when the count of tasks == 0. This is unless you use {\ttfamily auto subtasker = tasker.\+add\+Sub\+Tasker$<$Sync\+Tasker$>$(true)}, which prevents the subtasker from being deleted. Unless you\textquotesingle{}ve set this to true, it is probably safe to assume that the tasker has been deleted and you\textquotesingle{}re accessing a null ptr!
+
+\subsubsection*{Debug out}
+
+Using {\ttfamily tasker.\+debug\+Out(\+Serial);} gives you a list of all the current running tasks, and subtasks. 
+\begin{DoxyCode}
+*****  Tasker  *****  
+Heap: 43320
+Tasker: 0x3ffef290 - 4 Tasks Running
+    1. 0x3fff0a0c [N][Debug Out] priority 0, timeout = 10000, runcount = 1
+    2. Tasker: 0x3fff0a88 - 4 Tasks Running Parent Tasker 0x3ffef290
+       └ 1. 0x3fff0b14 [N][SubTask1.1] timeout = 30000, runcount = 0
+        └ 2. 0x3fff0b74 [N][SubTask1.2] timeout = 30000, runcount = 0
+         └ 3. 0x3fff0bd4 [N][SubTask1.3] timeout = 30000, runcount = 0
+          └ 4. 0x3fff0c3c [N][SubTask1.4] timeout = 30000, runcount = 0
+    3. Tasker: 0x3fff0cb8 - 1 Tasks Running Parent Tasker 0x3ffef290
+        └ 1. Tasker: 0x3fff0e88 - 1 Tasks Running Parent Tasker 0x3fff0cb8
+            1. Tasker: 0x3fff1328 - 20 Tasks Running Parent Tasker 0x3fff0e88
+               └ 1. 0x3fff13c4 [N][supernested] timeout = 10000, runcount = 0
+                └ 2. 0x3fff140c [N][supernested] timeout = 10000, runcount = 0
+                 └ 3. 0x3fff1474 [N][supernested] timeout = 10000, runcount = 0
+*****   END   *****
+\end{DoxyCode}
+ Tasks run async just appear as numbers, tasks run sync and depend on the previous finishing have └ and are indented. The memory location of all taskers and tasks is given to help debugging.
+
+\subsubsection*{Other}
+
+
+\begin{DoxyItemize}
+\item There are plans for a priority approach but it has not been implemented yet... watch this space.
+\item I also plan to write lightweight less R\+AM hungry versions. 
+\end{DoxyItemize}

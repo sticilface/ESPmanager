@@ -1,0 +1,87 @@
+\hypertarget{_e_s_pman_sys_log_8h}{}\section{src/\+E\+S\+Pman\+Sys\+Log.h File Reference}
+\label{_e_s_pman_sys_log_8h}\index{src/\+E\+S\+Pman\+Sys\+Log.\+h@{src/\+E\+S\+Pman\+Sys\+Log.\+h}}
+
+
+\hyperlink{class_e_s_pmanager}{E\+S\+Pmanager} file.  
+
+
+{\ttfamily \#include \char`\"{}E\+S\+P\+M\+A\+N.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$I\+P\+Address.\+h$>$}\newline
+{\ttfamily \#include $<$Wi\+Fi\+Udp.\+h$>$}\newline
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_sys_log}{Sys\+Log}
+\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_a709050545b621c5eba19d44e17b5da52}\label{_e_s_pman_sys_log_8h_a709050545b621c5eba19d44e17b5da52}} 
+\#define {\bfseries L\+O\+G\+\_\+\+P\+R\+I\+M\+A\+SK}~0x07  /$\ast$ mask to extract priority part (internal) $\ast$/
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_aaa76273872f6d8e1a2626b76d417209d}\label{_e_s_pman_sys_log_8h_aaa76273872f6d8e1a2626b76d417209d}} 
+\#define {\bfseries L\+O\+G\+\_\+\+P\+RI}(p)~((p) \& L\+O\+G\+\_\+\+P\+R\+I\+M\+A\+SK)
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_adad2d7c1f25f7a94c697894722469c83}\label{_e_s_pman_sys_log_8h_adad2d7c1f25f7a94c697894722469c83}} 
+\#define {\bfseries L\+O\+G\+\_\+\+M\+A\+K\+E\+P\+RI}(fac,  pri)~(((fac) $<$$<$ 3) $\vert$ (pri))
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_af7e64a388ebd11693b6982b361aba8fa}\label{_e_s_pman_sys_log_8h_af7e64a388ebd11693b6982b361aba8fa}} 
+\#define {\bfseries L\+O\+G\+\_\+\+N\+F\+A\+C\+I\+L\+I\+T\+I\+ES}~24  /$\ast$ current number of facilities $\ast$/
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_a0e487f6cabd1b68612374a0a1dce72f0}\label{_e_s_pman_sys_log_8h_a0e487f6cabd1b68612374a0a1dce72f0}} 
+\#define {\bfseries L\+O\+G\+\_\+\+F\+A\+C\+M\+A\+SK}~0x03f8  /$\ast$ mask to extract facility part $\ast$/
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_aa6996a065648a99f5dfbd7c704a11ec8}\label{_e_s_pman_sys_log_8h_aa6996a065648a99f5dfbd7c704a11ec8}} 
+\#define {\bfseries L\+O\+G\+\_\+\+F\+AC}(p)~(((p) \& L\+O\+G\+\_\+\+F\+A\+C\+M\+A\+SK) $>$$>$ 3)
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_a12b268e754674380f5c5df9a488a6311}\label{_e_s_pman_sys_log_8h_a12b268e754674380f5c5df9a488a6311}} 
+\#define {\bfseries L\+O\+G\+\_\+\+M\+A\+SK}(pri)~(1 $<$$<$ (pri))	/$\ast$ mask for one priority $\ast$/
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_af55a665e2caa1cb189cf7391349ab418}\label{_e_s_pman_sys_log_8h_af55a665e2caa1cb189cf7391349ab418}} 
+\#define {\bfseries L\+O\+G\+\_\+\+U\+P\+TO}(pri)~((1 $<$$<$ ((pri)+1)) -\/ 1)	/$\ast$ all priorities through pri $\ast$/
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_a7d441ba7829e37ba63e210cf77268119}\label{_e_s_pman_sys_log_8h_a7d441ba7829e37ba63e210cf77268119}} 
+enum {\bfseries log\+Level\+\_\+t} \+: uint32\+\_\+t \{ \newline
+{\bfseries L\+O\+G\+\_\+\+E\+M\+E\+RG} = 0, 
+{\bfseries L\+O\+G\+\_\+\+A\+L\+E\+RT} = 1, 
+{\bfseries L\+O\+G\+\_\+\+C\+R\+IT} = 2, 
+{\bfseries L\+O\+G\+\_\+\+E\+RR} = 3, 
+\newline
+{\bfseries L\+O\+G\+\_\+\+W\+A\+R\+N\+I\+NG} = 4, 
+{\bfseries L\+O\+G\+\_\+\+N\+O\+T\+I\+CE} = 5, 
+{\bfseries L\+O\+G\+\_\+\+I\+N\+FO} = 6, 
+{\bfseries L\+O\+G\+\_\+\+D\+E\+B\+UG} = 7
+ \}
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_a890c8ead97e1af769e56e21791a36730}\label{_e_s_pman_sys_log_8h_a890c8ead97e1af769e56e21791a36730}} 
+enum {\bfseries protocol\+\_\+t} \+: uint8\+\_\+t \{ {\bfseries S\+Y\+S\+L\+O\+G\+\_\+\+P\+R\+O\+T\+O\+\_\+\+I\+E\+TF} = 0, 
+{\bfseries S\+Y\+S\+L\+O\+G\+\_\+\+P\+R\+O\+T\+O\+\_\+\+B\+SD} = 1
+ \}
+\item 
+\mbox{\Hypertarget{_e_s_pman_sys_log_8h_a6414f8a8ce2b88e418403a3793f1d9d5}\label{_e_s_pman_sys_log_8h_a6414f8a8ce2b88e418403a3793f1d9d5}} 
+enum {\bfseries facility\+\_\+t} \+: uint32\+\_\+t \{ \newline
+{\bfseries L\+O\+G\+\_\+\+K\+E\+RN} = (0 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+U\+S\+ER} = (1 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+M\+A\+IL} = (2 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+D\+A\+E\+M\+ON} = (3 $<$$<$ 3), 
+\newline
+{\bfseries L\+O\+G\+\_\+\+A\+U\+TH} = (4 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+S\+Y\+S\+L\+OG} = (5 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+L\+PR} = (6 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+N\+E\+WS} = (7 $<$$<$ 3), 
+\newline
+{\bfseries L\+O\+G\+\_\+\+U\+U\+CP} = (8 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+C\+R\+ON} = (9 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+A\+U\+T\+H\+P\+R\+IV} = (10 $<$$<$ 3), 
+{\bfseries L\+O\+G\+\_\+\+F\+TP} = (11 $<$$<$ 3)
+ \}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+\hyperlink{class_e_s_pmanager}{E\+S\+Pmanager} file. 
+
+Details. 

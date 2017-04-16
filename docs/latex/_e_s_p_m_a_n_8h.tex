@@ -1,0 +1,132 @@
+\hypertarget{_e_s_p_m_a_n_8h}{}\section{src/\+E\+S\+P\+M\+AN.h File Reference}
+\label{_e_s_p_m_a_n_8h}\index{src/\+E\+S\+P\+M\+A\+N.\+h@{src/\+E\+S\+P\+M\+A\+N.\+h}}
+
+
+E\+S\+P\+M\+AN file.  
+
+
+{\ttfamily \#include $<$Arduino.\+h$>$}\newline
+{\ttfamily \#include $<$Arduino\+Json.\+h$>$}\newline
+{\ttfamily \#include $<$I\+P\+Address.\+h$>$}\newline
+{\ttfamily \#include $<$functional$>$}\newline
+{\ttfamily \#include $<$F\+S.\+h$>$}\newline
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_e_s_p_m_a_n_1_1_j_s_o_npackage}{E\+S\+P\+M\+A\+N\+::\+J\+S\+O\+Npackage}
+\item 
+class \hyperlink{class_e_s_p_m_a_n_1_1my_string}{E\+S\+P\+M\+A\+N\+::my\+String}
+\item 
+class \hyperlink{class_e_s_p_m_a_n_1_1my_stringf}{E\+S\+P\+M\+A\+N\+::my\+Stringf}
+\item 
+class \hyperlink{class_e_s_p_m_a_n_1_1my_stringf___p}{E\+S\+P\+M\+A\+N\+::my\+Stringf\+\_\+P}
+\item 
+struct \hyperlink{struct_e_s_p_m_a_n_1_1settings__t}{E\+S\+P\+M\+A\+N\+::settings\+\_\+t}
+\item 
+struct \hyperlink{struct_e_s_p_m_a_n_1_1settings__t_1_1_a_p__t}{E\+S\+P\+M\+A\+N\+::settings\+\_\+t\+::\+A\+P\+\_\+t}
+\item 
+struct \hyperlink{struct_e_s_p_m_a_n_1_1settings__t_1_1_s_t_a__t}{E\+S\+P\+M\+A\+N\+::settings\+\_\+t\+::\+S\+T\+A\+\_\+t}
+\item 
+struct \hyperlink{struct_e_s_p_m_a_n_1_1settings__t_1_1_g_e_n__t}{E\+S\+P\+M\+A\+N\+::settings\+\_\+t\+::\+G\+E\+N\+\_\+t}
+\item 
+struct \hyperlink{struct_e_s_p_m_a_n_1_1password__t}{E\+S\+P\+M\+A\+N\+::password\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_e_s_p_m_a_n_8h_a8bcc85d695e1fff66ea9b0abf4891a78}\label{_e_s_p_m_a_n_8h_a8bcc85d695e1fff66ea9b0abf4891a78}} 
+enum {\bfseries E\+S\+P\+M\+A\+N\+\_\+\+E\+R\+R\+\_\+t} \+: int8\+\_\+t \{ \newline
+{\bfseries S\+U\+C\+C\+E\+SS} = 0, 
+{\bfseries U\+N\+K\+N\+O\+W\+N\+\_\+\+E\+R\+R\+OR} = -\/20, 
+{\bfseries N\+O\+\_\+\+U\+P\+D\+A\+T\+E\+\_\+\+U\+RL} = -\/21, 
+{\bfseries S\+P\+I\+F\+F\+S\+\_\+\+F\+I\+L\+E\+S\+\_\+\+A\+B\+S\+E\+NT} = -\/22, 
+\newline
+{\bfseries F\+I\+L\+E\+\_\+\+N\+O\+T\+\_\+\+C\+H\+A\+N\+G\+ED} = -\/23, 
+{\bfseries M\+D5\+\_\+\+C\+H\+K\+\_\+\+E\+R\+R\+OR} = -\/24, 
+{\bfseries H\+T\+T\+P\+\_\+\+E\+R\+R\+OR} = -\/25, 
+{\bfseries J\+S\+O\+N\+\_\+\+P\+A\+R\+S\+E\+\_\+\+E\+R\+R\+OR} = -\/26, 
+\newline
+{\bfseries J\+S\+O\+N\+\_\+\+O\+B\+J\+E\+C\+T\+\_\+\+E\+R\+R\+OR} = -\/27, 
+{\bfseries C\+O\+N\+F\+I\+G\+\_\+\+F\+I\+L\+E\+\_\+\+E\+R\+R\+OR} = -\/28, 
+{\bfseries U\+P\+D\+A\+T\+E\+R\+\_\+\+E\+R\+R\+OR} = -\/29, 
+{\bfseries J\+S\+O\+N\+\_\+\+T\+O\+O\+\_\+\+L\+A\+R\+GE} = -\/30, 
+\newline
+{\bfseries M\+A\+L\+L\+O\+C\+\_\+\+F\+A\+IL} = -\/31, 
+{\bfseries M\+A\+N\+I\+F\+S\+T\+\_\+\+F\+I\+L\+E\+\_\+\+E\+R\+R\+OR} = -\/32, 
+{\bfseries U\+N\+K\+N\+O\+W\+N\+\_\+\+N\+U\+M\+B\+E\+R\+\_\+\+O\+F\+\_\+\+F\+I\+L\+ES} = -\/33, 
+{\bfseries S\+P\+I\+F\+F\+S\+\_\+\+I\+N\+F\+O\+\_\+\+F\+A\+IL} = -\/34, 
+\newline
+{\bfseries S\+P\+I\+F\+F\+S\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+T\+O\+O\+\_\+\+L\+O\+NG} = -\/35, 
+{\bfseries S\+P\+I\+F\+F\+S\+\_\+\+F\+I\+L\+E\+\_\+\+O\+P\+E\+N\+\_\+\+E\+R\+R\+OR} = -\/36, 
+{\bfseries F\+I\+L\+E\+\_\+\+T\+O\+O\+\_\+\+L\+A\+R\+GE} = -\/37, 
+{\bfseries I\+N\+C\+O\+M\+P\+L\+E\+T\+E\+\_\+\+D\+O\+W\+N\+L\+O\+AD} = -\/38, 
+\newline
+{\bfseries C\+R\+C\+\_\+\+E\+R\+R\+OR} = -\/39, 
+{\bfseries J\+S\+O\+N\+\_\+\+K\+E\+Y\+\_\+\+M\+I\+S\+S\+I\+NG} = -\/40, 
+{\bfseries E\+M\+P\+T\+Y\+\_\+\+B\+U\+F\+F\+ER} = -\/41, 
+{\bfseries A\+P\+\_\+\+D\+I\+S\+A\+B\+L\+ED} = -\/42, 
+\newline
+{\bfseries E\+R\+R\+O\+R\+\_\+\+E\+N\+A\+B\+L\+I\+N\+G\+\_\+\+AP} = -\/43, 
+{\bfseries E\+R\+R\+O\+R\+\_\+\+D\+I\+S\+A\+B\+L\+I\+N\+G\+\_\+\+AP} = -\/44, 
+{\bfseries E\+R\+R\+O\+R\+\_\+\+S\+E\+T\+T\+I\+N\+G\+\_\+\+C\+O\+N\+F\+IG} = -\/45, 
+{\bfseries E\+R\+R\+O\+R\+\_\+\+E\+N\+A\+B\+L\+I\+N\+G\+\_\+\+S\+TA} = -\/46, 
+\newline
+{\bfseries F\+A\+I\+L\+E\+D\+\_\+\+S\+E\+T\+\_\+\+A\+U\+T\+O\+C\+O\+N\+N\+E\+CT} = -\/47, 
+{\bfseries F\+A\+I\+L\+E\+D\+\_\+\+S\+E\+T\+\_\+\+A\+U\+T\+O\+R\+E\+C\+O\+N\+N\+E\+CT} = -\/48, 
+{\bfseries W\+I\+F\+I\+\_\+\+C\+O\+N\+F\+I\+G\+\_\+\+E\+R\+R\+OR} = -\/49, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+S\+S\+ID} = -\/50, 
+\newline
+{\bfseries E\+R\+R\+O\+R\+\_\+\+W\+I\+F\+I\+\_\+\+B\+E\+G\+IN} = -\/60, 
+{\bfseries N\+O\+\_\+\+S\+S\+I\+D\+\_\+\+A\+V\+A\+IL} = -\/70, 
+{\bfseries C\+O\+N\+N\+E\+C\+T\+\_\+\+F\+A\+I\+L\+ED} = -\/80, 
+{\bfseries U\+N\+I\+T\+I\+T\+I\+A\+L\+I\+S\+ED} = -\/81, 
+\newline
+{\bfseries E\+R\+R\+O\+R\+\_\+\+S\+P\+I\+F\+F\+S\+\_\+\+M\+O\+U\+NT} = -\/82, 
+{\bfseries A\+U\+T\+O\+\_\+\+C\+O\+N\+N\+E\+C\+T\+E\+D\+\_\+\+S\+TA} = -\/83, 
+{\bfseries E\+R\+R\+O\+R\+\_\+\+D\+I\+S\+A\+B\+L\+I\+N\+G\+\_\+\+S\+TA} = -\/84, 
+{\bfseries S\+T\+A\+\_\+\+D\+I\+S\+A\+B\+L\+ED} = -\/85, 
+\newline
+{\bfseries S\+E\+T\+T\+I\+N\+G\+S\+\_\+\+N\+O\+T\+\_\+\+I\+N\+\_\+\+M\+E\+M\+O\+RY} = -\/86, 
+{\bfseries E\+R\+R\+O\+R\+\_\+\+S\+E\+T\+T\+I\+N\+G\+\_\+\+M\+AC} = -\/87, 
+{\bfseries P\+A\+S\+S\+W\+O\+R\+D\+\_\+\+M\+I\+S\+M\+A\+T\+CH} = -\/88, 
+{\bfseries N\+O\+\_\+\+C\+H\+A\+N\+G\+ES} = -\/89, 
+\newline
+{\bfseries P\+A\+S\+S\+W\+O\+R\+O\+D\+\_\+\+I\+N\+V\+A\+L\+ID} = -\/90, 
+{\bfseries W\+R\+O\+N\+G\+\_\+\+S\+E\+T\+T\+I\+N\+G\+S\+\_\+\+F\+I\+L\+E\+\_\+\+V\+E\+R\+S\+I\+ON} = -\/91
+ \}
+\item 
+\mbox{\Hypertarget{_e_s_p_m_a_n_8h_a367257b39aefb98c08769d372c069820}\label{_e_s_p_m_a_n_8h_a367257b39aefb98c08769d372c069820}} 
+enum {\bfseries ap\+\_\+boot\+\_\+mode\+\_\+t} \+: int8\+\_\+t \{ \newline
+{\bfseries D\+I\+S\+A\+B\+L\+ED} = -\/1, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+B\+O\+OT} = 0, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+B\+O\+O\+T\+\_\+\+A\+P\+\_\+5} = 5, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+B\+O\+O\+T\+\_\+\+A\+P\+\_\+10} = 10, 
+\newline
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+B\+O\+O\+T\+\_\+\+A\+P\+\_\+30} = 30, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+B\+O\+O\+T\+\_\+\+A\+P\+\_\+60} = 60
+ \}
+\item 
+\mbox{\Hypertarget{_e_s_p_m_a_n_8h_a48ab5fdcc0f24c796c52b63426135429}\label{_e_s_p_m_a_n_8h_a48ab5fdcc0f24c796c52b63426135429}} 
+enum {\bfseries no\+\_\+sta\+\_\+mode\+\_\+t} \+: int8\+\_\+t \{ \newline
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+N\+O\+T\+H\+I\+NG} = -\/2, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+R\+E\+B\+O\+OT} = -\/1, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+S\+T\+A\+R\+T\+\_\+\+AP} = 0, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+S\+T\+A\+R\+T\+\_\+\+A\+P\+\_\+5} = 5, 
+\newline
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+S\+T\+A\+R\+T\+\_\+\+A\+P\+\_\+10} = 10, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+S\+T\+A\+R\+T\+\_\+\+A\+P\+\_\+30} = 30, 
+{\bfseries N\+O\+\_\+\+S\+T\+A\+\_\+\+S\+T\+A\+R\+T\+\_\+\+A\+P\+\_\+60} = 60
+ \}
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_e_s_p_m_a_n_8h_aa88c03e5f6478d3ce6c6e9537c83f8a8}\label{_e_s_p_m_a_n_8h_aa88c03e5f6478d3ce6c6e9537c83f8a8}} 
+const char fstring\+\_\+\+C\+O\+RS \mbox{[}$\,$\mbox{]} {\bfseries E\+S\+P\+M\+A\+N\+::\+P\+R\+O\+G\+M\+EM} = \char`\"{}Access-\/Control-\/Allow-\/Origin\char`\"{}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+E\+S\+P\+M\+AN file. 
+
+Details. 

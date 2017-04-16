@@ -1,0 +1,65 @@
+\hypertarget{class_flash_writer}{}\section{Flash\+Writer Class Reference}
+\label{class_flash_writer}\index{Flash\+Writer@{Flash\+Writer}}
+Inheritance diagram for Flash\+Writer\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_flash_writer}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_flash_writer_a1376815be0390bdedfd3d59eda900732}\label{class_flash_writer_a1376815be0390bdedfd3d59eda900732}} 
+bool {\bfseries begin} (size\+\_\+t size)
+\item 
+\mbox{\Hypertarget{class_flash_writer_a41447872c8c0ecb37bdd9bdae4fa8dc2}\label{class_flash_writer_a41447872c8c0ecb37bdd9bdae4fa8dc2}} 
+bool {\bfseries is\+Running} ()
+\item 
+\mbox{\Hypertarget{class_flash_writer_a51781bc5e919454056cfaed0156873a3}\label{class_flash_writer_a51781bc5e919454056cfaed0156873a3}} 
+bool {\bfseries is\+Finished} ()
+\item 
+\mbox{\Hypertarget{class_flash_writer_a18950100a30881380d55a348bd1e1526}\label{class_flash_writer_a18950100a30881380d55a348bd1e1526}} 
+size\+\_\+t {\bfseries size} ()
+\item 
+\mbox{\Hypertarget{class_flash_writer_af395626466b39b7aed1da7598e1e2e67}\label{class_flash_writer_af395626466b39b7aed1da7598e1e2e67}} 
+size\+\_\+t {\bfseries progress} ()
+\item 
+\mbox{\Hypertarget{class_flash_writer_a99c79273d8c09f12c9ad5a2c304fc346}\label{class_flash_writer_a99c79273d8c09f12c9ad5a2c304fc346}} 
+size\+\_\+t {\bfseries remaining} ()
+\item 
+\mbox{\Hypertarget{class_flash_writer_a8a38cd9ac0b6fcd17e843d0b43e9f553}\label{class_flash_writer_a8a38cd9ac0b6fcd17e843d0b43e9f553}} 
+String {\bfseries get\+M\+D5} ()
+\item 
+\mbox{\Hypertarget{class_flash_writer_a4dbb71d7dd54a7045f67cc7b9b67cfdb}\label{class_flash_writer_a4dbb71d7dd54a7045f67cc7b9b67cfdb}} 
+void {\bfseries timeout} (uint32\+\_\+t value)
+\item 
+\mbox{\Hypertarget{class_flash_writer_aa22c6cb879da90b10d677fcd04fdf349}\label{class_flash_writer_aa22c6cb879da90b10d677fcd04fdf349}} 
+virtual size\+\_\+t {\bfseries write} (const uint8\+\_\+t $\ast$data, size\+\_\+t len) override
+\item 
+\mbox{\Hypertarget{class_flash_writer_ad38210dcd95926ac5c9538a247580bff}\label{class_flash_writer_ad38210dcd95926ac5c9538a247580bff}} 
+virtual size\+\_\+t {\bfseries write} (uint8\+\_\+t value) override
+\item 
+\mbox{\Hypertarget{class_flash_writer_ae77a296342ed2e6a182a47e3723ec793}\label{class_flash_writer_ae77a296342ed2e6a182a47e3723ec793}} 
+virtual int {\bfseries available} () override
+\item 
+\mbox{\Hypertarget{class_flash_writer_a4663c0f6af43e917bdc3da3e713ce4d8}\label{class_flash_writer_a4663c0f6af43e917bdc3da3e713ce4d8}} 
+virtual int {\bfseries read} () override
+\item 
+\mbox{\Hypertarget{class_flash_writer_aa28215079911b918877cf1bd48a19ca7}\label{class_flash_writer_aa28215079911b918877cf1bd48a19ca7}} 
+virtual size\+\_\+t {\bfseries read\+Bytes} (uint8\+\_\+t $\ast$, size\+\_\+t)
+\item 
+\mbox{\Hypertarget{class_flash_writer_ab9a55816c9ae25b7a07c444ff93811d4}\label{class_flash_writer_ab9a55816c9ae25b7a07c444ff93811d4}} 
+virtual int {\bfseries peek} () override
+\item 
+\mbox{\Hypertarget{class_flash_writer_a3d68a95de1159906ad910aa14530ff00}\label{class_flash_writer_a3d68a95de1159906ad910aa14530ff00}} 
+virtual void {\bfseries flush} () override
+\item 
+\mbox{\Hypertarget{class_flash_writer_aeada2f4f7a906b30f0affce61551ad92}\label{class_flash_writer_aeada2f4f7a906b30f0affce61551ad92}} 
+int {\bfseries write\+To\+Stream} (Stream $\ast$stream)
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\hyperlink{_flash_writer_8h}{Flash\+Writer.\+h}\item 
+src/\hyperlink{_flash_writer_8cpp}{Flash\+Writer.\+cpp}\end{DoxyCompactItemize}

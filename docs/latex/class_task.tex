@@ -1,0 +1,73 @@
+\hypertarget{class_task}{}\section{Task Class Reference}
+\label{class_task}\index{Task@{Task}}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_task_a3c14c4e1c42ebd30ba57a1d6da0d74bb}\label{class_task_a3c14c4e1c42ebd30ba57a1d6da0d74bb}} 
+typedef std\+::function$<$ void(\hyperlink{class_task}{Task} \&)$>$ {\bfseries tasker\+Cb\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_task_abf4c9149babce0960cf1e628de499f9d}\label{class_task_abf4c9149babce0960cf1e628de499f9d}} 
+{\bfseries Task} (tasker\+Cb\+\_\+t cb, bool use\+Micros=false)
+\item 
+\mbox{\Hypertarget{class_task_ab69f69089f91b6b7c696564a6796e0ca}\label{class_task_ab69f69089f91b6b7c696564a6796e0ca}} 
+bool {\bfseries run} (const uint8\+\_\+t priority=0, const bool override=false)
+\item 
+\mbox{\Hypertarget{class_task_a1fc4c9c46651e9c4fc0240b5619ea850}\label{class_task_a1fc4c9c46651e9c4fc0240b5619ea850}} 
+\hyperlink{class_task}{Task} \& {\bfseries run\+Cb} ()
+\item 
+\mbox{\Hypertarget{class_task_ae65879becb23f5381225ee0c8959b739}\label{class_task_ae65879becb23f5381225ee0c8959b739}} 
+\hyperlink{class_task}{Task} \& {\bfseries set\+Timeout} (uint32\+\_\+t timeout)
+\item 
+\mbox{\Hypertarget{class_task_a602c3d55c3ce1adf70c77ca34dac5eba}\label{class_task_a602c3d55c3ce1adf70c77ca34dac5eba}} 
+uint32\+\_\+t {\bfseries get\+Timeout} ()
+\item 
+\mbox{\Hypertarget{class_task_af0cdd7eb17b54decbca227cc2db86aaa}\label{class_task_af0cdd7eb17b54decbca227cc2db86aaa}} 
+\hyperlink{class_task}{Task} \& {\bfseries set\+Repeat} (bool repeat=true)
+\item 
+\mbox{\Hypertarget{class_task_a2eba537a294f1ea2e9d0d375ad980993}\label{class_task_a2eba537a294f1ea2e9d0d375ad980993}} 
+\hyperlink{class_task}{Task} \& {\bfseries set\+Repeat} (int number)
+\item 
+\mbox{\Hypertarget{class_task_aed0f55a2f6129e1ee9ec6bf1f49339ba}\label{class_task_aed0f55a2f6129e1ee9ec6bf1f49339ba}} 
+\hyperlink{class_task}{Task} \& {\bfseries set\+Priority} (uint8\+\_\+t pr)
+\item 
+\mbox{\Hypertarget{class_task_affea110babfe474fc6ccdb88e7b8122e}\label{class_task_affea110babfe474fc6ccdb88e7b8122e}} 
+uint8\+\_\+t {\bfseries get\+Priority} ()
+\item 
+\mbox{\Hypertarget{class_task_a7f9a1b3b8b2f16bba8fa05831dff6776}\label{class_task_a7f9a1b3b8b2f16bba8fa05831dff6776}} 
+\hyperlink{class_task}{Task} \& {\bfseries enable} ()
+\item 
+\mbox{\Hypertarget{class_task_afe347b4ccfcaf48c333f87cd4e832ecf}\label{class_task_afe347b4ccfcaf48c333f87cd4e832ecf}} 
+\hyperlink{class_task}{Task} \& {\bfseries disable} ()
+\item 
+\mbox{\Hypertarget{class_task_ab3d1be80ad209a597a729166a80efc92}\label{class_task_ab3d1be80ad209a597a729166a80efc92}} 
+\hyperlink{class_task}{Task} \& {\bfseries set\+Name} (const char $\ast$name)
+\item 
+\mbox{\Hypertarget{class_task_aba0bd15f206791e57958128c5be34956}\label{class_task_aba0bd15f206791e57958128c5be34956}} 
+const char $\ast$ {\bfseries name} ()
+\item 
+\mbox{\Hypertarget{class_task_aa3a2b2bf899730aa64e1cf3c1d868b47}\label{class_task_aa3a2b2bf899730aa64e1cf3c1d868b47}} 
+void {\bfseries reset} ()
+\item 
+\mbox{\Hypertarget{class_task_a4804088579cabf62cd81f2f85d79f5c4}\label{class_task_a4804088579cabf62cd81f2f85d79f5c4}} 
+\hyperlink{class_task}{Task} \& {\bfseries on\+End} (std\+::function$<$ void(void)$>$ Cb)
+\item 
+\mbox{\Hypertarget{class_task_a60541f7f451ab3ce1831530272e1d428}\label{class_task_a60541f7f451ab3ce1831530272e1d428}} 
+\hyperlink{class_task}{Task} \& {\bfseries set\+Persistent} (bool donotdelete)
+\item 
+\mbox{\Hypertarget{class_task_a0922035b69fa2db9fcfc8624e0857724}\label{class_task_a0922035b69fa2db9fcfc8624e0857724}} 
+bool {\bfseries running} ()
+\end{DoxyCompactItemize}
+\subsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_task_a658d28d140840da2ae4ea5a92923a326}\label{class_task_a658d28d140840da2ae4ea5a92923a326}} 
+uint32\+\_\+t {\bfseries count} \{0\}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\+Tasker/src/\hyperlink{_task_8h}{Task.\+h}\end{DoxyCompactItemize}

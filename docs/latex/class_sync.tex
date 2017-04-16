@@ -1,0 +1,64 @@
+\hypertarget{class_sync}{}\section{Sync$<$ T $>$ Class Template Reference}
+\label{class_sync}\index{Sync$<$ T $>$@{Sync$<$ T $>$}}
+Inheritance diagram for Sync$<$ T $>$\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{class_sync}
+\end{center}
+\end{figure}
+\subsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_sync_a84a754a69fe29401cc17a92e90c48975}\label{class_sync_a84a754a69fe29401cc17a92e90c48975}} 
+typedef std\+::unique\+\_\+ptr$<$ T $>$ {\bfseries task\+Storage\+\_\+t}
+\item 
+\mbox{\Hypertarget{class_sync_a9b62760ba34279555be314fdc09a2690}\label{class_sync_a9b62760ba34279555be314fdc09a2690}} 
+typedef \hyperlink{class_tasker_base}{Tasker\+Base} $\ast$ {\bfseries sub\+Task\+Storage\+\_\+t}
+\item 
+\mbox{\Hypertarget{class_sync_ae1688802d96c5882f89616a6fbf54fe7}\label{class_sync_ae1688802d96c5882f89616a6fbf54fe7}} 
+typedef std\+::pair$<$ task\+Storage\+\_\+t, \hyperlink{class_tasker_base}{sub\+Task\+Storage\+\_\+t} $>$ {\bfseries task\+Pair\+Storage\+\_\+t}
+\item 
+\mbox{\Hypertarget{class_sync_a319cc5d12bb90918a33aea6aced00921}\label{class_sync_a319cc5d12bb90918a33aea6aced00921}} 
+typedef std\+::list$<$ task\+Pair\+Storage\+\_\+t $>$ {\bfseries task\+List\+\_\+t}
+\item 
+\mbox{\Hypertarget{class_sync_a0d888c29e32980c1b54fcccf7a53e952}\label{class_sync_a0d888c29e32980c1b54fcccf7a53e952}} 
+typedef std\+::function$<$ void(void)$>$ {\bfseries Empty\+Cb\+\_\+t}
+\item 
+\mbox{\Hypertarget{class_sync_a36eab6d1287f11d284de05b542afa3dc}\label{class_sync_a36eab6d1287f11d284de05b542afa3dc}} 
+typedef std\+::function$<$ void(T \&)$>$ {\bfseries tasker\+Cb\+\_\+t}
+\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_sync_aece81cdb63a55f8cbde87d19f6e3abb7}\label{class_sync_aece81cdb63a55f8cbde87d19f6e3abb7}} 
+void {\bfseries loop} ()
+\item 
+\mbox{\Hypertarget{class_sync_a3fe1dc69eaf600a1cccdeb9a16ac9529}\label{class_sync_a3fe1dc69eaf600a1cccdeb9a16ac9529}} 
+void {\bfseries enable} (bool enable)
+\item 
+\mbox{\Hypertarget{class_sync_a9e80ba41b50ccc48142210a178f01f1c}\label{class_sync_a9e80ba41b50ccc48142210a178f01f1c}} 
+void {\bfseries set\+Repeat} (bool repeat)
+\item 
+\mbox{\Hypertarget{class_sync_a0bc032145bb002439b7af2a9611cc2e6}\label{class_sync_a0bc032145bb002439b7af2a9611cc2e6}} 
+void {\bfseries sort} ()
+\item 
+\mbox{\Hypertarget{class_sync_aea43723f3a584a07137a47f50b40a9df}\label{class_sync_aea43723f3a584a07137a47f50b40a9df}} 
+void {\bfseries dump\+Task} (T \&t, Stream \&stream, uint \&position, uint index)
+\item 
+\mbox{\Hypertarget{class_sync_af05b4166d049fdd643517980d090b232}\label{class_sync_af05b4166d049fdd643517980d090b232}} 
+void {\bfseries printprechar} (Stream \&stream)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{class_sync_a257fec0e90c516a9d18f3f48e6dbc684}\label{class_sync_a257fec0e90c516a9d18f3f48e6dbc684}} 
+task\+List\+\_\+t {\bfseries \+\_\+list}
+\item 
+\mbox{\Hypertarget{class_sync_ab238d6984e4942bbbf641a938ce109a1}\label{class_sync_ab238d6984e4942bbbf641a938ce109a1}} 
+task\+List\+\_\+t\+::iterator {\bfseries \+\_\+it}
+\end{DoxyCompactItemize}
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+src/\+Tasker/src/\hyperlink{_task_methods_8h}{Task\+Methods.\+h}\end{DoxyCompactItemize}
