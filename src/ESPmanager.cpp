@@ -417,9 +417,6 @@ ESPMAN_ERR_t ESPmanager::begin()
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
 #endif
 
-
-    _initialiseTasks();
-
     if (_settings->GEN.updateFreq) {
 
         _tasker.add([this](Task & t) {
@@ -1406,14 +1403,10 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
 
             if (writer.begin(len)) {
                 uint32_t start_time = millis();
-                //Serial.print("Started write to Flash: ");
                 byteswritten = http.writeToStream(&writer);  //  this writes to the 1Mb Flash partition for the OTA upgrade.  zero latency...
-                //Serial.println( millis() - start_time);
                 if (byteswritten > 0 && byteswritten == len) {
                     uint32_t start_time = millis();
-                    //Serial.print("Started write to SPIFFS: ");
                     byteswritten = writer.writeToStream(&f); //  contains a yield to allow networking.  Can take minutes to complete.
-                    //erial.println( millis() - start_time);
                 } else {
                     ESPMan_Debugf("HTTP to Flash error, byteswritten = %i\n", byteswritten);
                 }

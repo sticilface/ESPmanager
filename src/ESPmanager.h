@@ -102,6 +102,7 @@ static File _DebugFile;
 #endif
 
 using namespace ESPMAN;
+//using namespace ESPMAN;
 
 class ESPmanager
 {

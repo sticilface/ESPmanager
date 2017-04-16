@@ -168,7 +168,7 @@ enum no_sta_mode_t : int8_t {
 // static const char * string_
 // static const char * string_
 
-//static const int MAX_BUFFER_SIZE = 2048; 
+static const int MAX_BUFFER_SIZE = 2048;  /**< @brief max permitted size for a buffer, generally used to receive network data */
 static const int MAX_SSID_LENGTH = 32;  /**< @brief max permitted length of SSID */
 static const int MAX_PASS_LENGTH = 64;  /**< @brief max permitted length of PASS */
 static const int AP_START_DELAY = 2 * 60 * 1000; /**< @brief Fixed time constant before checking that there is no wifi before starting AP */
