@@ -15,7 +15,7 @@
 #include <FS.h>
 
 /**
- *  @brief ESPMAN namespace.  Contains tools for ESPmanager
+ *  @brief Contains tools for ESPmanager
  */
 namespace ESPMAN
 {
@@ -287,7 +287,8 @@ struct settings_t {
     bool changed {false};
 
     /**
-     * @brief Access point (AP) Settings.  
+     * @brief Access point (AP) Settings struct
+     * Parse this 
      */
     struct AP_t {
         bool enabled {false};
@@ -303,7 +304,7 @@ struct settings_t {
         uint8_t channel {1};
     } AP;
     /**
-     * @brief Station (STA) Settings. 
+     * @brief Station (STA) Settings struct
      */
     struct STA_t {
         bool enabled {false};
@@ -322,7 +323,7 @@ struct settings_t {
         bool autoReconnect {true};
     } STA;
     /**
-     * @brief General settings, used for storing ESPmanager variables. 
+     * @brief General settings struct, used for storing ESPmanager variables.
      */
     struct GEN_t {
         bool mDNSenabled {true};
@@ -346,6 +347,7 @@ struct settings_t {
 };
 /**
  * @private
+ * Not in use. 
  */
 struct password_t {
     myString pass;

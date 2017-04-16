@@ -101,9 +101,13 @@ static File _DebugFile;
 #define ESPMan_Debugf_raw(_1, ...) { }
 #endif
 
-using namespace ESPMAN;
 //using namespace ESPMAN;
 
+/**
+ * @brief Manager for ESP8266.
+ *
+ * Includes support for WiFi management, WiFi upgrades, device discovery and much more. 
+ */
 class ESPmanager
 {
 public:
