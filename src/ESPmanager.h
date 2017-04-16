@@ -1,3 +1,12 @@
+/** @file .
+ *   @brief Main File ESPManager.
+ *   
+ *   
+ *   This is the main file.  ESPManager is a full wifi and update lib for the ESP8266 designed on Arduino. 
+ *
+ *  
+ */
+
 /*--------------------------------------------------------------------
    Settings Manager for Arduino ESP8266
    Andrew Melvin - Sticilface
@@ -54,11 +63,11 @@
 
 
 //  These are the Features that can be turned off to save more FLASH and RAM space. 
-//#define ESPMANAGER_SYSLOG         /* 16 Bytes   RAM */
-//#define ESPMANAGER_SAVESTACK      /* 0 Bytes    RAM */
-//#define ESPMANAGER_UPDATER        /* 912 Bytes  RAM */ 
-//#define ESPMANAGER_DEVICEFINDER   /*  200 Bytes RAM */ 
-//#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/ 
+#define ESPMANAGER_SYSLOG         /**< @brief Enable the SysLog (uses 16 bytes) @warning not implemented yet */ 
+#define ESPMANAGER_SAVESTACK      /**< @brief Save the Stack when the ESP crashes to SPIFFS.  This helps with remote debugging*/ 
+#define ESPMANAGER_UPDATER        /**< @brief Enable the remote updater, update via http see ::upgrade, uses 1K heap */ 
+#define ESPMANAGER_DEVICEFINDER   /**< @brief Enable deviceFinder.  ESPmanager will now locate all other ESPmanager instances, see ::ESPdeviceFinder, uses 200 bytes heap */ 
+//#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/  
 //#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 
@@ -66,16 +75,16 @@
 #include "SaveStack.h"
 #endif
 
-#define DEFAULT_AP_PASS "esprocks"
+#define DEFAULT_AP_PASS "esprocks" ///< Default password for the ESP AP.  Used for first connecting to the ESPManager. 
 
-#define SETTINGS_FILE "/espman/settings.json"
-#define ESPMANVERSION "2.2-async"
-#define SETTINGS_FILE_VERSION 2
+#define SETTINGS_FILE "/espman/settings.json"  /**< @brief Location of settings file on SPIFFS */ 
+#define ESPMANVERSION "2.2-async"              /**< @brief Version of espmanager */ 
+#define SETTINGS_FILE_VERSION 2                /**< @brief Settings file.  Version number increments are not backwards compatible. @todo implement version checking in settings file  */ 
 
 
 //  New logging methods... just send the message to the logging function, otherwise squash it all... NOT in use yet... 
 #ifdef ESPMANAGER_LOG
-  #define ESP_LOG(a,b) { _log(a,b) ; }
+  #define ESP_LOG(a,b) { _log(a,b) ; } /**<  Attempt at logging @warning {not implemented} */ 
 #else 
  #define ESP_LOG(a,b) { }
 #endif
@@ -94,7 +103,6 @@ static File _DebugFile;
 
 using namespace ESPMAN;
 
-
 class ESPmanager
 {
 public:
@@ -110,10 +118,7 @@ public:
   template <class T = JsonObject> static void sendJsontoHTTP( const T & root, AsyncWebServerRequest * request);
   String getHostname();
   myString getError(ESPMAN_ERR_t err); 
-  myString getError(int err) { return getError( (ESPMAN_ERR_t)err ); }
-  
-  //void setAppName(const char * name ) { _appName = name ; }  // don't store any of these... at the moment it should be a constant in the app... 
-  
+  myString getError(int err) { return getError( (ESPMAN_ERR_t)err ); } /**< Returns error as String. @return ESPMAN::myString &  */   
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
   AsyncEventSource & getEvent();
@@ -122,17 +127,17 @@ public:
   bool event_send(myString topic, myString msg ); 
   ESPMAN_ERR_t upgrade(String path = String(), bool runasync = true);
   void factoryReset();
-  int save();
-  bool portal() { return _dns; }
+  ESPMAN_ERR_t save();
+  bool portal() { return _dns; } /**< Returns if the portal is active or not. @return bool  */
   ESPMAN_ERR_t enablePortal();
   void disablePortal();
-  ASyncTasker & getTaskManager() { return _tasker; }
-  ASyncTasker & tasker() { return _tasker; }
+  ASyncTasker & getTaskManager() { return _tasker; } /**< Returns tasker. @return ASyncTasker &  */
+  ASyncTasker & tasker() { return _tasker; } /**< Returns tasker. @return ASyncTasker &  */ 
 
 #ifdef ESPMANAGER_SYSLOG
 
 public:
-  SysLog * logger() { return _syslog; }
+  SysLog * logger() { return _syslog; } /**< Returns logger instance. @return SysLog * @warning{not implemented}  */ 
   bool log(myString  msg); 
   bool log(uint16_t pri, myString  msg); 
   bool log(myString appName, myString  msg);
@@ -171,7 +176,6 @@ private:
   void _populateFoundDevices(JsonObject & root); 
 
   void _removePreGzFiles();
-  void _initialiseTasks();
   void _APlogic(Task & t);
   
 

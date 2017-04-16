@@ -1,3 +1,5 @@
 *.sublime*
 scripts/node_modules
 terminal.glue
+scripts/data
+

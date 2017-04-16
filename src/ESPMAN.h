@@ -1,3 +1,10 @@
+/*! \file 
+    \brief Extra helper classes for ESPManager.
+    
+    ESPMAN is a file+namespace for extra features of the ESPManager lib. 
+
+   
+*/
 
 #pragma once
 
@@ -7,10 +14,14 @@
 #include <functional>
 #include <FS.h>
 
-
+/**
+ *  @brief ESPMAN namespace.  Contains tools for ESPmanager
+ */
 namespace ESPMAN
 {
-
+/** \public
+ *  Error codes for ESPmanager. 
+ */
 enum ESPMAN_ERR_t : int8_t {
     SUCCESS                  = 0, 
     UNKNOWN_ERROR            = -20,//  start at -20 as we use httpupdate errors
@@ -60,6 +71,10 @@ enum ESPMAN_ERR_t : int8_t {
     WRONG_SETTINGS_FILE_VERSION = -91
 };
 
+/**
+ *  \public
+ *  Enum actions if no wifi found on boot 
+ */
 enum ap_boot_mode_t : int8_t {
     DISABLED = -1,
     NO_STA_BOOT = 0,
@@ -69,9 +84,13 @@ enum ap_boot_mode_t : int8_t {
     NO_STA_BOOT_AP_60 = 60, 
 };
 
+/**
+ *  \public
+ *  Enum actions if wifi fails after boot
+ */
 enum no_sta_mode_t : int8_t {
-    NO_STA_NOTHING = -2,
-    NO_STA_REBOOT = -1,
+    NO_STA_NOTHING = -2,  ///< Do nothing if there is no wifi connection on device boot. 
+    NO_STA_REBOOT = -1,  ///< Reboot if there is no wifi on device boot, device waits for ::AP_START_DELAY
     NO_STA_START_AP = 0,
     NO_STA_START_AP_5 = 5,
     NO_STA_START_AP_10 = 10,
@@ -79,65 +98,12 @@ enum no_sta_mode_t : int8_t {
     NO_STA_START_AP_60 = 60
 };
 
-
-// static const char * string_CORS = "Access-Control-Allow-Origin";
-// static const char * string_CACHE_CONTROL = "Cache-Control";
-// static const char * string_UPGRADE = "upgrade";
-// static const char * string_UPDATE = "update";
-// static const char * string_CONSOLE = "console";
-// static const char * string_ERROR = "ERROR [%i]";
-// static const char * string_ERROR2 = "ERROR [%i] [%i]";
-// static const char * string_ERROR2_toString = "ERROR [%s] [%s]";
-// static const char * string_ERROR_toString = "ERROR [%s]";
-// static const char * string_deviceid = "deviceid";
-// static const char * string_settingsversion = "settingversion";
-
-// static const char * string_host = "host";
-// static const char * string_General = "General";
-// static const char * string_mDNS = "mDNS";
-// static const char * string_updateURL = "updateURL";
-// static const char * string_updateFreq = "updateFreq";
-// static const char * string_OTApassword = "OTApassword";
-// static const char * string_GUIusername = "GUIusername";
-// static const char * string_GUIpassword = "GUIpassword";
-// static const char * string_GUIhash = "GUIhash";
-// static const char * string_OTAport = "OTAport";
-// static const char * string_STA = "STA";
-// static const char * string_AP = "AP";
-// static const char * string_enabled = "enabled";
-// static const char * string_ssid = "ssid";
-// static const char * string_pass = "pass";
-// static const char * string_changed = "changed";
-// static const char * string_usePerminantSettings = "usePerminantSettings";
-
-// static const char * string_IP = "IP";
-// static const char * string_GW = "GW";
-// static const char * string_SN = "SN";
-// static const char * string_MAC = "MAC";
-//static const char * string_autoconnect = "autoconnect";
-//static const char * string_autoreconnect = "autoreconnect";
-//static const char * string_mode = "mode";
-//static const char * string_ap_boot_mode = "ap_boot_mode";
-//static const char * string_no_sta_mode = "no_sta_mode";
-//static const char * string_OTAupload = "OTAupload";
-
-//static const char * string_visible = "visible";
-//static const char * string_channel = "channel";
-//static const char * string_saveandreboot = "Save and Reboot to Apply";
-//static const char * string_yes = "yes";
-
-//static const char * string_DNS1 = "DNS1";
-//static const char * string_DNS2 = "DNS2";
-
-//static const char * string_syslog = "syslog";
-//static const char * string_usesyslog = "usesyslog";
-//static const char * string_syslogIP = "syslogIP";
-//static const char * string_syslogPort = "syslogPort";
-//static const char * string_syslogProto = "syslogProto";
-
-//  use flash Strings instead 
-
- const char fstring_CORS[] PROGMEM =  "Access-Control-Allow-Origin";
+/**
+ *  @brief Collection of const progrem strings used in ESPmanager. 
+ *  @addtogroup progmem strings
+ *  @{
+ */
+ const char fstring_CORS[] PROGMEM =  "Access-Control-Allow-Origin"; 
  const char fstring_CACHE_CONTROL[] PROGMEM =  "Cache-Control";
  const char fstring_UPGRADE[] PROGMEM =  "upgrade";
  const char fstring_UPDATE[] PROGMEM =  "update";
@@ -193,19 +159,28 @@ enum no_sta_mode_t : int8_t {
  const char fstring_syslogProto[] PROGMEM =  "syslogProto";
 
  const char fstring_OK[] PROGMEM =  "OK";
-
+/**
+ *  @}
+ */
 
 // static const char * string_
 // static const char * string_
 // static const char * string_
 // static const char * string_
 
-static const int MAX_BUFFER_SIZE = 2048;
-static const int MAX_SSID_LENGTH = 32;
-static const int MAX_PASS_LENGTH = 64;
-static const int AP_START_DELAY = 2 * 60 * 1000;
-static const int SETTINGS_MEMORY_TIMEOUT = 1 * 60 * 1000;
+//static const int MAX_BUFFER_SIZE = 2048; 
+static const int MAX_SSID_LENGTH = 32;  /**< @brief max permitted length of SSID */
+static const int MAX_PASS_LENGTH = 64;  /**< @brief max permitted length of PASS */
+static const int AP_START_DELAY = 2 * 60 * 1000; /**< @brief Fixed time constant before checking that there is no wifi before starting AP */
+static const int SETTINGS_MEMORY_TIMEOUT = 1 * 60 * 1000; /**< @brief Time settings are kept in memory before being deleted.  Default is 1min */
 
+/**
+ * @brief A class to manage ArduinoJson objects. 
+ * 
+ * A class that manages the lifetime of a json object.  Either a JsonObject or JsonArray. 
+ * You can also parse a SPIFFS file directly into the JSONpackage. 
+ * Provides a merge function to merge two Json objects @todo template merge function. 
+ */
 class JSONpackage
 {
 
@@ -228,7 +203,14 @@ public:
 
 };
 
-
+/**
+ * @brief A class to manage Strings.
+ * 
+ * Not stricly speaking necessary, but this is an interface class to allow odd cool stuff with strings. 
+ * Initialisable from lots of different types. 
+ * move semantics so buffers can be moved without copy penalty. 
+ * 
+ */
 class myString
 {
 public:
@@ -239,8 +221,6 @@ public:
     myString(const __FlashStringHelper *str); 
     myString(String str);
     myString(nullptr_t ptr);
-
-
     virtual ~myString();
 
     myString & operator =(const char *cstr);
@@ -260,13 +240,19 @@ public:
 
     static const char * _nullString;// = "NULL";
 
-
 protected:
     char *buffer {nullptr};
 private:
 
 };
 
+/**
+ *  @brief Derived from myString to allow printf type functionality. 
+ *  
+ *  @code
+ *  myStringf abc("use of %s\n", "myString"); 
+ *  @endcode
+ */
 class myStringf : public myString {
 public:
     myStringf(const char *, ...);
@@ -275,14 +261,24 @@ private:
 
 }; 
 
+/**
+ * @brief Derived from myString to allow use of printf but with buffers stored in progmem.  
+ *  
+ *  Probably better to just use F() macro. 
+ *  
+ */
 class myStringf_P : public myString {
 public:
     myStringf_P(PGM_P, ... );
 private:
-    
-
 };
 
+
+/**
+ * @brief Master settings struct.  Contains all the settings. 
+ * This struct is not kept in memory all the time.  It gets deleted and reloaded as required. 
+ * 
+ */
 struct settings_t {
     settings_t() { start_time = millis(); }
 
@@ -290,6 +286,9 @@ struct settings_t {
     bool configured {false};
     bool changed {false};
 
+    /**
+     * @brief Access point (AP) Settings.  
+     */
     struct AP_t {
         bool enabled {false};
         bool hasConfig {false};
@@ -303,7 +302,9 @@ struct settings_t {
         bool visible {true};
         uint8_t channel {1};
     } AP;
-
+    /**
+     * @brief Station (STA) Settings. 
+     */
     struct STA_t {
         bool enabled {false};
         bool hasConfig {false};
@@ -320,7 +321,9 @@ struct settings_t {
         bool autoConnect {true};
         bool autoReconnect {true};
     } STA;
-
+    /**
+     * @brief General settings, used for storing ESPmanager variables. 
+     */
     struct GEN_t {
         bool mDNSenabled {true};
         myString host;
@@ -338,11 +341,12 @@ struct settings_t {
         IPAddress syslogIP;
         uint16_t syslogPort{514};
         uint8_t syslogProto{0}; 
-
     } GEN;
 
 };
-
+/**
+ * @private
+ */
 struct password_t {
     myString pass;
     myString salt;

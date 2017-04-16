@@ -1,3 +1,6 @@
+/** @file 
+    @brief ESPmanager implementations. 
+*/
 
 #include "ESPmanager.h"
 
@@ -70,14 +73,18 @@ extern File _DebugFile;
 #endif
 
 
+/**
+ * 
+ * @param [HTTP] pass an instance of AsyncWebServer. Optional. 
+ * @param [fs] pass an instance of SPIFFS file system.  Defaults to SPIFFS, as per arduino. Optional. 
+ * 
+ */
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs)
     : _HTTP(HTTP)
     , _fs(fs)
     , _events("/espman/events")
 {
-
-
 }
 
 
@@ -98,6 +105,10 @@ ESPmanager::~ESPmanager()
 
 }
 
+/**
+ * To be called during setup() and only called once. 
+ * @return ESPMAN::ESPMAN_ERR_t. 
+ */
 ESPMAN_ERR_t ESPmanager::begin()
 {
     using namespace std::placeholders;
@@ -250,8 +261,6 @@ ESPMAN_ERR_t ESPmanager::begin()
             }
         }
 
-
-
     } else if (_settings->configured) {
 
         ESPMan_Debugf("settings->configured = true \n");
@@ -310,12 +319,8 @@ ESPMAN_ERR_t ESPmanager::begin()
 
         }
 
-
         ArduinoOTA.onStart([this]() {
-            //_events.send("begin","update");
             _fs.end();
-            //event_printf("update", "begin");
-            //event_printf_P("update", PSTR("begin"));
             event_send( F("update") , F("begin"));
 #ifdef Debug_ESPManager
             Debug_ESPManager.print(F(   "[              Performing OTA Upgrade              ]\n["));
@@ -375,8 +380,6 @@ ESPMAN_ERR_t ESPmanager::begin()
 
         });
 
-
-
         ArduinoOTA.begin();
 
     } else {
@@ -388,7 +391,6 @@ ESPMAN_ERR_t ESPmanager::begin()
     }
 
     _HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
-
     _HTTP.rewrite("/espman/", "/espman/index.htm");
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
 
@@ -403,25 +405,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" );
     _HTTP.serveStatic("/espman/ajax-loader.gif", _fs, "/espman/ajax-loader.gif" );
-
     _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" );
-
-    // _HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) {
-    // AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, favicon_ico_gz_len);
-    // response->addHeader("Content-Encoding", "gzip");
-    // request->send(response);
-    // });
-
-    // _HTTP.on("/espman/setup.htm", [this](AsyncWebServerRequest * request) {
-
-    //     AsyncWebServerResponse *response = request->beginResponse(_fs, "/espman/setup.htm");
-    //     //response->addHeader("Server","ESP Async Web Server");
-    //     response->addHeader(ESPMAN::string_CORS, "*");
-    //     request->send(response);
-
-    // });
-
-
 
     _events.onConnect([](AsyncEventSourceClient * client) {
         client->send(NULL, NULL, 0, 1000);
@@ -565,7 +549,13 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 }
 
-
+/**
+ * Allows you to override and settings file, mainly for testing purposes as you can't use settings stored
+ * in the config.json file.  
+ * @param [ssid] desired default ssid to connect to.  Can be `const char *`, `String`, `myString` or `F()`. 
+ * @param [pass] desired default password to connect to ssid.  Can be `const char *`, `String`, `myString` or `F()`. 
+ * @return ESPMAN::ESPMAN_ERR_t
+ */
 ESPMAN_ERR_t ESPmanager::begin(myString ssid, myString pass)
 {
     ESPMan_Debugf("ssid = %s, pass = %s\n", ssid(), pass());
@@ -608,17 +598,6 @@ void ESPmanager::_APlogic(Task & t)
 
             ESP.restart();    //  change behaviour to restart...  if still not connected then reboot and make an AP for set time... if STA connects then no problem...
 
-            // ESPMan_Debugf("[ESPmanager::handle()] Disabling AP\n");
-
-            // bool result = WiFi.enableAP(false);
-
-            // if (result == false) {
-            //     ESPMan_Debugf("[ESPmanager::handle()] ERROR disabling AP\n");
-            // }
-
-            // _APtimer = 0;
-            // _APtimer2 = 0;
-            // _APenabledAtBoot = false;
         } else if (time_total > 0) {
 
 #ifdef Debug_ESPManager
@@ -678,6 +657,14 @@ void ESPmanager::_APlogic(Task & t)
     }
 }
 
+/**
+ *  This function enables the captive portal, creating a DNS server that allows redirect. 
+ *  example:  To redirect root to page when portal is enabled. 
+ *  @code
+ *  HTTP.rewrite("/", "/espman/setup.htm").setFilter( [](AsyncWebServerRequest * request) { return settings.portal(); });
+ *  @endcode
+ *  @return ESPMAN::ESPMAN_ERR_t
+ */
 
 ESPMAN_ERR_t ESPmanager::enablePortal()
 {
@@ -706,6 +693,10 @@ ESPMAN_ERR_t ESPmanager::enablePortal()
 
 }
 
+/**
+ *  Disable the captive portal function. 
+ * 
+ */
 void ESPmanager::disablePortal()
 {
     ESPMan_Debugf("Disabling Portal\n");
@@ -726,48 +717,9 @@ void ESPmanager::disablePortal()
 
 }
 
-
-void ESPmanager::_initialiseTasks()
-{
-
-
-    // typedef std::function<bool(task*)> mycallbacktype;
-    // typedef default_task<mycallbacktype> mytask ;
-    using namespace std::placeholders;
-
-
-    // Task & atask_2 = _tasker.add( [this] (Task & t) {
-    //     Serial.println("task 2 run once, after 10 seconds and delete");
-    //     return false;
-    // }).setTimeout(10000);
-
-    // Task & atask_3 = _tasker.add( std::bind(&ESPmanager::test, this, _1 )  ).setTimeout(3000).setRepeat();
-
-    // task & atask_4 = _tasker.add( [this] (task & t) {
-    //     Serial.printf("task 4 run every 20 seconds and delete after 10. %u remaining\n", 10 - t.count);
-    //     if (t.count < 10) {
-    //         return false;
-    //     } else {
-    //         return true;
-    //     }
-
-    // }).setTimeout(20000);
-
-
-    // task & atask_5 = _tasker.add( [this] (task & t) {
-    //     Serial.println("task 5 run once and delete");
-    //     return false;
-    // });
-
-    // task & atask_6 = _tasker.add( [this] (task & t) {
-    //     Serial.println("task 6 run once and delete");
-    //     return false;
-    // });
-
-}
-
-
-
+/**
+ *  Loop task, must be included in loop(); 
+ */
 void ESPmanager::handle()
 {
     _tasker.loop();
@@ -775,6 +727,11 @@ void ESPmanager::handle()
 
 //format bytes thanks to @me-no-dev
 
+/**
+ * Thanks to me-no-dev.
+ * @param [bytes] Number of Bytes to convert to String. 
+ * @return String with formated bytes. 
+ */
 String ESPmanager::formatBytes(size_t bytes)
 {
     if (bytes < 1024) {
@@ -788,6 +745,12 @@ String ESPmanager::formatBytes(size_t bytes)
     }
 }
 
+/**
+ * Converts a String to a byte array. 
+ * @param [mac] `*uint8_t` to byte array to output to.   
+ * @param [input]  input String to convert
+ * @return
+ */
 bool ESPmanager::StringtoMAC(uint8_t *mac, const String & input)
 {
 
@@ -815,9 +778,13 @@ bool ESPmanager::StringtoMAC(uint8_t *mac, const String & input)
 
 
 
-//URI Decoding function
-//no check if dst buffer is big enough to receive string so
-//use same size as src is a recommendation
+/**
+ *  URI Decoding function
+ *  Does not check if dst buffer is big enough to receive string so
+ *  use same size as src is a recommendation. 
+ * @param [dst] destination buffer
+ * @param [src] source buffer 
+ */
 void ESPmanager::urldecode(char *dst, const char *src)
 {
     char a, b, c;
@@ -853,6 +820,11 @@ void ESPmanager::urldecode(char *dst, const char *src)
     *dst++ = '\0';
 }
 
+/**
+ * Returns an md5 string of the input file. 
+ * @param [f] Input file. 
+ * @return String
+ */
 String ESPmanager::file_md5 (File & f)
 {
     // Md5 check
@@ -873,21 +845,18 @@ String ESPmanager::file_md5 (File & f)
     }
 }
 
+/**
 
+ * Templated functon to allow sending of a json to an AsyncWebServerRequest. 
+ * It adds the CORS header, and no-store to prevent caching. 
+ * Only works for json lengths under 4k.  
+ * @todo Add return bool so it does not fail silently. 
+ * @param [root] Either JsonObject or JsonObject
+ * @param [request] AsyncWebServerRequest* to send the json to.
+ */
 template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServerRequest *request)
 {
     int len = root.measureLength();
-
-    //Serial.printf("JSON length: %u, heap = %u\n", len, ESP.getFreeHeap());
-
-//#ifdef Debug_ESPManager
-
-    // Serial.println("Begin:");
-    // root.prettyPrintTo(Serial);
-    // Serial.println("\nEnd");
-
-//#endif
-
     if (len < 4000) {
 
         AsyncResponseStream *response = request->beginResponseStream("text/json");
@@ -919,7 +888,11 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
 
 }
 
-
+/**
+ * Returns the current hostname set in config.json. 
+ * Opens the settings file if settings are not in memory. 
+ * @return String 
+ */
 String ESPmanager::getHostname()
 {
 
@@ -942,6 +915,37 @@ String ESPmanager::getHostname()
     }
 }
 
+/**
+ * Allows update of ESP8266 binary and SPIFFS files.  
+ * Downloads the file at path. 
+ * example config.json
+ * @code{json}
+ * {  
+ *  "files":[  
+ *    {  
+ *      "saveto":"sketch",
+ *      "location":"/data/firmware.bin",
+ *      "md5":"bbec8986eea6a5836c7446d08c719923"
+ *    },
+ *    {  
+ *      "saveto":"/index.htm.gz",
+ *      "location":"/data/index.htm.gz",
+ *      "md5":"6816935f51673e61f76afd788e457400"
+ *    },
+ *    {  
+ *      "saveto":"/espman/ajax-loader.gif",
+ *      "location":"/data/espman/ajax-loader.gif",
+ *      "md5":"8fd7e719b06cd3f701c791adb62bd7a6"
+ *    }
+ *  ],
+ *  "overwrite":true,
+ *  "filecount":7
+ * }
+ * @endcode
+ * @param [path] A url to a json file containing the upgrade instructions. 
+ * @param [runasync] `bool` required if upgrade is being called from an interrupt. 
+ * @return ESPMAN::ESPMAN_ERR_t
+ */
 ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 {
 
@@ -1270,95 +1274,55 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         delete[] buff;
     }
 
-    //delay(10);
-    //event_printf_P(string_UPGRADE, PSTR("end"));
-
     event_send( FPSTR(fstring_UPGRADE), F("end"));
-    //event_printf(string_UPGRADE, "end");
 
     delay(200);
 
 }
 
 #endif
-
+/**
+ * Get the size of the existing sketch in bytes. 
+ * @return uint32_t
+ */
 uint32_t ESPmanager::trueSketchSize()
 {
     return ESP.getSketchSize();
 }
-
+/**
+ * Get the current sketch md5.  This is used to compare updates 
+ * @return
+ */
 String ESPmanager::getSketchMD5()
 {
     return ESP.getSketchMD5();
 }
-
+/**
+ * Returns the events instance, allowing sketches to access browsers that have events opened. 
+ * @return AsyncEventSource & 
+ */
 AsyncEventSource & ESPmanager::getEvent()
 {
     return _events;
 }
 
-
-
-
-// size_t ESPmanager::event_printf_P(const char * topic, PGM_P format, ... )
-// {
-//     uint8_t i = 0;
-//     va_list arg;
-//     va_start(arg, format);
-//     char temp[64] = {0};
-//     char* buffer = temp;
-//     size_t len = vsnprintf_P(temp, sizeof(temp), format, arg);
-//     va_end(arg);
-//     if (len > sizeof(temp) - 1) {
-//         buffer = new char[len + 1];
-//         if (!buffer) {
-//             return 0;
-//         }
-//         va_start(arg, format);
-//         vsnprintf_P(buffer, len + 1, format, arg);
-//         va_end(arg);
-//     }
-
-//     _events.send(buffer, topic, millis(), 5000);
-
-//     if (buffer != temp) {
-//         delete[] buffer;
-//     }
-//     return len;
-// }
-
-
-// size_t ESPmanager::event_printf(const char * topic, const char * format, ... )
-// {
-//     va_list arg;
-//     va_start(arg, format);
-//     char temp[64] = {0};
-//     char* buffer = temp;
-//     size_t len = vsnprintf(temp, sizeof(temp), format, arg);
-//     va_end(arg);
-//     if (len > sizeof(temp) - 1) {
-//         buffer = new char[len + 1];
-//         if (!buffer) {
-//             return 0;
-//         }
-//         va_start(arg, format);
-//         vsnprintf(buffer, len + 1, format, arg);
-//         va_end(arg);
-//     }
-//     _events.send(buffer, topic, millis(), 5000);
-//     if (buffer != temp) {
-//         delete[] buffer;
-//     }
-//     return len;
-// }
-
+/**
+ * Send event function. Topic and message are myString, allowing use of F(), as well as, ESPMAN::myStringf and ESPMAN::myStringf_P. 
+ * @param [topic] topic
+ * @param [msg] message
+ * @return
+ */
 bool ESPmanager::event_send(myString topic, myString msg )
 {
     _events.send(msg.c_str(), topic.c_str() , millis(), 5000);
     ESPMan_Debugf("EVENT: top = %s, msg = %s\n", (topic.c_str()) ? topic.c_str() : "" , (msg.c_str()) ? msg.c_str() : "" );
 }
 
-int ESPmanager::save()
+/**
+ * Saves settings to SPIFFS. 
+ * @return ESPMAN::ESPMAN_ERR_t
+ */
+ESPMAN_ERR_t ESPmanager::save()
 {
     using namespace ESPMAN;
     _getAllSettings();
@@ -1572,26 +1536,6 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & j
 
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
-//   int position = 0;
-
-    // read all data from server
-    // while (http.connected() && (len > 0 || len == -1)) {
-    //     // get available data size
-    //     size_t size = stream->available();
-    //     uint8_t * b = &buff[position];
-
-    //     if (size) {
-    //         int c = stream->readBytes(b, ((size > sizeof(buff)) ? sizeof(buff) : size));
-    //         position += c;
-    //         if (len > 0) {
-    //             len -= c;
-    //         }
-    //     }
-    //     delay(0);
-
-
-    // }
-
 
     root = &jsonBuffer.parseObject(* stream );
     //root = &jsonBuffer.parseObject( (char*)buff, length );
@@ -3301,20 +3245,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         }
     }
 
-
-
-    // if (request->hasParam(string_usePerminantSettings, true) ) {
-
-    //     bool var = request->getParam(string_usePerminantSettings, true)->value().equals("on");
-
-    //     if (var != set.GEN.usePerminantSettings) {
-    //         ESPMan_Debugf("Recieved usePerminantSettings Set To: %s\n", (var) ? "on" : "off");
-    //         set.GEN.usePerminantSettings = var;
-    //         set.changed = true;
-
-    //     }
-    // }
-
     /*------------------------------------------------------------------------------------------------------------------
 
                                             New UPGRADE
@@ -3366,13 +3296,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     }
 
-
-
-
-
-    // DynamicJsonBuffer jsonbuffer;
-    // JsonObject & root = jsonbuffer.createObject();
-
     root[FPSTR(fstring_changed)] = (set.changed) ? true : false;
     root[F("heap")] = ESP.getFreeHeap();
 
@@ -3390,110 +3313,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     sendJsontoHTTP<JsonObject>(root, request);
 
     if (sendsaveandreboot) {
-        // event_printf(nullptr, string_saveandreboot);
         event_send(nullptr, FPSTR(fstring_saveandreboot ));
     }
 
-    // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
-    // response->addHeader(ESPMAN::string_CORS,"*");
-    // response->addHeader(ESPMAN::string_CACHE_CONTROL,"no-store");
-    // request->send(response);
 }
-
-
-
-
-
-
-
-
-// struct tm * ESPmanager::getCompileTime(){
-//         const char * months[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-//         const char * compile_date = __DATE__;
-//         const char * compile_time = __TIME__;
-//
-//         int year = atoi(compile_date+7),
-//             month = 0,
-//             day = atoi(compile_date+4),
-//             hour = atoi(compile_time),
-//             minute = atoi(compile_time+3),
-//             second = atoi(compile_time+6);
-//
-//         int i;
-//         for(i=0; i<12; i++) {
-//
-//                 if(memcmp(compile_date, months[i], 3) == 0) {
-//                         month = i;
-//                 }
-//         }
-//
-//         static struct tm * timeinfo = (struct tm *)malloc(sizeof(struct tm));
-//         timeinfo->tm_year = year - 1900;
-//         timeinfo->tm_mon = month;
-//         timeinfo->tm_mday = day;
-//         timeinfo->tm_hour = hour;
-//         timeinfo->tm_min = minute;
-//         timeinfo->tm_sec = second;
-//         mktime(timeinfo);
-//         return timeinfo;
-// }
-
-// char * ESPmanager::buildTime(){
-//   static char result[30];
-//   struct tm * timeinfo = getCompileTime();
-//   strftime (result,30,"%a, %d %b %Y %H:%M:%S %Z",timeinfo);
-//   return result;
-// }
-
-// void ESPmanager::_handleManifest(AsyncWebServerRequest *request)
-// {
-
-// #ifdef DISABLE_MANIFEST
-// #pragma message MANIFEST DISABLED
-//     request->send(404);
-//     return;
-// #endif
-
-//     AsyncResponseStream *response = request->beginResponseStream(F("text/cache-manifest")); //Sends 404 File Not Found
-//     response->addHeader(ESPMAN::string_CACHE_CONTROL, F( "must-revalidate"));
-//     response->print(F("CACHE MANIFEST\n"));
-//     response->printf( "# %s\n", __DATE__ " " __TIME__ );
-
-//     if (_randomvalue) {
-//         response->printf(  "# %u\n", _randomvalue );
-//     }
-
-//     response->print(F("CACHE:\n"));
-//     response->print(F("../jquery/jqm1.4.5.css\n"));
-//     response->print(F("../jquery/jq1.11.1.js\n"));
-//     response->print(F("../jquery/jqm1.4.5.js\n"));
-//     response->print(F("../jquery/images/ajax-loader.gif\n"));
-//     response->print(F("NETWORK:\n"));
-//     response->print(F("index.htm\n"));
-//     response->print(F("espman.js\n"));
-//     response->print("*\n");
-//     request->send(response);
-
-// }
-
-
-/*
-
-
-      NEW FUNCTIONS FOR AP LOGIC.....
-
- */
-
-
-/*
-
-
-      AP  stuff
-
-
- */
-
-
 
 
 ESPMAN_ERR_t ESPmanager::_initialiseAP(bool override)
@@ -3777,43 +3600,28 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
 }
 
-// int ESPmanager::_autoSDKconnect()
-// {
-//     using namespace ESPMAN;
-
-//     WiFi.begin();
-
-//     wl_status_t status = (wl_status_t)WiFi.waitForConnectResult();
-
-//     switch (status) {
-//     case WL_CONNECTED:
-//         return 0;
-//         break;
-//     case WL_NO_SSID_AVAIL:
-//         return NO_SSID_AVAIL;
-//         break;
-//     case WL_CONNECT_FAILED:
-//         return CONNECT_FAILED;
-//         break;
-//     default:
-//         ESPMan_Debugf("[ESPmanager::_autoSDKconnect()] WiFi Error %i\n", status);
-//         return UNKNOWN_ERROR;
-//         break;
-//     }
-
-//     ESPMan_Debugf("[ESPmanager::_autoSDKconnect()] done\n");
-
-// }
-
 #ifdef ESPMANAGER_SYSLOG
 
-bool ESPmanager::log(myString  msg)
+/**
+ * Syslog:  Send msg to configured syslog server. 
+ * @param [msg] message
+ * @return bool 
+ * @warning not implemented
+ */
+bool ESPmanager::log(myString msg)
 {
     if (_syslog) {
         return _syslog->log(std::move(msg) );
     }
     return false;
 }
+
+/**
+ * @param [pri] priority 
+ * @param [msg] message
+ * @return bool
+ * @warning not implemented
+ */
 bool ESPmanager::log(uint16_t pri, myString  msg)
 {
     if (_syslog) {
@@ -3821,6 +3629,13 @@ bool ESPmanager::log(uint16_t pri, myString  msg)
     }
     return false;
 }
+
+/**
+ * @param
+ * @param
+ * @return bool
+ * @warning not implemented
+ */
 bool ESPmanager::log(myString appName, myString  msg)
 {
     if (_syslog) {
@@ -3828,6 +3643,13 @@ bool ESPmanager::log(myString appName, myString  msg)
     }
     return false;
 }
+/**
+ * @param
+ * @param
+ * @param
+ * @return bool 
+ * @warning not implemented
+ */
 bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
 {
     if (_syslog) {
@@ -3836,6 +3658,11 @@ bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
     return false;
 }
 
+/**
+ * @param
+ * @param
+ * @warning not implemented
+ */
 void ESPmanager::_log(uint16_t pri, myString  msg)
 {
     log(pri, msg);
@@ -3893,30 +3720,6 @@ ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown, int channel)
 }
 
 
-// int ESPmanager::setSSID(const char * ssid, const char * pass)
-// {
-//   using namespace ESPMAN;
-//
-//
-// }
-
-
-
-
-
-/*
-
-
-      Namespace ESPMAN  JSONpackage
-
-
- */
-
-
-
-// ToDo......
-
-
 ESPMAN_ERR_t ESPmanager::_getAllSettings()
 {
 
@@ -3969,13 +3772,11 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
 {
 
     using namespace ESPMAN;
-
     JSONpackage json;
     uint8_t settingsversion = 0;
     uint32_t start_heap = ESP.getFreeHeap();
 
     ESPMAN_ERR_t ERROR = SUCCESS;
-
     ERROR = static_cast<ESPMAN_ERR_t> (json.parseSPIFS(SETTINGS_FILE));
 
     if (ERROR) {
@@ -4279,15 +4080,9 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     }
 
-
-
-    //settingsJSON[string_usePerminantSettings] = (set.GEN.usePerminantSettings) ? true : false;
-
     settingsJSON[FPSTR(fstring_ap_boot_mode)] = (int)set.GEN.ap_boot_mode;
     settingsJSON[FPSTR(fstring_no_sta_mode)] = (int)set.GEN.no_sta_mode;
     settingsJSON[FPSTR(fstring_OTAupload)] = set.GEN.OTAupload;
-
-
 
     /*****************************************
             STA Settings
@@ -4407,7 +4202,6 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     APjson[FPSTR(fstring_visible)] = set.AP.visible;
     APjson[FPSTR(fstring_channel)] = set.AP.channel;
 
-
     File f = _fs.open(SETTINGS_FILE, "w");
 
     if (!f) {
@@ -4415,9 +4209,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     }
 
     root.prettyPrintTo(f);
-
     f.close();
-
     return SUCCESS;
 
 }
@@ -4510,6 +4302,10 @@ void ESPmanager::_dumpSettings()
 
 #endif
 
+/**
+ *  Resets the ESP to a non-configured state. 
+ *  Erases the config file, and removes the wizard flag if it is there. 
+ */
 void ESPmanager::factoryReset()
 {
     ESPMan_Debugf("FACTORY RESET\n");
@@ -4526,77 +4322,6 @@ void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t cod
     response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
     request->send(response);
 }
-
-
-// String ESPmanager::_hash(const char * pass){
-//
-//         char salt[SALT_LENGTH + 1];
-//         for (uint8_t i = 0; i < SALT_LENGTH; i++) {
-//                 salt[i] = random(33,123);
-//         }
-//         salt[SALT_LENGTH ] = '\0';
-//         //ESPMan_Debugf("[ESPmanager::_hash] salt = %s\n", salt );
-//         char * input = new char[ strlen(salt) + strlen(pass) + 1 ];
-//
-//         if (input) {
-//                 strcpy(input, pass);
-//                 strcat(input, salt);
-//                 String hash = salt;
-//                 //ESPMan_Debugf("[ESPmanager::_hashCheck] input = %s\n", input );
-//                 hash += sha1( input, strlen(input));
-//                 //ESPMan_Debugf("[ESPmanager::_hashCheck] output = %s\n", sha1( input, strlen(input)).c_str() );
-//                 //ESPMan_Debugf("[ESPmanager::_hash] salt + hash = %s\n", hash.c_str() );
-//                 delete input;
-//                 return hash;
-//         }
-//
-//         return String();
-//
-// }
-//
-//
-//
-// bool ESPmanager::_hashCheck(const char * password, const char * hash)
-// {
-//         // ESPMan_Debugf("[ESPmanager::_hashCheck] pasword = %s\n" , password);
-//         // ESPMan_Debugf("[ESPmanager::_hashCheck] hash = %s\n" , hash);
-//
-//         bool result = false;
-//         char salt[SALT_LENGTH + 1];
-//
-//         for (uint8_t i = 0; i < SALT_LENGTH; i++) {
-//                 salt[i] = hash[i];
-//         }
-//
-//         salt[SALT_LENGTH] = '\0';
-//         //ESPMan_Debugf("[ESPmanager::_hashCheck] salt = %s\n" , salt);
-//
-//         char * truehash = new char[ strlen(hash) - SALT_LENGTH + 1 ];
-//         char * input = new char [  strlen(salt) + strlen(password) + 1 ];
-//         if (input && truehash) {
-//                 strcpy(input, password);
-//                 strcat(input, salt);
-//                 memcpy( truehash, &hash[SALT_LENGTH], strlen(hash) - SALT_LENGTH );
-//                 truehash[  strlen(hash) - SALT_LENGTH ] = '\0';
-//                 //ESPMan_Debugf("[ESPmanager::_hashCheck] truehash = %s\n" , truehash);
-//                 //ESPMan_Debugf("[ESPmanager::_hashCheck] input = %s\n" , input);
-//                 String check = sha1(input, strlen(input));
-//
-//                 //ESPMan_Debugf("[ESPmanager::_hashCheck] checkhash = %s\n" , check.c_str() );
-//
-//                 if (  strcmp( check.c_str(), truehash) == 0) {
-//                         //ESPMan_Debugf("[ESPmanager::_hashCheck] MATCH");
-//                         result = true;
-//
-//                 }
-//
-//                 delete truehash;
-//                 delete input;
-//         }
-//
-//         return result;
-//
-// }
 
 void ESPmanager::_removePreGzFiles()
 {
@@ -4620,7 +4345,11 @@ void ESPmanager::_removePreGzFiles()
 
 }
 
-
+/**
+ * Returns error code as a String. 
+ * @param
+ * @return
+ */
 myString ESPmanager::getError(ESPMAN_ERR_t err)
 {
     switch (err) {
@@ -4729,21 +4458,14 @@ void ESPmanager::_populateFoundDevices(JsonObject & root)
 
         if (_devicefinder->count()) {
             JsonArray & devicelist = root.createNestedArray(F("devices"));
-
             JsonObject & listitem = devicelist.createNestedObject();
             listitem[F("name")] = host;
             listitem[F("IP")] = WiFi.localIP().toString();
-            //listitem[F("appname")] = _appName;
-
             for (uint8_t i = 0; i < _devicefinder->count(); i++) {
                 JsonObject & listitem = devicelist.createNestedObject();
                 const char * name = _devicefinder->getName(i);
-                //const char * appName = _devicefinder->getAppName(i);
-
                 IPAddress IP = _devicefinder->getIP(i);
-
                 listitem[F("name")] = name;
-                //listitem[F("appname")] = appName;
                 listitem[F("IP")] = IP.toString();
                 //ESPMan_Debugf("Found [%s]@ %s\n", name, IP.toString().c_str());
             }

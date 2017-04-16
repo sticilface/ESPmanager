@@ -1,4 +1,6 @@
-# To Do
+# ChangeLog
+
+## To Do
  - Add manual SSID and password. 
  - Add multi WiFi implementaion to search for and join a number of WiFi Networks. 
 

@@ -31,7 +31,7 @@ var uncss = require('gulp-uncss');
 var concat = require('gulp-concat');
 var webserver = require('gulp-webserver');
 var browserSync = require('browser-sync').create();
-
+var exec = require('child_process').spawn
 
 const datadir = './data/'
 const sourcedir = '../www/'
@@ -159,6 +159,20 @@ gulp.task('inlinesource' , function() {
         .pipe(gulp.dest(datadir));
 });
 
+gulp.task('doxygen', function () {
+  return exec("doxygen", {cwd: "../"}, function (err, stdout, stderr) {
+    console.log(stdout);
+    console.log(stderr);
+  });
+
+
+
+  // exec('doxygen', function (err, stdout, stderr) {
+  //   console.log(stdout);
+  //   console.log(stderr);
+  // });
+}); 
+
 
 /* Build file system */
 // gulp.task('buildfs', ['clean', 'files', 'html']);
@@ -169,11 +183,12 @@ gulp.task('build', ['clean', 'files', 'inlinesource']);
 
 
 
-gulp.task('default',['build'], function(){
+gulp.task('default',['build','doxygen'], function(){
+  gulp.start('webserver');
   gulp.watch(sourcedir +'/**/*.{html,htm,js}',  ['inlinesource']);
-  //gulp.watch(datadir + '/*.{html,htm,js', browserSync.reload);
+  gulp.watch('../src/**/*.{cpp,c,h}', ['doxygen']);
   //gulp.watch(datadir + '/**/*.js', browserSync.reload);
-})
+});
 
 
 
