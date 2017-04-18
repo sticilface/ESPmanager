@@ -1,0 +1,16 @@
+.env
+
+test/
+coverage/
+CONTRIBUTING.md
+HEADER
+.bithoundrc
+.codeclimate.yml
+.editorconfig
+.eslintignore
+.eslintrc.js
+.gitignore
+.node-inspectorrc
+.travis.yml
+CHANGELOG.md
+README.md
