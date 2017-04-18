@@ -4,6 +4,8 @@
  *   
  *   This is the main file.  ESPManager is a full wifi and update lib for the ESP8266 designed on Arduino. 
  *
+ *  @todo 1) Web notification for crashlog 
+ *  @todo 2) Check bin upload via web interface
  *  
  */
 

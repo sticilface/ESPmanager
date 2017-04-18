@@ -2,11 +2,15 @@
 
 ## ESPmanager
 Full wifi and OTA manager for ESP8266 Arduino IDE, with integrated update manager to perform autoupdating over HTTP. 
-Uses Jquerymobile and AJAX to run everything. 
-V2.2 Released please see [Changes](https://github.com/sticilface/ESPmanager/blob/master/ChangeLog.md). 
 
-## Cool new features include:
-+ Syslogging
+Uses Jquerymobile and AJAX to run everything. 
+
+V2.2 Released please see 
++ [Changes](https://github.com/sticilface/espmanager/blob/master/ChangeLog.md) 
++ [Changes](https://github.com/sticilface/espmanager/blob/master) 
+
+## Cool new features:
++ Syslogging - not entirely up and running yet. 
 + Saving crashdump to SPIFFS file
  
 ## Dependancies
