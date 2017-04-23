@@ -52,7 +52,7 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                     #item["index"] = index
                     index = index + 1
                     item["location"] =  "/" + locPath
-                    item["isurl"] = False
+                    # item["isurl"] = False
                     item["md5"] = md5(dirName + "/" + fname)
                     item["saveto"] = "/" + relPath
                     List.append(item)
@@ -62,7 +62,7 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                         index = index + 1
                         print("binary hit:" + dirName + "/" + fname + "(" + md5(dirName + "/" + fname) + ")")
                         binary = {}
-                        binary["index"] = index
+                        # binary["index"] = index
                         binary["location"] = "/data/firmware.bin"
                         binary["saveto"] = "sketch"
                         binary["md5"] = md5(dirName + "/" + fname)

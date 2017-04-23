@@ -920,14 +920,14 @@ String ESPmanager::getHostname()
  * {
  *  "files":[
  *    {
- *      "saveto":"sketch",
+ *      "saveto":"sketch", // used for binary
  *      "location":"/data/firmware.bin",
- *      "md5":"bbec8986eea6a5836c7446d08c719923"
+ *      "md5":"bbec8986eea6a5836c7446d08c719923"  
  *    },
  *    {
  *      "saveto":"/index.htm.gz",
- *      "location":"/data/index.htm.gz",
- *      "md5":"6816935f51673e61f76afd788e457400"
+ *      "location":"/data/index.htm.gz", //  can be relative url, or absolute http://  location
+ *      "md5":"6816935f51673e61f76afd788e457400"  //md5 of the file
  *    },
  *    {
  *      "saveto":"/espman/ajax-loader.gif",
@@ -935,22 +935,24 @@ String ESPmanager::getHostname()
  *      "md5":"8fd7e719b06cd3f701c791adb62bd7a6"
  *    }
  *  ],
- *  "overwrite":true,
- *  "filecount":7
  * }
  * @endcode
+ * Optional parameters for config json:  
+ * "overwrite": bool  -> overwrite existing files
+ * "formatSPIFFS": bool -> format spiffs before download, keeps the ESPManager settings file.  Good for a defrag....
+ * "clearWiFi": bool -> reset wifin settings
+ * 
  * @param [path] A url to a json file containing the upgrade instructions.
  * @param [runasync] `bool` required if upgrade is being called from an interrupt.
  * @return ESPMAN::ESPMAN_ERR_t
  */
 ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 {
-
+    using namespace ESPMAN;
+    
     if (path.length()) {
         ESPMan_Debugf("Upgrade Called: path = %s\n", path.c_str());
     }
-
-    using namespace ESPMAN;
 
     _getAllSettings();
 
@@ -980,7 +982,6 @@ ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
     } else {
         return _upgrade(newpath());
     }
-
 
     return SUCCESS;
 
@@ -1061,9 +1062,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
      */
 
     if (root.containsKey(F("formatSPIFFS"))) {
-        if (root["formatSPIFFS"] == true) {
+        if (root[F("formatSPIFFS")] == true) {
             ESPMan_Debugf("Formatting SPIFFS....");
-
             _getAllSettings();
             _fs.format();
             if (_settings) {
@@ -1075,7 +1075,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
     }
 
     if (root.containsKey(F("clearWiFi"))) {
-        if (root["clearWiFi"] == true) {
+        if (root[F("clearWiFi")] == true) {
             ESPMan_Debugf("Erasing WiFi Config ....");
             ESPMan_Debugf("done\n");
         }
@@ -1088,7 +1088,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
     if (root.containsKey(F("files"))) {
 
-        JsonArray & array = root["files"];
+        JsonArray & array = root[F("files")];
         files_expected = array.size();
 
         for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
@@ -1096,17 +1096,17 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
             String remote_path = String();
 
             //  if the is url is set to true then don't prepend the rootUri...
-            if (item["isurl"] == true) {
+            if (remote_path.startsWith("http://")) {
                 remote_path = String(item["location"].as<const char *>());
             } else {
                 remote_path = rooturi + String(item["location"].as<const char *>());
             }
 
-            const char* md5 = item["md5"];
-            String filename = item["saveto"];
+            const char* md5 = item[F("md5")];
+            String filename = item[F("saveto")];
 
             if (remote_path.endsWith("bin") && filename == "sketch" ) {
-                firmwareIndex = file_count - 1; //  true index vs counted 
+                firmwareIndex = file_count - 1; //  true index vs counted = -1
                 ESPMan_Debugf("[%u/%u] BIN Updated pending, index %i\n", file_count, files_expected, firmwareIndex);
                 file_count++;
                 continue;
@@ -1154,8 +1154,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
             JsonObject & item = array.get<JsonObject&>(firmwareIndex);
 
             String remote_path = rooturi + String(item["location"].as<const char *>());
-            String filename = item["saveto"];
-            String commit = root["commit"];
+            String filename = item[F("saveto")];
+            String commit = root[F("commit")];
 
             if (remote_path.endsWith("bin") && filename == "sketch" ) {
                 if ( String( item["md5"].as<const char *>() ) != getSketchMD5() ) {
@@ -1201,8 +1201,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
                 }
             } else {
                 //  json object does not contain valid binary.
-            }
-       // }  //  for loop
+            }      
     }
 
     event_send( FPSTR(fstring_UPGRADE), F("end"));
@@ -1425,13 +1424,9 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
 ESPMAN_ERR_t ESPmanager::_parseUpdateJson(JSONpackage & json, const char * path)
 {
     using namespace ESPMAN;
-
     ESPMan_Debugf("path = %s\n", path);
-
     HTTPClient http;
-
     http.begin(path);  //HTTP
-
     int httpCode = http.GET();
 
     if (httpCode != 200) {
@@ -1487,18 +1482,10 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
     //char msgdata[100] = {'\0'};
     bool _uploadAuthenticated = true;
     if (!index) {
-        //if(!_username.length() || request->authenticate(_username.c_str(),_password.c_str()))
-        //if(!_username.length() || request->authenticate(_username.c_str(),_password.c_str()))
         _uploadAuthenticated = true; // not bothering just yet...
         if (!filename.startsWith("/")) { filename = "/" + filename; }
         request->_tempFile = _fs.open(filename, "w");
-
         ESPMan_Debugf("UploadStart: %s\n", filename.c_str());
-
-
-        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str());
-        //event_printf(nullptr, "UploadStart: %s", filename.c_str());
-
         event_send( nullptr , myStringf_P( PSTR("UploadStart: %s"), filename.c_str()  ));
     }
 
@@ -1509,17 +1496,8 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
     if (_uploadAuthenticated && final) {
         if (request->_tempFile) { request->_tempFile.close(); }
         ESPMan_Debugf("UploadEnd: %s, %u B\n", filename.c_str(), index + len);
-        // snprintf(msgdata, 100, "UploadFinished:%s (%u)",  filename.c_str(), request->_tempFile.size() );
-        // _events.send(msgdata, nullptr, 0, 5000);
-        //event_printf_P(nullptr, PSTR("UploadStart: %s"), filename.c_str());
-
-        //event_printf_P(nullptr , PSTR("UploadFinished:%s (%u)"), filename.c_str(), request->_tempFile.size() );
-
         event_send( nullptr, myStringf_P( PSTR("UploadFinished:%s (%u)"), filename.c_str(), request->_tempFile.size()  ));
-
     }
-
-
 }
 
 
@@ -4202,7 +4180,7 @@ void ESPmanager::factoryReset()
 void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, myString text)
 {
     AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text.c_str() );
-    response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
+    response->addHeader( myString( FPSTR(ESPMAN::fstring_CORS) ).c_str() , "*");
     response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
     request->send(response);
 }
