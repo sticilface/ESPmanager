@@ -1,5 +1,5 @@
-/** @file 
-    @brief ESPmanager implementations. 
+/** @file
+    @brief ESPmanager implementations.
 */
 
 #include "ESPmanager.h"
@@ -30,8 +30,8 @@ extern UMM_HEAP_INFO ummHeapInfo;
 extern "C" uint32_t _SPIFFS_start;
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
-static const uint16_t _ESPdeviceFinderPort = 8888;  
-static const uint32_t _ESPdeviceTimeout = 1200000;// 300000;  //  when is the devicefinder deleted. 
+static const uint16_t _ESPdeviceFinderPort = 8888;
+static const uint32_t _ESPdeviceTimeout = 1200000;// 300000;  //  when is the devicefinder deleted.
 
 
 
@@ -74,10 +74,10 @@ extern File _DebugFile;
 
 
 /**
- * 
- * @param [HTTP] pass an instance of AsyncWebServer. Optional. 
- * @param [fs] pass an instance of SPIFFS file system.  Defaults to SPIFFS, as per arduino. Optional. 
- * 
+ *
+ * @param [HTTP] pass an instance of AsyncWebServer. Optional.
+ * @param [fs] pass an instance of SPIFFS file system.  Defaults to SPIFFS, as per arduino. Optional.
+ *
  */
 ESPmanager::ESPmanager(
     AsyncWebServer & HTTP, FS & fs)
@@ -106,8 +106,8 @@ ESPmanager::~ESPmanager()
 }
 
 /**
- * To be called during setup() and only called once. 
- * @return ESPMAN::ESPMAN_ERR_t. 
+ * To be called during setup() and only called once.
+ * @return ESPMAN::ESPMAN_ERR_t.
  */
 ESPMAN_ERR_t ESPmanager::begin()
 {
@@ -524,33 +524,33 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     if (_devicefinder) {
 
-    myString host = getHostname();
-    _devicefinder->cacheResults(false); 
-    _devicefinder->setAppName( "ESPmanager" );
-    _devicefinder->begin(host.c_str(), _ESPdeviceFinderPort);
+        myString host = getHostname();
+        _devicefinder->cacheResults(false);
+        _devicefinder->setAppName( "ESPmanager" );
+        _devicefinder->begin(host.c_str(), _ESPdeviceFinderPort);
 
-    _tasker.add( [this](Task & t) {
+        _tasker.add( [this](Task & t) {
 
-        if (_devicefinder) {
-            _devicefinder->loop();
-        }
+            if (_devicefinder) {
+                _devicefinder->loop();
+            }
 
-        if (t.count > 2000) {
-            t.setTimeout(1000);  //  run for 20 seconds quickly... then back off...
-        }
+            if (t.count > 2000) {
+                t.setTimeout(1000);  //  run for 20 seconds quickly... then back off...
+            }
 
-    }).setTimeout(10).setRepeat(true);  
+        }).setTimeout(10).setRepeat(true);
 
     }
-  
+
 
 }
 
 /**
  * Allows you to override and settings file, mainly for testing purposes as you can't use settings stored
- * in the config.json file.  
- * @param [ssid] desired default ssid to connect to.  Can be `const char *`, `String`, `myString` or `F()`. 
- * @param [pass] desired default password to connect to ssid.  Can be `const char *`, `String`, `myString` or `F()`. 
+ * in the config.json file.
+ * @param [ssid] desired default ssid to connect to.  Can be `const char *`, `String`, `myString` or `F()`.
+ * @param [pass] desired default password to connect to ssid.  Can be `const char *`, `String`, `myString` or `F()`.
  * @return ESPMAN::ESPMAN_ERR_t
  */
 ESPMAN_ERR_t ESPmanager::begin(myString ssid, myString pass)
@@ -655,8 +655,8 @@ void ESPmanager::_APlogic(Task & t)
 }
 
 /**
- *  This function enables the captive portal, creating a DNS server that allows redirect. 
- *  example:  To redirect root to page when portal is enabled. 
+ *  This function enables the captive portal, creating a DNS server that allows redirect.
+ *  example:  To redirect root to page when portal is enabled.
  *  @code
  *  HTTP.rewrite("/", "/espman/setup.htm").setFilter( [](AsyncWebServerRequest * request) { return settings.portal(); });
  *  @endcode
@@ -691,8 +691,8 @@ ESPMAN_ERR_t ESPmanager::enablePortal()
 }
 
 /**
- *  Disable the captive portal function. 
- * 
+ *  Disable the captive portal function.
+ *
  */
 void ESPmanager::disablePortal()
 {
@@ -715,7 +715,7 @@ void ESPmanager::disablePortal()
 }
 
 /**
- *  Loop task, must be included in loop(); 
+ *  Loop task, must be included in loop();
  */
 void ESPmanager::handle()
 {
@@ -726,8 +726,8 @@ void ESPmanager::handle()
 
 /**
  * Thanks to me-no-dev.
- * @param [bytes] Number of Bytes to convert to String. 
- * @return String with formated bytes. 
+ * @param [bytes] Number of Bytes to convert to String.
+ * @return String with formated bytes.
  */
 String ESPmanager::formatBytes(size_t bytes)
 {
@@ -743,8 +743,8 @@ String ESPmanager::formatBytes(size_t bytes)
 }
 
 /**
- * Converts a String to a byte array. 
- * @param [mac] `*uint8_t` to byte array to output to.   
+ * Converts a String to a byte array.
+ * @param [mac] `*uint8_t` to byte array to output to.
  * @param [input]  input String to convert
  * @return
  */
@@ -778,9 +778,9 @@ bool ESPmanager::StringtoMAC(uint8_t *mac, const String & input)
 /**
  *  URI Decoding function
  *  Does not check if dst buffer is big enough to receive string so
- *  use same size as src is a recommendation. 
+ *  use same size as src is a recommendation.
  * @param [dst] destination buffer
- * @param [src] source buffer 
+ * @param [src] source buffer
  */
 void ESPmanager::urldecode(char *dst, const char *src)
 {
@@ -818,8 +818,8 @@ void ESPmanager::urldecode(char *dst, const char *src)
 }
 
 /**
- * Returns an md5 string of the input file. 
- * @param [f] Input file. 
+ * Returns an md5 string of the input file.
+ * @param [f] Input file.
  * @return String
  */
 String ESPmanager::file_md5 (File & f)
@@ -844,10 +844,10 @@ String ESPmanager::file_md5 (File & f)
 
 /**
 
- * Templated functon to allow sending of a json to an AsyncWebServerRequest. 
- * It adds the CORS header, and no-store to prevent caching. 
- * Only works for json lengths under 4k.  
- * @todo Add return bool so it does not fail silently. 
+ * Templated functon to allow sending of a json to an AsyncWebServerRequest.
+ * It adds the CORS header, and no-store to prevent caching.
+ * Only works for json lengths under 4k.
+ * @todo Add return bool so it does not fail silently.
  * @param [root] Either JsonObject or JsonObject
  * @param [request] AsyncWebServerRequest* to send the json to.
  */
@@ -886,9 +886,9 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
 }
 
 /**
- * Returns the current hostname set in config.json. 
- * Opens the settings file if settings are not in memory. 
- * @return String 
+ * Returns the current hostname set in config.json.
+ * Opens the settings file if settings are not in memory.
+ * @return String
  */
 String ESPmanager::getHostname()
 {
@@ -913,23 +913,23 @@ String ESPmanager::getHostname()
 }
 
 /**
- * Allows update of ESP8266 binary and SPIFFS files.  
- * Downloads the file at path. 
+ * Allows update of ESP8266 binary and SPIFFS files.
+ * Downloads the file at path.
  * example config.json
  * @code{json}
- * {  
- *  "files":[  
- *    {  
+ * {
+ *  "files":[
+ *    {
  *      "saveto":"sketch",
  *      "location":"/data/firmware.bin",
  *      "md5":"bbec8986eea6a5836c7446d08c719923"
  *    },
- *    {  
+ *    {
  *      "saveto":"/index.htm.gz",
  *      "location":"/data/index.htm.gz",
  *      "md5":"6816935f51673e61f76afd788e457400"
  *    },
- *    {  
+ *    {
  *      "saveto":"/espman/ajax-loader.gif",
  *      "location":"/data/espman/ajax-loader.gif",
  *      "md5":"8fd7e719b06cd3f701c791adb62bd7a6"
@@ -939,8 +939,8 @@ String ESPmanager::getHostname()
  *  "filecount":7
  * }
  * @endcode
- * @param [path] A url to a json file containing the upgrade instructions. 
- * @param [runasync] `bool` required if upgrade is being called from an interrupt. 
+ * @param [path] A url to a json file containing the upgrade instructions.
+ * @param [runasync] `bool` required if upgrade is being called from an interrupt.
  * @return ESPMAN::ESPMAN_ERR_t
  */
 ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
@@ -1003,11 +1003,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         if ( _settings->GEN.updateURL ) {
             path = _settings->GEN.updateURL.c_str();
         } else {
-            //event_printf(string_UPGRADE, "[%i]", NO_UPDATE_URL );
-            //event_printf_P(string_UPGRADE, PSTR("[%i]"), NO_UPDATE_URL );
 
             event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("[%i]"), NO_UPDATE_URL  ));
-
             return NO_UPDATE_URL;
         }
 
@@ -1015,33 +1012,17 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         ESPMan_Debugf("Path sent in: %s\n", path);
     }
 
-
     int files_expected = 0;
-    int files_recieved = 0;
-    int file_count = 0;
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject * p_root = nullptr;
-    uint8_t * buff = nullptr;
-    bool updatesketch = false;
+    int file_count = 1;
+    int firmwareIndex = -1; 
     bool overwriteFiles = false;
-
-    char msgdata[100];  //  delete me when done
-
-    //event_printf(string_UPGRADE, ("begin"), path);
+    JSONpackage json;
 
     event_send( FPSTR(fstring_UPGRADE) , F("begin")) ;
-
-
-
     ESPMan_Debugf("Checking for Updates: %s\n", path);
-
     String Spath = String(path);
     String rooturi = Spath.substring(0, Spath.lastIndexOf('/') );
-
-
-    //event_printf(string_CONSOLE, "%s", path);
     event_send( FPSTR(fstring_CONSOLE) , myStringf("%s", path )) ;
-
     ESPMan_Debugf("rooturi=%s\n", rooturi.c_str());
 
     //  save new update path for future update checks...  (if done via url only for example)
@@ -1056,48 +1037,28 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         save_flag = true;
     }
 
-    int ret = _parseUpdateJson(buff, jsonBuffer, p_root, path);
+    int ret = _parseUpdateJson(json, path);
 
     if (ret) {
-        //event_printf(string_UPGRADE, string_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError( (ESPMAN_ERR_t)ret).c_str());
-
-
         event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError( (ESPMAN_ERR_t)ret).c_str() ) );
         ESPMan_Debugf("MANIFEST ERROR [%i]\n", ret );
-        if (buff) {
-            delete[] buff;
-        }
-
         return MANIFST_FILE_ERROR;
     }
 
     ESPMan_Debugf("_parseUpdateJson success\n");
 
-    if (!p_root) {
-        //event_printf(string_UPGRADE, string_ERROR_toString , getError(JSON_OBJECT_ERROR).c_str());
-
+    if (!json) {
         event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR_toString, getError(JSON_OBJECT_ERROR).c_str() ) );
-
         ESPMan_Debugf("JSON ERROR [%i]\n", JSON_OBJECT_ERROR );
-        if (buff) {
-            delete[] buff;
-        }
         return JSON_PARSE_ERROR;
     }
 
-    JsonObject & root = *p_root;
-    files_expected = root["filecount"];
+    JsonObject & root = json.getRoot();
 
-    if (!files_expected) {
-        //event_printf(string_UPGRADE, string_ERROR_toString, getError(UNKNOWN_NUMBER_OF_FILES).c_str() );
-        event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR_toString, getError(UNKNOWN_NUMBER_OF_FILES).c_str() ) );
-
-        ESPMan_Debugf("ERROR [%i]\n", UNKNOWN_NUMBER_OF_FILES );
-
-    }
-
-
-    JsonArray & array = root["files"];
+    /**
+     *      Global settings for upgrade
+     *
+     */
 
     if (root.containsKey(F("formatSPIFFS"))) {
         if (root["formatSPIFFS"] == true) {
@@ -1125,96 +1086,84 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         ESPMan_Debugf("overwrite files set to %s\n", (overwriteFiles) ? "true" : "false");
     }
 
+    if (root.containsKey(F("files"))) {
 
-    for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
-        file_count++;
-        JsonObject& item = *it;
-        String remote_path = String();
-
-        //  if the is url is set to true then don't prepend the rootUri...
-        if (item["isurl"] == true) {
-            remote_path = String(item["location"].as<const char *>());
-        } else {
-            remote_path = rooturi + String(item["location"].as<const char *>());
-        }
-
-        const char* md5 = item["md5"];
-        String filename = item["saveto"];
-
-        if (remote_path.endsWith("bin") && filename == "sketch" ) {
-            updatesketch = true;
-            files_recieved++;         //  add one to keep count in order...
-            ESPMan_Debugf("[%u/%u] BIN Updated pending\n", file_count, files_expected);
-            continue;
-        }
-
-#ifdef Debug_ESPManager
-        Debug_ESPManager.print("\n\n");
-#endif
-
-        ESPMan_Debugf("[%u/%u] Downloading (%s)..\n", file_count, files_expected, filename.c_str()  );
-
-        int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
-
-        //char temp_buffer[50];
-
-        if (ret == 0 || ret == FILE_NOT_CHANGED) {
-            //event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
-            //event_printf(string_CONSOLE, "[%u/%u] (%s) : %s", file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed");
-            event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed" ) );
-
-
-        } else {
-            //event_printf_P(string_CONSOLE, PSTR("[%u/%u] (%s) : ERROR [%i]"), file_count, files_expected, filename.c_str(), ret);
-            //event_printf(string_CONSOLE, "[%u/%u] (%s) : ERROR [%i]", file_count, files_expected, filename.c_str(), ret);
-            event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : ERROR [%i]") , file_count, files_expected, filename.c_str(), ret ) );
-
-
-        }
-
-        event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("%u") , (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f)  ) );
-
-        //event_printf(string_UPGRADE, "%u", (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f) );
-
-
-
-
-#if defined(Debug_ESPManager)
-        if (ret == 0) {
-            Debug_ESPManager.printf("SUCCESS \n");
-            //files_recieved++;
-        } else if (ret == FILE_NOT_CHANGED) {
-            Debug_ESPManager.printf("FILE NOT CHANGED \n");
-        } else {
-            Debug_ESPManager.printf("FAILED [%i]\n", ret  );
-        }
-#endif
-
-    }
-
-    //  this removes any duplicate files if a compressed
-    _removePreGzFiles();
-
-    if (updatesketch) {
+        JsonArray & array = root["files"];
+        files_expected = array.size();
 
         for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
             JsonObject& item = *it;
+            String remote_path = String();
+
+            //  if the is url is set to true then don't prepend the rootUri...
+            if (item["isurl"] == true) {
+                remote_path = String(item["location"].as<const char *>());
+            } else {
+                remote_path = rooturi + String(item["location"].as<const char *>());
+            }
+
+            const char* md5 = item["md5"];
+            String filename = item["saveto"];
+
+            if (remote_path.endsWith("bin") && filename == "sketch" ) {
+                firmwareIndex = file_count - 1; //  true index vs counted 
+                ESPMan_Debugf("[%u/%u] BIN Updated pending, index %i\n", file_count, files_expected, firmwareIndex);
+                file_count++;
+                continue;
+            }
+
+#ifdef Debug_ESPManager
+            Debug_ESPManager.print("\n\n");
+#endif
+
+            ESPMan_Debugf("[%u/%u] Downloading (%s)..\n", file_count, files_expected, filename.c_str()  );
+            int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
+            if (ret == 0 || ret == FILE_NOT_CHANGED) {
+                event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed" ) );
+            } else {
+                event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : ERROR [%i]") , file_count, files_expected, filename.c_str(), ret ) );
+            }
+
+            event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("%u") , (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f)  ) );
+
+#if defined(Debug_ESPManager)
+            if (ret == 0) {
+                Debug_ESPManager.printf("SUCCESS \n");
+            } else if (ret == FILE_NOT_CHANGED) {
+                Debug_ESPManager.printf("FILE NOT CHANGED \n");
+            } else {
+                Debug_ESPManager.printf("FAILED [%i]\n", ret  );
+            }
+#endif
+
+            file_count++; 
+        }
+
+    } else {
+        event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR_toString, getError(MANIFST_FILE_ERROR).c_str() ) );
+        ESPMan_Debugf("ERROR [%i]\n", MANIFST_FILE_ERROR );
+    }
+
+    //  this removes any duplicate files if a compressed file exists
+    _removePreGzFiles();
+
+    if (firmwareIndex != -1) {
+
+      //  for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
+            JsonArray & array = root["files"];
+            JsonObject & item = array.get<JsonObject&>(firmwareIndex);
+
             String remote_path = rooturi + String(item["location"].as<const char *>());
             String filename = item["saveto"];
             String commit = root["commit"];
 
             if (remote_path.endsWith("bin") && filename == "sketch" ) {
                 if ( String( item["md5"].as<const char *>() ) != getSketchMD5() ) {
-
                     ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
-                    //_events.send("firmware", string_UPGRADE, 0, 5000);
-
                     event_send( FPSTR(fstring_UPGRADE), F("firmware"));
                     delay(10);
                     _events.send(  myString(F("Upgrading sketch")).c_str() , nullptr, 0, 5000);
-                    //event_send( FPSTR(string_UPGRADE), F("firmware"));
                     delay(10);
-                    // _fs.end();
                     ESPhttpUpdate.rebootOnUpdate(false);
 
                     t_httpUpdate_return ret = ESPhttpUpdate.update(remote_path);
@@ -1223,29 +1172,20 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
                     case HTTP_UPDATE_FAILED:
                         ESPMan_Debugf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-                        // snprintf(msgdata, 100,"FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str() );
-                        // _events.send(msgdata, "upgrade");
                         delay(100);
-                        //event_printf_P(string_UPGRADE, PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str() );
-                        //event_printf(string_UPGRADE, "ERROR [%s]", ESPhttpUpdate.getLastErrorString().c_str() );
                         event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str()  ));
                         delay(100);
                         break;
 
                     case HTTP_UPDATE_NO_UPDATES:
                         ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
-                        //_events.send("FAILED no update", "upgrade");
                         delay(100);
-                        //event_printf_P(string_UPGRADE, PSTR("ERROR no update"));
-                        //event_printf(string_UPGRADE, "ERROR no update");
                         event_send( FPSTR(fstring_UPGRADE), F("ERROR no update") );
                         delay(100);
                         break;
 
                     case HTTP_UPDATE_OK:
                         ESPMan_Debugf("HTTP_UPDATE_OK");
-                        //event_printf_P(string_UPGRADE, PSTR("firmware-end"));
-                        //event_printf(string_UPGRADE, "firmware-end");
                         event_send( FPSTR(fstring_UPGRADE), F("firmware-end") );
                         delay(100);
                         _events.close();
@@ -1255,31 +1195,23 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
                     }
 
                 } else {
-                    //event_printf(string_CONSOLE, "No Change to firmware");
-                    //event_printf_P(string_CONSOLE, PSTR("No Change to firmware"));
-
                     event_send( FPSTR(fstring_CONSOLE), F("No Change to firmware") );
-
                     ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].as<const char *>()  );
 
                 }
+            } else {
+                //  json object does not contain valid binary.
             }
-        }
-    }
-
-    if (buff) {
-        delete[] buff;
+       // }  //  for loop
     }
 
     event_send( FPSTR(fstring_UPGRADE), F("end"));
-
-    delay(200);
 
 }
 
 #endif
 /**
- * Get the size of the existing sketch in bytes. 
+ * Get the size of the existing sketch in bytes.
  * @return uint32_t
  */
 uint32_t ESPmanager::trueSketchSize()
@@ -1287,7 +1219,7 @@ uint32_t ESPmanager::trueSketchSize()
     return ESP.getSketchSize();
 }
 /**
- * Get the current sketch md5.  This is used to compare updates 
+ * Get the current sketch md5.  This is used to compare updates
  * @return
  */
 String ESPmanager::getSketchMD5()
@@ -1295,8 +1227,8 @@ String ESPmanager::getSketchMD5()
     return ESP.getSketchMD5();
 }
 /**
- * Returns the events instance, allowing sketches to access browsers that have events opened. 
- * @return AsyncEventSource & 
+ * Returns the events instance, allowing sketches to access browsers that have events opened.
+ * @return AsyncEventSource &
  */
 AsyncEventSource & ESPmanager::getEvent()
 {
@@ -1304,7 +1236,7 @@ AsyncEventSource & ESPmanager::getEvent()
 }
 
 /**
- * Send event function. Topic and message are myString, allowing use of F(), as well as, ESPMAN::myStringf and ESPMAN::myStringf_P. 
+ * Send event function. Topic and message are myString, allowing use of F(), as well as, ESPMAN::myStringf and ESPMAN::myStringf_P.
  * @param [topic] topic
  * @param [msg] message
  * @return
@@ -1316,7 +1248,7 @@ bool ESPmanager::event_send(myString topic, myString msg )
 }
 
 /**
- * Saves settings to SPIFFS. 
+ * Saves settings to SPIFFS.
  * @return ESPMAN::ESPMAN_ERR_t
  */
 ESPMAN_ERR_t ESPmanager::save()
@@ -1490,7 +1422,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
  *
  */
 
-ESPMAN_ERR_t ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path)
+ESPMAN_ERR_t ESPmanager::_parseUpdateJson(JSONpackage & json, const char * path)
 {
     using namespace ESPMAN;
 
@@ -1517,25 +1449,12 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & j
         return JSON_TOO_LARGE;
     }
 
-    //uint8_t buff[bufsize] = { 0 }; // max size of input buffer. Don't use String, as arduinoJSON doesn't like it!
-    // buff = nullptr;
-    // buff = new uint8_t[len];
-
-    // if (!buff) {
-    //     ESPMan_Debugf("[ESPmanager::_parseUpdateJson] failed to allocate buff\n");
-    //     return MALLOC_FAIL;
-    // }
-
-
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
-
-    root = &jsonBuffer.parseObject(* stream );
-    //root = &jsonBuffer.parseObject( (char*)buff, length );
-
+    int ret = json.parseStream(*stream);
     http.end();
 
-    if (root->success()) {
+    if (ret == SUCCESS) {
         ESPMan_Debugf("root->success() = true\n");
         return SUCCESS;
     } else {
@@ -1548,37 +1467,15 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & j
 
 void ESPmanager::_HandleSketchUpdate(AsyncWebServerRequest *request)
 {
-
-
-    ESPMan_Debugf("HIT\n" );
-
-
     if ( request->hasParam(F("url"), true)) {
-
         String path = request->getParam(F("url"), true)->value();
-
         ESPMan_Debugf("path = %s\n", path.c_str());
-
         _tasker.add([ = ](Task & t) {
             _upgrade(path.c_str());
-
         });
-
-        // _syncCallback = [ = ]() {
-
-        //_upgrade(path.c_str());
-        //     return true;
-
-        // };
-
     }
 
     _sendTextResponse(request, 200, FPSTR(fstring_OK));
-
-    // AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "OK");
-    // response->addHeader( ESPMAN::string_CORS, "*");
-    // response->addHeader( ESPMAN::string_CACHE_CONTROL, "no-store");
-    // request->send(response);
 
 }
 
@@ -1920,9 +1817,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             JsonObject& generalobject = root.createNestedObject(FPSTR(fstring_General));
 
-            generalobject[FPSTR(fstring_deviceid)] = set.GEN.host();
+            generalobject[FPSTR(fstring_deviceid)] = getHostname();
             //generalobject[F("OTAenabled")] = (_OTAenabled) ? true : false;
-
             generalobject[FPSTR(fstring_OTApassword)] = (set.GEN.OTApassword) ? true : false;
             generalobject[FPSTR(fstring_GUIhash)] =  (set.GEN.GUIhash) ? true : false;
             generalobject[FPSTR(fstring_OTAport)] = set.GEN.OTAport;
@@ -1946,17 +1842,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
             STAobject[F("connectedssid")] = WiFi.SSID();
-
             STAobject[F("dhcp")] = (set.STA.dhcp) ? true : false;
-
             STAobject[F("state")] = (mode == WIFI_STA || mode == WIFI_AP_STA) ? true : false;
-
             STAobject[FPSTR(fstring_channel)] = WiFi.channel();
-
             STAobject[F("RSSI")] = WiFi.RSSI();
 
             //String ip;
-
             STAobject[FPSTR(fstring_IP)] = WiFi.localIP().toString();
             STAobject[FPSTR(fstring_GW)] = WiFi.gatewayIP().toString();
             STAobject[FPSTR(fstring_SN)] = WiFi.subnetMask().toString();
@@ -2248,23 +2139,23 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
         if (plainCommand == F("discover")) {
 
             ESPMan_Debugf("Discover Devices\n");
-            
+
             if (_devicefinder && !_deviceFinderTimer) {
                 _devicefinder->cacheResults(true);
                 _devicefinder->ping();
-                _deviceFinderTimer = millis(); 
+                _deviceFinderTimer = millis();
 
                 _tasker.add( [this](Task & t) {
 
                     if (millis() - _deviceFinderTimer > _ESPdeviceTimeout) {
                         t.setRepeat(false);
                         if (_devicefinder) {
-                            uint32_t pre_heap = ESP.getFreeHeap(); 
+                            uint32_t pre_heap = ESP.getFreeHeap();
                             _devicefinder->cacheResults(false);
                             ESPMan_Debugf("Removing Found Devices after %us freeing %u\n", _ESPdeviceTimeout / 1000, ESP.getFreeHeap() - pre_heap  );
                         }
-                        _deviceFinderTimer = 0; 
-                    } 
+                        _deviceFinderTimer = 0;
+                    }
                 }).setTimeout(1000).setRepeat(true);
 
             }
@@ -2281,11 +2172,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             _populateFoundDevices(root);
 
-            //  reset the timer so as to not delete the results. 
+            //  reset the timer so as to not delete the results.
             if (_deviceFinderTimer) {
-                _deviceFinderTimer = millis(); 
+                _deviceFinderTimer = millis();
             }
-            
+
 
         }
 
@@ -3596,9 +3487,9 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 #ifdef ESPMANAGER_SYSLOG
 
 /**
- * Syslog:  Send msg to configured syslog server. 
+ * Syslog:  Send msg to configured syslog server.
  * @param [msg] message
- * @return bool 
+ * @return bool
  * @warning not implemented
  */
 bool ESPmanager::log(myString msg)
@@ -3610,7 +3501,7 @@ bool ESPmanager::log(myString msg)
 }
 
 /**
- * @param [pri] priority 
+ * @param [pri] priority
  * @param [msg] message
  * @return bool
  * @warning not implemented
@@ -3640,7 +3531,7 @@ bool ESPmanager::log(myString appName, myString  msg)
  * @param
  * @param
  * @param
- * @return bool 
+ * @return bool
  * @warning not implemented
  */
 bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
@@ -4296,8 +4187,8 @@ void ESPmanager::_dumpSettings()
 #endif
 
 /**
- *  Resets the ESP to a non-configured state. 
- *  Erases the config file, and removes the wizard flag if it is there. 
+ *  Resets the ESP to a non-configured state.
+ *  Erases the config file, and removes the wizard flag if it is there.
  */
 void ESPmanager::factoryReset()
 {
@@ -4339,7 +4230,7 @@ void ESPmanager::_removePreGzFiles()
 }
 
 /**
- * Returns error code as a String. 
+ * Returns error code as a String.
  * @param
  * @return
  */

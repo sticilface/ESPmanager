@@ -49,7 +49,7 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                     locPath = os.path.relpath( dirName + "/" + fname, sys.argv[1])
                     print("RelPath = " + relPath)
                     item = {}
-                    item["index"] = index
+                    #item["index"] = index
                     index = index + 1
                     item["location"] =  "/" + locPath
                     item["isurl"] = False
@@ -69,7 +69,7 @@ for dirName, subdirList, fileList in os.walk(rootDir):
                         List.append(binary)
 
 data["files"] = List
-data["filecount"] = index
+#data["filecount"] = index
 
 # print(json.dumps(data, sort_keys=False, indent=4))
 with open(sys.argv[2], 'w') as outfile:

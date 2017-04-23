@@ -163,7 +163,9 @@ private:
 #ifdef ESPMANAGER_UPDATER
   ESPMAN_ERR_t _upgrade(const char * path);
   ESPMAN_ERR_t   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
-  ESPMAN_ERR_t   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
+  //ESPMAN_ERR_t   _parseUpdateJson(uint8_t *& buff, DynamicJsonBuffer & jsonBuffer, JsonObject *& root, const char * path);
+  ESPMAN_ERR_t   _parseUpdateJson(JSONpackage & json, const char * path);
+  
   void  _HandleSketchUpdate(AsyncWebServerRequest * request);
 #else 
   ESPMAN_ERR_t _upgrade(const char * path) {}

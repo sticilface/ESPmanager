@@ -57,53 +57,29 @@ int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs)
         return FILE_TOO_LARGE;
     }
 
-    // _data = std::unique_ptr<char[]>(new char[totalBytes]);
-
-    // if (!_data) {
-    //     return MALLOC_FAIL;
+    // if (_isArray) {
+    //     _root = _jsonBuffer.parseArray(f);
+    // } else {
+    //     _root = _jsonBuffer.parseObject(f);
     // }
 
-    // int position = 0;
-    // int bytesleft = totalBytes;
+    return parseStream(f); 
 
-    // while ((f.available() > -1) && (bytesleft > 0)) {
+}
 
-    //     // get available data size
-    //     int sizeAvailable = f.available();
-    //     if (sizeAvailable) {
-    //         int readBytes = sizeAvailable;
-
-    //         // read only the asked bytes
-    //         if (readBytes > bytesleft) {
-    //             readBytes = bytesleft;
-    //         }
-
-    //         // get new position in buffer
-    //         char * buf = &_data.get()[position];
-    //         // read data
-    //         int bytesread = f.readBytes(_data.get(), readBytes);
-    //         if (readBytes && bytesread == 0) { break; } //  this fixes a corrupt file that has size but can't be read.
-    //         bytesleft -= bytesread;
-    //         position += bytesread;
-
-    //     }
-    //     // time for network streams
-    //     delay(0);
-    // }
-
-    // f.close();
-
+int ESPMAN::JSONpackage::parseStream(Stream & in)
+{
     if (_isArray) {
-        _root = _jsonBuffer.parseArray(f);
+        _root = _jsonBuffer.parseArray(in);
     } else {
-        _root = _jsonBuffer.parseObject(f);
+        _root = _jsonBuffer.parseObject(in);
     }
-
+    
     if (!_root.success()) {
         return JSON_PARSE_ERROR;
     }
 
-    return 0;
+    return 0; 
 
 }
 
@@ -127,6 +103,10 @@ bool ESPMAN::JSONpackage::save(const char * file)
     f.close();
 
     return 0;
+}
+
+ESPMAN::JSONpackage::operator bool() const {
+    return _root.success(); 
 }
 
 

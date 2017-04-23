@@ -197,9 +197,11 @@ public:
     JsonVariant & getRoot() { return _root; }
 
     int parseSPIFS(const char * file, FS & fs = SPIFFS);
+    int parseStream(Stream & in); 
     int parse(char * data, int size);
     static void mergejson(JsonObject& dest, JsonObject& src);
     bool save(const char * file);
+    operator bool() const; 
 
 };
 
