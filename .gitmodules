@@ -1,6 +1,6 @@
-[submodule "src/Tasker"]
-	path = src/Tasker
-	url = https://github.com/sticilface/Tasker
 [submodule "src/ESPdeviceFinder"]
 	path = src/ESPdeviceFinder
 	url = https://github.com/sticilface/ESPdeviceFinder
+[submodule "src/Tasker"]
+	path = src/Tasker
+	url = https://github.com/sticilface/Tasker/tree/develop
