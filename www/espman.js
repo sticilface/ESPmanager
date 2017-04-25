@@ -291,7 +291,6 @@ function getGenvars() {
                     $("#gen-page-status").empty().append(" <p> WiFi Not Connected to " + result.STA.connectedssid + "</p>");
                 }
             }
-
         }
 
         if (result.hasOwnProperty("General")) {
