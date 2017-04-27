@@ -77,8 +77,8 @@
 #include "SaveStack.h"
 #endif
 
-#define DEFAULT_AP_PASS "esprocks" ///< Default password for the ESP AP.  Used for first connecting to the ESPManager. 
-
+#define DEFAULT_AP_PASS "esprocks" ///< @brief Default password for the ESP AP.  Used for first connecting to the ESPManager. 
+#define MAX_WIFI_NETWORKS 10 ///< @brief Max number of WiFi networks to report in the scan.  Too many here will crash the ESP. 
 #define SETTINGS_FILE "/espman/settings.json"  /**< @brief Location of settings file on SPIFFS */ 
 #define ESPMANVERSION "2.2-async"              /**< @brief Version of espmanager */ 
 #define SETTINGS_FILE_VERSION 2                /**< @brief Settings file.  Version number increments are not backwards compatible. @todo implement version checking in settings file  */ 
@@ -138,8 +138,8 @@ public:
   bool portal() { return _dns; } /**< Returns if the portal is active or not. @return bool  */
   ESPMAN_ERR_t enablePortal();
   void disablePortal();
-  ASyncTasker & getTaskManager() { return _tasker; } /**< Returns tasker. @return ASyncTasker &  */
-  ASyncTasker & tasker() { return _tasker; } /**< Returns tasker. @return ASyncTasker &  */ 
+  // ASyncTasker & getTaskManager() { return _tasker; } *< Returns tasker. @return ASyncTasker &  
+  // ASyncTasker & tasker() { return _tasker; } /**< Returns tasker. @return ASyncTasker &  */ 
 
 #ifdef ESPMANAGER_SYSLOG
 
@@ -201,7 +201,7 @@ private:
   settings_t * _settings {nullptr};
   const byte DNS_PORT = 53;
   int8_t WiFiresult = -1;
-  ASyncTasker _tasker;
+  Task _tasker;
   Task * _dnsTask{nullptr};
 
   ESPdeviceFinder * _devicefinder{nullptr}; 

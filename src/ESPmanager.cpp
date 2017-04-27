@@ -719,7 +719,7 @@ void ESPmanager::disablePortal()
  */
 void ESPmanager::handle()
 {
-    _tasker.loop();
+    _tasker.run();
 }
 
 //format bytes thanks to @me-no-dev
@@ -1713,7 +1713,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     for (int i = 0; i < _wifinetworksfound; i++) {
 
-                        _container.push_back(std::pair<int, int>(i, WiFi.RSSI(i)));
+                        //_container.push_back(std::pair<int, int>(i, WiFi.RSSI(i)));
+                        _container.emplace_back(i,WiFi.RSSI(i) ); //  use emplace... less copy/move semantics. 
                     }
 
                     _container.sort([](const std::pair<int, int>& first, const std::pair<int, int>& second) {
@@ -1723,8 +1724,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     JsonArray& Networkarray = root.createNestedArray("networks");
 
 
-                    if (_wifinetworksfound > 20) {
-                        _wifinetworksfound = 20;
+                    if (_wifinetworksfound > MAX_WIFI_NETWORKS) {
+                        _wifinetworksfound = MAX_WIFI_NETWORKS;
                     }
 
 
