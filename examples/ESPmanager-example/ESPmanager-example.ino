@@ -48,7 +48,7 @@ void setup()
 
 	Serial.println("");
 	Serial.println(F("Example ESPconfig - using ESPAsyncWebServer"));
-	Serial.println("Version: " ESPMANVERSION); 
+	Serial.println("Version: " ESPMANVERSION);
 
 	Serial.printf("Sketch size: %u\n", ESP.getSketchSize());
 	Serial.printf("Free size: %u\n", ESP.getFreeSketchSpace());
@@ -57,8 +57,8 @@ void setup()
 
 
 
-	//  This rewrite is active when the captive portal is working, and redirects the root / to the setup wizard. 
-	//  This has to go in the main sketch to allow your project to control the root when using ESPManager. 
+	//  This rewrite is active when the captive portal is working, and redirects the root / to the setup wizard.
+	//  This has to go in the main sketch to allow your project to control the root when using ESPManager.
 	HTTP.rewrite("/", "/espman/setup.htm").setFilter( [](AsyncWebServerRequest * request) {
 		return settings.portal();
 	});
@@ -68,15 +68,15 @@ void setup()
 	HTTP.rewrite("/", "/index.htm");
 	HTTP.serveStatic("/index.htm", SPIFFS, "/index.htm");
 
-    //  rewrite the AJAX loader
-    HTTP.rewrite("/images/ajax-loader.gif", "/espman/ajax-loader.gif"); 
+	//  rewrite the AJAX loader
+	HTTP.rewrite("/images/ajax-loader.gif", "/espman/ajax-loader.gif");
 
-    // Serve favicon from PROGMEM: #include <favicon.h>
-    HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) { 
-    AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, favicon_ico_gz_len);
-    response->addHeader("Content-Encoding", "gzip");
-    request->send(response);
-    });
+	// Serve favicon from PROGMEM: #include <favicon.h>
+	HTTP.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest * request) {
+		AsyncWebServerResponse *response = request->beginResponse_P(200, "image/x-icon", favicon_ico_gz, favicon_ico_gz_len);
+		response->addHeader("Content-Encoding", "gzip");
+		request->send(response);
+	});
 
 
 

@@ -70,7 +70,7 @@
 #define ESPMANAGER_UPDATER        /**< @brief Enable the remote updater, update via http see ::upgrade, uses 1K heap */ 
 #define ESPMANAGER_DEVICEFINDER   /**< @brief Enable deviceFinder.  ESPmanager will now locate all other ESPmanager instances, see ::ESPdeviceFinder, uses 200 bytes heap */ 
 //#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/  
-//#define Debug_ESPManager Serial /* 1760 bytes  */ 
+#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 
 #ifdef ESPMANAGER_SAVESTACK
@@ -133,6 +133,7 @@ public:
 
   bool event_send(myString topic, myString msg ); 
   ESPMAN_ERR_t upgrade(String path = String(), bool runasync = true);
+  ESPMAN_ERR_t upgrade(bool runasync) {  return upgrade( String(), runasync); }
   void factoryReset();
   ESPMAN_ERR_t save();
   bool portal() { return _dns; } /**< Returns if the portal is active or not. @return bool  */

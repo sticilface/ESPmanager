@@ -302,7 +302,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
         _tasker.add([](Task & t) {
             ArduinoOTA.handle();
-        }, true).setRepeat(true).setTimeout(500);
+        }).setRepeat(true).setTimeout(500);
 
         ArduinoOTA.setHostname(_settings->GEN.host.c_str());
         //
@@ -529,17 +529,17 @@ ESPMAN_ERR_t ESPmanager::begin()
         _devicefinder->setAppName( "ESPmanager" );
         _devicefinder->begin(host.c_str(), _ESPdeviceFinderPort);
 
-        _tasker.add( [this](Task & t) {
+        Task * repeat_task = &_tasker.add( [this](Task & t) {
 
             if (_devicefinder) {
                 _devicefinder->loop();
             }
 
-            if (t.count > 2000) {
-                t.setTimeout(1000);  //  run for 20 seconds quickly... then back off...
-            }
+        }).setTimeout(10).setRepeat(true).setMicros(true); 
 
-        }).setTimeout(10).setRepeat(true);
+        _tasker.add([repeat_task](Task & t) { 
+            repeat_task->setTimeout(1000); 
+        });
 
     }
 
@@ -680,7 +680,7 @@ ESPMAN_ERR_t ESPmanager::enablePortal()
 
         _dnsTask = & _tasker.add([this](Task & t) {
             this->_dns->processNextRequest();
-        }, true).setRepeat().setTimeout(500);
+        }).setRepeat(true).setTimeout(500).setMicros(true); 
 
         return SUCCESS;
 
@@ -704,7 +704,7 @@ void ESPmanager::disablePortal()
     }
 
     if (_dnsTask) {
-        _tasker.remove(*_dnsTask);
+        _tasker.remove(_dnsTask);
     }
 
     // if (_portalreWrite && _HTTP.removeRewrite(_portalreWrite))
@@ -977,10 +977,10 @@ ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 
     if (runasync) {
         _tasker.add([newpath, this](Task & t) {
-            this->_upgrade(newpath());
+            this->_upgrade(newpath.c_str() ) ;
         });
     } else {
-        return _upgrade(newpath());
+        return _upgrade(newpath.c_str() ) ;
     }
 
     return SUCCESS;
@@ -1041,7 +1041,9 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
     int ret = _parseUpdateJson(json, path);
 
     if (ret) {
-        event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError( (ESPMAN_ERR_t)ret).c_str() ) );
+        ESPMan_Debugf("MANIFEST ERROR part 1 [%s]\n", getError(MANIFST_FILE_ERROR).c_str() );
+        ESPMan_Debugf("MANIFEST ERROR part 2 [%s]\n", getError(ret).c_str() );
+        event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError(ret).c_str()));
         ESPMan_Debugf("MANIFEST ERROR [%i]\n", ret );
         return MANIFST_FILE_ERROR;
     }
@@ -1739,7 +1741,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     int counter = 0;
 
                     for (it = _container.begin(); it != _container.end(); it++) {
-                        if (counter == 20) {
+                        if (counter == MAX_WIFI_NETWORKS) {
                             break;
                         }
 
@@ -4306,6 +4308,8 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
         return F("Password invalid"); break;
     case WRONG_SETTINGS_FILE_VERSION:
         return F("Wrong Settings File Version"); break;
+    default:
+        return String(err); break; 
     }
 }
 

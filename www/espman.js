@@ -11,7 +11,7 @@ var _home_device = getBaseUrl();
 
 
 
-//_home_device = "http://192.168.1.168/espman/";
+//_home_device = "http://192.168.1.151/espman/";
 
 console.log("Home Device:" +  _home_device);
 
