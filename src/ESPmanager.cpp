@@ -320,6 +320,7 @@ ESPMAN_ERR_t ESPmanager::begin()
         }
 
         ArduinoOTA.onStart([this]() {
+            //MDNS.stop();
             _fs.end();
             event_send( F("update") , F("begin"));
 #ifdef Debug_ESPManager
@@ -519,6 +520,8 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 
 //  autodiscover code
+//
+#ifdef ESPMANAGER_DEVICEFINDER
 
     _devicefinder = new ESPdeviceFinder;
 
@@ -535,13 +538,15 @@ ESPMAN_ERR_t ESPmanager::begin()
                 _devicefinder->loop();
             }
 
-        }).setTimeout(10).setRepeat(true).setMicros(true); 
+        }).setTimeout(10).setRepeat(true).setMicros(true);
 
-        _tasker.add([repeat_task](Task & t) { 
-            repeat_task->setTimeout(1000); 
+        _tasker.add([repeat_task](Task & t) {
+            repeat_task->setTimeout(1000);
         });
 
     }
+
+#endif
 
 
 }
@@ -680,7 +685,7 @@ ESPMAN_ERR_t ESPmanager::enablePortal()
 
         _dnsTask = & _tasker.add([this](Task & t) {
             this->_dns->processNextRequest();
-        }).setRepeat(true).setTimeout(500).setMicros(true); 
+        }).setRepeat(true).setTimeout(500).setMicros(true);
 
         return SUCCESS;
 
@@ -922,7 +927,7 @@ String ESPmanager::getHostname()
  *    {
  *      "saveto":"sketch", // used for binary
  *      "location":"/data/firmware.bin",
- *      "md5":"bbec8986eea6a5836c7446d08c719923"  
+ *      "md5":"bbec8986eea6a5836c7446d08c719923"
  *    },
  *    {
  *      "saveto":"/index.htm.gz",
@@ -937,11 +942,11 @@ String ESPmanager::getHostname()
  *  ],
  * }
  * @endcode
- * Optional parameters for config json:  
+ * Optional parameters for config json:
  * "overwrite": bool  -> overwrite existing files
  * "formatSPIFFS": bool -> format spiffs before download, keeps the ESPManager settings file.  Good for a defrag....
  * "clearWiFi": bool -> reset wifin settings
- * 
+ *
  * @param [path] A url to a json file containing the upgrade instructions.
  * @param [runasync] `bool` required if upgrade is being called from an interrupt.
  * @return ESPMAN::ESPMAN_ERR_t
@@ -949,7 +954,7 @@ String ESPmanager::getHostname()
 ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 {
     using namespace ESPMAN;
-    
+
     if (path.length()) {
         ESPMan_Debugf("Upgrade Called: path = %s\n", path.c_str());
     }
@@ -1015,7 +1020,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
     int files_expected = 0;
     int file_count = 1;
-    int firmwareIndex = -1; 
+    int firmwareIndex = -1;
     bool overwriteFiles = false;
     JSONpackage json;
 
@@ -1119,6 +1124,9 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 #endif
 
             ESPMan_Debugf("[%u/%u] Downloading (%s)..\n", file_count, files_expected, filename.c_str()  );
+
+ //           MDNS.stop();
+
             int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
             if (ret == 0 || ret == FILE_NOT_CHANGED) {
                 event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed" ) );
@@ -1138,7 +1146,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
             }
 #endif
 
-            file_count++; 
+            file_count++;
         }
 
     } else {
@@ -1151,62 +1159,66 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
     if (firmwareIndex != -1) {
 
-      //  for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
-            JsonArray & array = root["files"];
-            JsonObject & item = array.get<JsonObject&>(firmwareIndex);
+        //  for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
+        JsonArray & array = root["files"];
+        JsonObject & item = array.get<JsonObject&>(firmwareIndex);
 
-            String remote_path = rooturi + String(item["location"].as<const char *>());
-            String filename = item[F("saveto")];
-            String commit = root[F("commit")];
+        String remote_path = rooturi + String(item["location"].as<const char *>());
+        String filename = item[F("saveto")];
+        String commit = root[F("commit")];
 
-            if (remote_path.endsWith("bin") && filename == "sketch" ) {
-                if ( String( item["md5"].as<const char *>() ) != getSketchMD5() ) {
-                    ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
-                    event_send( FPSTR(fstring_UPGRADE), F("firmware"));
-                    delay(10);
-                    _events.send(  myString(F("Upgrading sketch")).c_str() , nullptr, 0, 5000);
-                    delay(10);
-                    ESPhttpUpdate.rebootOnUpdate(false);
+        if (remote_path.endsWith("bin") && filename == "sketch" ) {
+            if ( String( item["md5"].as<const char *>() ) != getSketchMD5() ) {
+                ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
+                event_send( FPSTR(fstring_UPGRADE), F("firmware"));
+                delay(10);
+                _events.send(  myString(F("Upgrading sketch")).c_str() , nullptr, 0, 5000);
+                delay(10);
+                ESPhttpUpdate.rebootOnUpdate(false);
 
-                    t_httpUpdate_return ret = ESPhttpUpdate.update(remote_path);
+  //              MDNS.stop(); 
 
-                    switch (ret) {
+                t_httpUpdate_return ret = ESPhttpUpdate.update(remote_path);
 
-                    case HTTP_UPDATE_FAILED:
-                        ESPMan_Debugf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-                        delay(100);
-                        event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str()  ));
-                        delay(100);
-                        break;
+                switch (ret) {
 
-                    case HTTP_UPDATE_NO_UPDATES:
-                        ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
-                        delay(100);
-                        event_send( FPSTR(fstring_UPGRADE), F("ERROR no update") );
-                        delay(100);
-                        break;
+                case HTTP_UPDATE_FAILED:
+                    ESPMan_Debugf("HTTP_UPDATE_FAILD Error (%d): %s", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
+                    delay(100);
+                    event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("ERROR [%s]"), ESPhttpUpdate.getLastErrorString().c_str()  ));
+                    delay(100);
+                    break;
 
-                    case HTTP_UPDATE_OK:
-                        ESPMan_Debugf("HTTP_UPDATE_OK");
-                        event_send( FPSTR(fstring_UPGRADE), F("firmware-end") );
-                        delay(100);
-                        _events.close();
-                        delay(1000);
-                        ESP.restart();
-                        break;
-                    }
+                case HTTP_UPDATE_NO_UPDATES:
+                    ESPMan_Debugf("HTTP_UPDATE_NO_UPDATES");
+                    delay(100);
+                    event_send( FPSTR(fstring_UPGRADE), F("ERROR no update") );
+                    delay(100);
+                    break;
 
-                } else {
-                    event_send( FPSTR(fstring_CONSOLE), F("No Change to firmware") );
-                    ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].as<const char *>()  );
-
+                case HTTP_UPDATE_OK:
+                    ESPMan_Debugf("HTTP_UPDATE_OK");
+                    event_send( FPSTR(fstring_UPGRADE), F("firmware-end") );
+                    delay(100);
+                    _events.close();
+                    delay(1000);
+                    ESP.restart();
+                    break;
                 }
+
             } else {
-                //  json object does not contain valid binary.
-            }      
+                event_send( FPSTR(fstring_CONSOLE), F("No Change to firmware") );
+                ESPMan_Debugf("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].as<const char *>()  );
+
+            }
+        } else {
+            //  json object does not contain valid binary.
+        }
     }
 
     event_send( FPSTR(fstring_UPGRADE), F("end"));
+
+ //   MDNS.restart();
 
 }
 
@@ -1328,6 +1340,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
         if (len > 0 && len < freeBytes) {
 
             WiFiUDP::stopAll();
+
             WiFiClient::stopAllExcept(http.getStreamPtr());
             wifi_set_sleep_type(NONE_SLEEP_T);
 
@@ -1716,7 +1729,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     for (int i = 0; i < _wifinetworksfound; i++) {
 
                         //_container.push_back(std::pair<int, int>(i, WiFi.RSSI(i)));
-                        _container.emplace_back(i,WiFi.RSSI(i) ); //  use emplace... less copy/move semantics. 
+                        _container.emplace_back(i, WiFi.RSSI(i) ); //  use emplace... less copy/move semantics.
                     }
 
                     _container.sort([](const std::pair<int, int>& first, const std::pair<int, int>& second) {
@@ -4309,7 +4322,7 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
     case WRONG_SETTINGS_FILE_VERSION:
         return F("Wrong Settings File Version"); break;
     default:
-        return String(err); break; 
+        return String(err); break;
     }
 }
 
@@ -4317,6 +4330,9 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
 
 void ESPmanager::_populateFoundDevices(JsonObject & root)
 {
+
+#ifdef ESPMANAGER_DEVICEFINDER
+
     if (_devicefinder) {
 
         String host = getHostname();
@@ -4340,6 +4356,9 @@ void ESPmanager::_populateFoundDevices(JsonObject & root)
             ESPMan_Debugf("No Devices Found\n");
         }
     }
+
+#endif
+
 }
 
 
