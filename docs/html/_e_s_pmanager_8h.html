@@ -70,7 +70,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><a class="el" href="class_e_s_pmanager.html">ESPmanager</a> file.  
+<p>Main File ESPManager.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;Arduino.h&gt;</code><br />
 <code>#include &lt;ESP8266WiFi.h&gt;</code><br />
@@ -82,31 +82,55 @@ $(function() {
 <code>#include &lt;FS.h&gt;</code><br />
 <code>#include &lt;functional&gt;</code><br />
 <code>#include &lt;ArduinoJson.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="_tasker_8h_source.html">Tasker/src/Tasker.h</a>&quot;</code><br />
-<code>#include &quot;ESPdeviceFinder/src/ESPdeviceFinder.h&quot;</code><br />
+<code>#include &quot;Tasker/src/Tasker.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="_e_s_pdevice_finder_8h_source.html">ESPdeviceFinder/src/ESPdeviceFinder.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="_e_s_p_m_a_n_8h_source.html">ESPMAN.h</a>&quot;</code><br />
 <code>#include &lt;<a class="el" href="_e_s_pman_sys_log_8h_source.html">ESPmanSysLog.h</a>&gt;</code><br />
+<code>#include &quot;<a class="el" href="_save_stack_8h_source.html">SaveStack.h</a>&quot;</code><br />
 </div>
 <p><a href="_e_s_pmanager_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_pmanager.html">ESPmanager</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manager for ESP8266.  <a href="class_e_s_pmanager.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:aa02df17d9f7448f6fbb730e7e0547224"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#aa02df17d9f7448f6fbb730e7e0547224">ESPMANAGER_SYSLOG</a></td></tr>
+<tr class="memdesc:aa02df17d9f7448f6fbb730e7e0547224"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable the <a class="el" href="class_sys_log.html">SysLog</a> (uses 16 bytes)  <a href="#aa02df17d9f7448f6fbb730e7e0547224">More...</a><br /></td></tr>
+<tr class="separator:aa02df17d9f7448f6fbb730e7e0547224"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d447dd2a0697e5b5f7f52df38f96d8b"><td class="memItemLeft" align="right" valign="top"><a id="a4d447dd2a0697e5b5f7f52df38f96d8b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#a4d447dd2a0697e5b5f7f52df38f96d8b">ESPMANAGER_SAVESTACK</a></td></tr>
+<tr class="memdesc:a4d447dd2a0697e5b5f7f52df38f96d8b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save the Stack when the ESP crashes to SPIFFS. This helps with remote debugging. <br /></td></tr>
+<tr class="separator:a4d447dd2a0697e5b5f7f52df38f96d8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8dd33d6cc3872e486561c1443599785b"><td class="memItemLeft" align="right" valign="top"><a id="a8dd33d6cc3872e486561c1443599785b"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#a8dd33d6cc3872e486561c1443599785b">ESPMANAGER_UPDATER</a></td></tr>
+<tr class="memdesc:a8dd33d6cc3872e486561c1443599785b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable the remote updater, update via http see ::upgrade, uses 1K heap. <br /></td></tr>
+<tr class="separator:a8dd33d6cc3872e486561c1443599785b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48cb2ba8f95b20608619b951dda4ccf1"><td class="memItemLeft" align="right" valign="top"><a id="a48cb2ba8f95b20608619b951dda4ccf1"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#a48cb2ba8f95b20608619b951dda4ccf1">ESPMANAGER_DEVICEFINDER</a></td></tr>
+<tr class="memdesc:a48cb2ba8f95b20608619b951dda4ccf1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable deviceFinder. <a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a> will now locate all other <a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a> instances, see <a class="el" href="class_e_s_pdevice_finder.html">ESPdeviceFinder</a>, uses 200 bytes heap. <br /></td></tr>
+<tr class="separator:a48cb2ba8f95b20608619b951dda4ccf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37874b9a1d816bf39589b06f9927090b"><td class="memItemLeft" align="right" valign="top"><a id="a37874b9a1d816bf39589b06f9927090b"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>DEFAULT_AP_PASS</b>&#160;&#160;&#160;&quot;esprocks&quot;</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#a37874b9a1d816bf39589b06f9927090b">DEFAULT_AP_PASS</a>&#160;&#160;&#160;&quot;esprocks&quot;</td></tr>
+<tr class="memdesc:a37874b9a1d816bf39589b06f9927090b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default password for the ESP AP. Used for first connecting to the ESPManager. <br /></td></tr>
 <tr class="separator:a37874b9a1d816bf39589b06f9927090b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6fffac1a45245ab9b105e57a76c2bde"><td class="memItemLeft" align="right" valign="top"><a id="ab6fffac1a45245ab9b105e57a76c2bde"></a>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#ab6fffac1a45245ab9b105e57a76c2bde">MAX_WIFI_NETWORKS</a>&#160;&#160;&#160;10</td></tr>
+<tr class="memdesc:ab6fffac1a45245ab9b105e57a76c2bde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Max number of WiFi networks to report in the scan. Too many here will crash the ESP. <br /></td></tr>
+<tr class="separator:ab6fffac1a45245ab9b105e57a76c2bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad13ef9fc86d531a6c7ead593b38e3d12"><td class="memItemLeft" align="right" valign="top"><a id="ad13ef9fc86d531a6c7ead593b38e3d12"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>SETTINGS_FILE</b>&#160;&#160;&#160;&quot;/espman/settings.json&quot;</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#ad13ef9fc86d531a6c7ead593b38e3d12">SETTINGS_FILE</a>&#160;&#160;&#160;&quot;/espman/settings.json&quot;</td></tr>
+<tr class="memdesc:ad13ef9fc86d531a6c7ead593b38e3d12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Location of settings file on SPIFFS. <br /></td></tr>
 <tr class="separator:ad13ef9fc86d531a6c7ead593b38e3d12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9525fc5d65958b425fef0f0cbae862a"><td class="memItemLeft" align="right" valign="top"><a id="af9525fc5d65958b425fef0f0cbae862a"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMANVERSION</b>&#160;&#160;&#160;&quot;2.2-async&quot;</td></tr>
+#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#af9525fc5d65958b425fef0f0cbae862a">ESPMANVERSION</a>&#160;&#160;&#160;&quot;2.2-async&quot;</td></tr>
+<tr class="memdesc:af9525fc5d65958b425fef0f0cbae862a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of espmanager. <br /></td></tr>
 <tr class="separator:af9525fc5d65958b425fef0f0cbae862a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07c1d24d0ee26ae4fac3eea66fd78ba1"><td class="memItemLeft" align="right" valign="top"><a id="a07c1d24d0ee26ae4fac3eea66fd78ba1"></a>
-#define&#160;</td><td class="memItemRight" valign="bottom"><b>SETTINGS_FILE_VERSION</b>&#160;&#160;&#160;2</td></tr>
+<tr class="memitem:a07c1d24d0ee26ae4fac3eea66fd78ba1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="_e_s_pmanager_8h.html#a07c1d24d0ee26ae4fac3eea66fd78ba1">SETTINGS_FILE_VERSION</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memdesc:a07c1d24d0ee26ae4fac3eea66fd78ba1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Settings file. Version number increments are not backwards compatible.  <a href="#a07c1d24d0ee26ae4fac3eea66fd78ba1">More...</a><br /></td></tr>
 <tr class="separator:a07c1d24d0ee26ae4fac3eea66fd78ba1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32acdd05b12ca04c517bfe68221be9c8"><td class="memItemLeft" align="right" valign="top"><a id="a32acdd05b12ca04c517bfe68221be9c8"></a>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ESP_LOG</b>(a,  b)&#160;&#160;&#160;{ }</td></tr>
@@ -119,9 +143,47 @@ Macros</h2></td></tr>
 <tr class="separator:ae5dc538f82d6d0fb164a784909cbe68c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p><a class="el" href="class_e_s_pmanager.html">ESPmanager</a> file. </p>
-<p>Details. </p>
-</div></div><!-- contents -->
+<div class="textblock"><p>Main File ESPManager. </p>
+<p>This is the main file. ESPManager is a full wifi and update lib for the ESP8266 designed on Arduino.</p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd><p class="startdd">1) Web notification for crashlog </p>
+<p class="enddd">2) Check bin upload via web interface</p>
+</dd></dl>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="aa02df17d9f7448f6fbb730e7e0547224"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa02df17d9f7448f6fbb730e7e0547224">&#9670;&nbsp;</a></span>ESPMANAGER_SYSLOG</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ESPMANAGER_SYSLOG</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enable the <a class="el" href="class_sys_log.html">SysLog</a> (uses 16 bytes) </p>
+<dl class="section warning"><dt>Warning</dt><dd>not implemented yet </dd></dl>
+
+</div>
+</div>
+<a id="a07c1d24d0ee26ae4fac3eea66fd78ba1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a07c1d24d0ee26ae4fac3eea66fd78ba1">&#9670;&nbsp;</a></span>SETTINGS_FILE_VERSION</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SETTINGS_FILE_VERSION&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Settings file. Version number increments are not backwards compatible. </p>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000004">Todo:</a></b></dt><dd>implement version checking in settings file </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

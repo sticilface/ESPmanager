@@ -300,9 +300,11 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     if (_settings->GEN.OTAupload) {
 
+        ESPMan_Debugf("Enabling OTA....\n");
+
         _tasker.add([](Task & t) {
             ArduinoOTA.handle();
-        }).setRepeat(true).setTimeout(500);
+        }).setRepeat(true).setTimeout(100);
 
         ArduinoOTA.setHostname(_settings->GEN.host.c_str());
         //
@@ -1885,7 +1887,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             uint32_t min = sec / 60;
             uint32_t hr = min / 60;
             uint32_t day = hr / 24;
-            int Vcc = analogRead(A0);
+            //int Vcc = analogRead(A0);
 
             char Up_time[bufsize];
             snprintf(Up_time, bufsize, "%02d days %02d hours (%02d:%02d) m:s", (uint32_t)day, uint32_t(hr % 24), uint32_t(min % 60), uint32_t(sec % 60));
@@ -2939,7 +2941,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     } // end of OTA enable
 
 
-    if ( request->hasParam(FPSTR(fstring_OTApassword), true)) {
+    if ( request->hasParam(FPSTR(fstring_OTApassword), true)  ) {
 
         char pass_confirm[40] = {0};
 
@@ -2950,6 +2952,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             String S_pass = request->getParam(FPSTR(fstring_OTApassword), true)->value();
             String S_confirm = request->getParam(pass_confirm, true)->value();
+
+            Serial.printf("S_pass = %s, len = %u", S_pass.c_str(), S_pass.length()); 
 
             const char * pass = S_pass.c_str();
             const char * confirm = S_confirm.c_str();
@@ -2963,6 +2967,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 md5.add( pass) ;
                 md5.calculate();
                 set.GEN.OTApassword = md5.toString().c_str() ;
+
+                if (S_pass.length() == 0 ) { 
+                    set.GEN.OTApassword = ""; 
+                    Serial.println("Password set but making null"); 
+                }
                 //set.GEN.OTApassword = pass;
 
                 sendsaveandreboot = true;

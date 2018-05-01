@@ -1,11 +1,7 @@
 var searchData=
 [
-  ['task',['Task',['../class_task.html',1,'']]],
-  ['task_2eh',['Task.h',['../_task_8h.html',1,'']]],
-  ['tasker',['Tasker',['../class_tasker.html',1,'']]],
-  ['tasker_2eh',['Tasker.h',['../_tasker_8h.html',1,'']]],
-  ['tasker_3c_20task_2c_20async_3c_20task_20_3e_20_3e',['Tasker&lt; Task, ASync&lt; Task &gt; &gt;',['../class_tasker.html',1,'']]],
-  ['taskerbase',['TaskerBase',['../class_tasker_base.html',1,'']]],
-  ['taskerclass_2eh',['TaskerClass.h',['../_tasker_class_8h.html',1,'']]],
-  ['taskmethods_2eh',['TaskMethods.h',['../_task_methods_8h.html',1,'']]]
+  ['max_5fwifi_5fnetworks',['MAX_WIFI_NETWORKS',['../_e_s_pmanager_8h.html#ab6fffac1a45245ab9b105e57a76c2bde',1,'ESPmanager.h']]],
+  ['mystring',['myString',['../class_e_s_p_m_a_n_1_1my_string.html',1,'ESPMAN']]],
+  ['mystringf',['myStringf',['../class_e_s_p_m_a_n_1_1my_stringf.html',1,'ESPMAN']]],
+  ['mystringf_5fp',['myStringf_P',['../class_e_s_p_m_a_n_1_1my_stringf___p.html',1,'ESPMAN']]]
 ];

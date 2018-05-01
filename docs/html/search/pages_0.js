@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['readme',['readme',['../md_src__tasker_readme.html',1,'']]]
+  ['changelog',['ChangeLog',['../md__c_hange_log.html',1,'']]]
 ];

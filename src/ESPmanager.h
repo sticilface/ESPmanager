@@ -19,6 +19,7 @@
 
 *** AP timeout options / what do do when WiFi fails
 
+   0) Add required files.  then add ClearApp(), which wipes SPIFFS except for espconfig + html... 
    1) Log Serial output to File and back
    2)
    4) Async wifi management using my own init callback instead of setup...for wifi services...
@@ -70,7 +71,7 @@
 #define ESPMANAGER_UPDATER        /**< @brief Enable the remote updater, update via http see ::upgrade, uses 1K heap */ 
 #define ESPMANAGER_DEVICEFINDER   /**< @brief Enable deviceFinder.  ESPmanager will now locate all other ESPmanager instances, see ::ESPdeviceFinder, uses 200 bytes heap */ 
 //#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/  
-#define Debug_ESPManager Serial /* 1760 bytes  */ 
+//#define Debug_ESPManager Serial /* 1760 bytes  */ 
 
 
 #ifdef ESPMANAGER_SAVESTACK

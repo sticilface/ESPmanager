@@ -61,81 +61,123 @@ $(function() {
   <div class="summary">
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
-<a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="class_task-members.html">List of all members</a>  </div>
   <div class="headertitle">
 <div class="title">Task Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="_tasker_8h_source.html">Tasker.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
 Public Types</h2></td></tr>
-<tr class="memitem:a3c14c4e1c42ebd30ba57a1d6da0d74bb"><td class="memItemLeft" align="right" valign="top"><a id="a3c14c4e1c42ebd30ba57a1d6da0d74bb"></a>
-typedef std::function&lt; void(<a class="el" href="class_task.html">Task</a> &amp;)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>taskerCb_t</b></td></tr>
-<tr class="separator:a3c14c4e1c42ebd30ba57a1d6da0d74bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6a63486c674087ff8b5c0f2e4f1b2d6"><td class="memItemLeft" align="right" valign="top"><a id="ab6a63486c674087ff8b5c0f2e4f1b2d6"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Task_t</b> : uint8_t { <b>ASYNC</b>, 
+<b>SYNC</b>
+ }</td></tr>
+<tr class="separator:ab6a63486c674087ff8b5c0f2e4f1b2d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb18553b857c6cc85ce8fe462ff657e6"><td class="memItemLeft" align="right" valign="top"><a id="acb18553b857c6cc85ce8fe462ff657e6"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Task_state</b> : uint8_t { <b>INIT</b>, 
+<b>WAITING</b>, 
+<b>RUNNING</b>, 
+<b>FINISHED</b>
+ }</td></tr>
+<tr class="separator:acb18553b857c6cc85ce8fe462ff657e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c18aafbe63e7929ee8c49a889d7659d"><td class="memItemLeft" align="right" valign="top"><a id="a9c18aafbe63e7929ee8c49a889d7659d"></a>
+typedef std::function&lt; void(<a class="el" href="class_task.html">Task</a> &amp;t)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>cb_t</b></td></tr>
+<tr class="separator:a9c18aafbe63e7929ee8c49a889d7659d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac8bc06a84135606aa40801f50003cf0b"><td class="memItemLeft" align="right" valign="top"><a id="ac8bc06a84135606aa40801f50003cf0b"></a>
+typedef std::function&lt; void(void)&gt;&#160;</td><td class="memItemRight" valign="bottom"><b>endFn_t</b></td></tr>
+<tr class="separator:ac8bc06a84135606aa40801f50003cf0b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0a8cb4b81429c83af22b8a8a1fd9d28c"><td class="memItemLeft" align="right" valign="top"><a id="a0a8cb4b81429c83af22b8a8a1fd9d28c"></a>
+typedef std::list&lt; std::unique_ptr&lt; <a class="el" href="class_task.html">Task</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>st_t</b></td></tr>
+<tr class="separator:a0a8cb4b81429c83af22b8a8a1fd9d28c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:abf4c9149babce0960cf1e628de499f9d"><td class="memItemLeft" align="right" valign="top"><a id="abf4c9149babce0960cf1e628de499f9d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Task</b> (taskerCb_t cb, bool useMicros=false)</td></tr>
-<tr class="separator:abf4c9149babce0960cf1e628de499f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab69f69089f91b6b7c696564a6796e0ca"><td class="memItemLeft" align="right" valign="top"><a id="ab69f69089f91b6b7c696564a6796e0ca"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>run</b> (const uint8_t priority=0, const bool override=false)</td></tr>
-<tr class="separator:ab69f69089f91b6b7c696564a6796e0ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1fc4c9c46651e9c4fc0240b5619ea850"><td class="memItemLeft" align="right" valign="top"><a id="a1fc4c9c46651e9c4fc0240b5619ea850"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>runCb</b> ()</td></tr>
-<tr class="separator:a1fc4c9c46651e9c4fc0240b5619ea850"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae65879becb23f5381225ee0c8959b739"><td class="memItemLeft" align="right" valign="top"><a id="ae65879becb23f5381225ee0c8959b739"></a>
+<tr class="memitem:ae0385b427afc19952d431977134b5b24"><td class="memItemLeft" align="right" valign="top"><a id="ae0385b427afc19952d431977134b5b24"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Task</b> (cb_t cb)</td></tr>
+<tr class="separator:ae0385b427afc19952d431977134b5b24"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4583e6c52aa3e52a9914f51e44d93683"><td class="memItemLeft" align="right" valign="top"><a id="a4583e6c52aa3e52a9914f51e44d93683"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>add</b> (cb_t cb=nullptr)</td></tr>
+<tr class="separator:a4583e6c52aa3e52a9914f51e44d93683"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7f0f5c335cc95c6c2fb6fa187bb1dfd"><td class="memItemLeft" align="right" valign="top"><a id="ac7f0f5c335cc95c6c2fb6fa187bb1dfd"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>remove</b> (const <a class="el" href="class_task.html">Task</a> *task)</td></tr>
+<tr class="separator:ac7f0f5c335cc95c6c2fb6fa187bb1dfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a14bb0201e22d50abf59bbafa7b7271"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_task.html#a5a14bb0201e22d50abf59bbafa7b7271">run</a> (bool override=true)</td></tr>
+<tr class="separator:a5a14bb0201e22d50abf59bbafa7b7271"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2725058a9921c716449d63caccc4afb"><td class="memItemLeft" align="right" valign="top"><a id="ab2725058a9921c716449d63caccc4afb"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>runNow</b> ()</td></tr>
+<tr class="separator:ab2725058a9921c716449d63caccc4afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dc446361f4a543b808b14c6cb8cc7b2"><td class="memItemLeft" align="right" valign="top"><a id="a6dc446361f4a543b808b14c6cb8cc7b2"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setType</b> (Task_t type)</td></tr>
+<tr class="separator:a6dc446361f4a543b808b14c6cb8cc7b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1f9d62d26365c4c8f31a30f9ca7fcea"><td class="memItemLeft" align="right" valign="top"><a id="aa1f9d62d26365c4c8f31a30f9ca7fcea"></a>
 <a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setTimeout</b> (uint32_t timeout)</td></tr>
-<tr class="separator:ae65879becb23f5381225ee0c8959b739"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="separator:aa1f9d62d26365c4c8f31a30f9ca7fcea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d1c4670586334100ed363d56451e961"><td class="memItemLeft" align="right" valign="top"><a id="a5d1c4670586334100ed363d56451e961"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setRepeat</b> (bool repeat)</td></tr>
+<tr class="separator:a5d1c4670586334100ed363d56451e961"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42e8b429bd245bba5cbab2f3a257c027"><td class="memItemLeft" align="right" valign="top"><a id="a42e8b429bd245bba5cbab2f3a257c027"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setRepeat</b> (int repeat)</td></tr>
+<tr class="separator:a42e8b429bd245bba5cbab2f3a257c027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab73d3270f0ecfbcdfc68e56c53960cb7"><td class="memItemLeft" align="right" valign="top"><a id="ab73d3270f0ecfbcdfc68e56c53960cb7"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setDelete</b> (bool deletable)</td></tr>
+<tr class="separator:ab73d3270f0ecfbcdfc68e56c53960cb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a1a242f71564c6a0b010ed1d9b72459"><td class="memItemLeft" align="right" valign="top"><a id="a2a1a242f71564c6a0b010ed1d9b72459"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>onEnd</b> (endFn_t Fn)</td></tr>
+<tr class="separator:a2a1a242f71564c6a0b010ed1d9b72459"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5817fdbcf030a7e487d15eb22c7a64f4"><td class="memItemLeft" align="right" valign="top"><a id="a5817fdbcf030a7e487d15eb22c7a64f4"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setName</b> (String name)</td></tr>
+<tr class="separator:a5817fdbcf030a7e487d15eb22c7a64f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8778b8311b69bc3dbdce01470b346427"><td class="memItemLeft" align="right" valign="top"><a id="a8778b8311b69bc3dbdce01470b346427"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setMicros</b> (bool useMicros)</td></tr>
+<tr class="separator:a8778b8311b69bc3dbdce01470b346427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac23db2f1de038a2b3b6c6d2e82aecd57"><td class="memItemLeft" align="right" valign="top"><a id="ac23db2f1de038a2b3b6c6d2e82aecd57"></a>
+Task_state&#160;</td><td class="memItemRight" valign="bottom"><b>getState</b> ()</td></tr>
+<tr class="separator:ac23db2f1de038a2b3b6c6d2e82aecd57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a602c3d55c3ce1adf70c77ca34dac5eba"><td class="memItemLeft" align="right" valign="top"><a id="a602c3d55c3ce1adf70c77ca34dac5eba"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getTimeout</b> ()</td></tr>
 <tr class="separator:a602c3d55c3ce1adf70c77ca34dac5eba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0cdd7eb17b54decbca227cc2db86aaa"><td class="memItemLeft" align="right" valign="top"><a id="af0cdd7eb17b54decbca227cc2db86aaa"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setRepeat</b> (bool repeat=true)</td></tr>
-<tr class="separator:af0cdd7eb17b54decbca227cc2db86aaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2eba537a294f1ea2e9d0d375ad980993"><td class="memItemLeft" align="right" valign="top"><a id="a2eba537a294f1ea2e9d0d375ad980993"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setRepeat</b> (int number)</td></tr>
-<tr class="separator:a2eba537a294f1ea2e9d0d375ad980993"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aed0f55a2f6129e1ee9ec6bf1f49339ba"><td class="memItemLeft" align="right" valign="top"><a id="aed0f55a2f6129e1ee9ec6bf1f49339ba"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setPriority</b> (uint8_t pr)</td></tr>
-<tr class="separator:aed0f55a2f6129e1ee9ec6bf1f49339ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:affea110babfe474fc6ccdb88e7b8122e"><td class="memItemLeft" align="right" valign="top"><a id="affea110babfe474fc6ccdb88e7b8122e"></a>
-uint8_t&#160;</td><td class="memItemRight" valign="bottom"><b>getPriority</b> ()</td></tr>
-<tr class="separator:affea110babfe474fc6ccdb88e7b8122e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7f9a1b3b8b2f16bba8fa05831dff6776"><td class="memItemLeft" align="right" valign="top"><a id="a7f9a1b3b8b2f16bba8fa05831dff6776"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>enable</b> ()</td></tr>
-<tr class="separator:a7f9a1b3b8b2f16bba8fa05831dff6776"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afe347b4ccfcaf48c333f87cd4e832ecf"><td class="memItemLeft" align="right" valign="top"><a id="afe347b4ccfcaf48c333f87cd4e832ecf"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>disable</b> ()</td></tr>
-<tr class="separator:afe347b4ccfcaf48c333f87cd4e832ecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3d1be80ad209a597a729166a80efc92"><td class="memItemLeft" align="right" valign="top"><a id="ab3d1be80ad209a597a729166a80efc92"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setName</b> (const char *name)</td></tr>
-<tr class="separator:ab3d1be80ad209a597a729166a80efc92"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba0bd15f206791e57958128c5be34956"><td class="memItemLeft" align="right" valign="top"><a id="aba0bd15f206791e57958128c5be34956"></a>
-const char *&#160;</td><td class="memItemRight" valign="bottom"><b>name</b> ()</td></tr>
-<tr class="separator:aba0bd15f206791e57958128c5be34956"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c551b1fda4f0fa39e8c5ebb15c79a8c"><td class="memItemLeft" align="right" valign="top"><a id="a5c551b1fda4f0fa39e8c5ebb15c79a8c"></a>
+String&#160;</td><td class="memItemRight" valign="bottom"><b>getName</b> ()</td></tr>
+<tr class="separator:a5c551b1fda4f0fa39e8c5ebb15c79a8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4f3b11a9dbb8d9d0859a95f9e1a79c7"><td class="memItemLeft" align="right" valign="top"><a id="ab4f3b11a9dbb8d9d0859a95f9e1a79c7"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>dump</b> (Stream &amp;stream, int indent=0)</td></tr>
+<tr class="separator:ab4f3b11a9dbb8d9d0859a95f9e1a79c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac228c21443f0fa19990aef9beebffbfb"><td class="memItemLeft" align="right" valign="top"><a id="ac228c21443f0fa19990aef9beebffbfb"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>canDelete</b> ()</td></tr>
+<tr class="separator:ac228c21443f0fa19990aef9beebffbfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa3a2b2bf899730aa64e1cf3c1d868b47"><td class="memItemLeft" align="right" valign="top"><a id="aa3a2b2bf899730aa64e1cf3c1d868b47"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()</td></tr>
 <tr class="separator:aa3a2b2bf899730aa64e1cf3c1d868b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4804088579cabf62cd81f2f85d79f5c4"><td class="memItemLeft" align="right" valign="top"><a id="a4804088579cabf62cd81f2f85d79f5c4"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>onEnd</b> (std::function&lt; void(void)&gt; Cb)</td></tr>
-<tr class="separator:a4804088579cabf62cd81f2f85d79f5c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a60541f7f451ab3ce1831530272e1d428"><td class="memItemLeft" align="right" valign="top"><a id="a60541f7f451ab3ce1831530272e1d428"></a>
-<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setPersistent</b> (bool donotdelete)</td></tr>
-<tr class="separator:a60541f7f451ab3ce1831530272e1d428"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0922035b69fa2db9fcfc8624e0857724"><td class="memItemLeft" align="right" valign="top"><a id="a0922035b69fa2db9fcfc8624e0857724"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>running</b> ()</td></tr>
-<tr class="separator:a0922035b69fa2db9fcfc8624e0857724"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
-Public Attributes</h2></td></tr>
-<tr class="memitem:a658d28d140840da2ae4ea5a92923a326"><td class="memItemLeft" align="right" valign="top"><a id="a658d28d140840da2ae4ea5a92923a326"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>count</b> {0}</td></tr>
-<tr class="separator:a658d28d140840da2ae4ea5a92923a326"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5584315b28913f18eab1b999add4b5d6"><td class="memItemLeft" align="right" valign="top"><a id="a5584315b28913f18eab1b999add4b5d6"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>finished</b> ()</td></tr>
+<tr class="separator:a5584315b28913f18eab1b999add4b5d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following file:<ul>
-<li>src/Tasker/src/<a class="el" href="_task_8h_source.html">Task.h</a></li>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Tasker for Arduino </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
+<a id="a5a14bb0201e22d50abf59bbafa7b7271"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a14bb0201e22d50abf59bbafa7b7271">&#9670;&nbsp;</a></span>run()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Task::run </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>override</em> = <code>true</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Need to allow countdown to be reset. ie... run 5 times then done, but if repeat set.. dont delete, but allow it to be reset to run another 5 times. </p>
+
+</div>
+</div>
+<hr/>The documentation for this class was generated from the following files:<ul>
+<li>src/Tasker/src/<a class="el" href="_tasker_8h_source.html">Tasker.h</a></li>
+<li>src/Tasker/src/Tasker.cpp</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

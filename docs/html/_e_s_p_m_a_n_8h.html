@@ -64,6 +64,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#namespaces">Namespaces</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
@@ -71,7 +72,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>ESPMAN file.  
+<p>Extra helper classes for ESPManager.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;Arduino.h&gt;</code><br />
 <code>#include &lt;ArduinoJson.h&gt;</code><br />
@@ -84,27 +85,39 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html">ESPMAN::JSONpackage</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class to manage ArduinoJson objects.  <a href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1my_string.html">ESPMAN::myString</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class to manage Strings.  <a href="class_e_s_p_m_a_n_1_1my_string.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1my_stringf.html">ESPMAN::myStringf</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived from <a class="el" href="class_e_s_p_m_a_n_1_1my_string.html" title="A class to manage Strings. ">myString</a> to allow printf type functionality.  <a href="class_e_s_p_m_a_n_1_1my_stringf.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1my_stringf___p.html">ESPMAN::myStringf_P</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived from <a class="el" href="class_e_s_p_m_a_n_1_1my_string.html" title="A class to manage Strings. ">myString</a> to allow use of printf but with buffers stored in progmem.  <a href="class_e_s_p_m_a_n_1_1my_stringf___p.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_e_s_p_m_a_n_1_1settings__t.html">ESPMAN::settings_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Master settings struct. Contains all the settings. This struct is not kept in memory all the time. It gets deleted and reloaded as required.  <a href="struct_e_s_p_m_a_n_1_1settings__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_e_s_p_m_a_n_1_1settings__t_1_1_a_p__t.html">ESPMAN::settings_t::AP_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Access point (AP) Settings struct Parse this.  <a href="struct_e_s_p_m_a_n_1_1settings__t_1_1_a_p__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_e_s_p_m_a_n_1_1settings__t_1_1_s_t_a__t.html">ESPMAN::settings_t::STA_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Station (STA) Settings struct.  <a href="struct_e_s_p_m_a_n_1_1settings__t_1_1_s_t_a__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_e_s_p_m_a_n_1_1settings__t_1_1_g_e_n__t.html">ESPMAN::settings_t::GEN_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">General settings struct, used for storing <a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a> variables.  <a href="struct_e_s_p_m_a_n_1_1settings__t_1_1_g_e_n__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_e_s_p_m_a_n_1_1password__t.html">ESPMAN::password_t</a></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
+Namespaces</h2></td></tr>
+<tr class="memitem:namespace_e_s_p_m_a_n"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_e_s_p_m_a_n.html">ESPMAN</a></td></tr>
+<tr class="memdesc:namespace_e_s_p_m_a_n"><td class="mdescLeft">&#160;</td><td class="mdescRight">Contains tools for <a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a>. <br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a8bcc85d695e1fff66ea9b0abf4891a78"><td class="memItemLeft" align="right" valign="top"><a id="a8bcc85d695e1fff66ea9b0abf4891a78"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN_ERR_t</b> : int8_t { <br />
+<tr class="memitem:a8bcc85d695e1fff66ea9b0abf4891a78"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_e_s_p_m_a_n.html#a8bcc85d695e1fff66ea9b0abf4891a78">ESPMAN::ESPMAN_ERR_t</a> : int8_t { <br />
 &#160;&#160;<b>SUCCESS</b> = 0, 
 <b>UNKNOWN_ERROR</b> = -20, 
 <b>NO_UPDATE_URL</b> = -21, 
@@ -165,7 +178,7 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:a8bcc85d695e1fff66ea9b0abf4891a78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a367257b39aefb98c08769d372c069820"><td class="memItemLeft" align="right" valign="top"><a id="a367257b39aefb98c08769d372c069820"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>ap_boot_mode_t</b> : int8_t { <br />
+<tr class="memitem:a367257b39aefb98c08769d372c069820"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_e_s_p_m_a_n.html#a367257b39aefb98c08769d372c069820">ESPMAN::ap_boot_mode_t</a> : int8_t { <br />
 &#160;&#160;<b>DISABLED</b> = -1, 
 <b>NO_STA_BOOT</b> = 0, 
 <b>NO_STA_BOOT_AP_5</b> = 5, 
@@ -176,9 +189,9 @@ Enumerations</h2></td></tr>
 <br />
  }</td></tr>
 <tr class="separator:a367257b39aefb98c08769d372c069820"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48ab5fdcc0f24c796c52b63426135429"><td class="memItemLeft" align="right" valign="top"><a id="a48ab5fdcc0f24c796c52b63426135429"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>no_sta_mode_t</b> : int8_t { <br />
-&#160;&#160;<b>NO_STA_NOTHING</b> = -2, 
-<b>NO_STA_REBOOT</b> = -1, 
+<tr class="memitem:a48ab5fdcc0f24c796c52b63426135429"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429">ESPMAN::no_sta_mode_t</a> : int8_t { <br />
+&#160;&#160;<a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429a14314da61ed24f4cca201b8c8fd6abe6">ESPMAN::NO_STA_NOTHING</a> = -2, 
+<a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429a4bbe30b1c4def7a7c8bc430fb0e9cca0">ESPMAN::NO_STA_REBOOT</a> = -1, 
 <b>NO_STA_START_AP</b> = 0, 
 <b>NO_STA_START_AP_5</b> = 5, 
 <br />
@@ -191,13 +204,160 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:aa88c03e5f6478d3ce6c6e9537c83f8a8"><td class="memItemLeft" align="right" valign="top"><a id="aa88c03e5f6478d3ce6c6e9537c83f8a8"></a>
-const char fstring_CORS []&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::PROGMEM</b> = &quot;Access-Control-Allow-Origin&quot;</td></tr>
-<tr class="separator:aa88c03e5f6478d3ce6c6e9537c83f8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6f76929001cdf88e70148ef4eff7d890"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_CORS</b> [] = &quot;Access-Control-Allow-Origin&quot;</td></tr>
+<tr class="separator:ga6f76929001cdf88e70148ef4eff7d890"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa02b75065d440193af477349e8f34e4f"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_CACHE_CONTROL</b> [] = &quot;Cache-Control&quot;</td></tr>
+<tr class="separator:gaa02b75065d440193af477349e8f34e4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf090b990bf1b4ad464c78c78b7e492e6"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_UPGRADE</b> [] = &quot;upgrade&quot;</td></tr>
+<tr class="separator:gaf090b990bf1b4ad464c78c78b7e492e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2fc866c31dc3b48a356372b9bc787836"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_UPDATE</b> [] = &quot;update&quot;</td></tr>
+<tr class="separator:ga2fc866c31dc3b48a356372b9bc787836"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafc55468f65374f59b140f2535b790652"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_CONSOLE</b> [] = &quot;console&quot;</td></tr>
+<tr class="separator:gafc55468f65374f59b140f2535b790652"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa3226447bda4345ea70ef20169b85feb"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_ERROR</b> [] = &quot;ERROR [%i]&quot;</td></tr>
+<tr class="separator:gaa3226447bda4345ea70ef20169b85feb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf2782cf1e5ee59c6886318700b4930eb"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_ERROR2</b> [] = &quot;ERROR [%i] [%i]&quot;</td></tr>
+<tr class="separator:gaf2782cf1e5ee59c6886318700b4930eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2e7c732e447aac775495cb167c69f95b"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_ERROR2_toString</b> [] = &quot;ERROR [%s] [%s]&quot;</td></tr>
+<tr class="separator:ga2e7c732e447aac775495cb167c69f95b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga58bbde8742368b76bae6bae69a8f10e2"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_ERROR_toString</b> [] = &quot;ERROR [%s]&quot;</td></tr>
+<tr class="separator:ga58bbde8742368b76bae6bae69a8f10e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa0077cafdba0c28c21d337e310eb4e5e"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_deviceid</b> [] = &quot;deviceid&quot;</td></tr>
+<tr class="separator:gaa0077cafdba0c28c21d337e310eb4e5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa0aa007cf4019c8d101ab69b391200e5"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_settingsversion</b> [] = &quot;settingversion&quot;</td></tr>
+<tr class="separator:gaa0aa007cf4019c8d101ab69b391200e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga66c9397d36d9ba6b3db1787a34d8d090"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_host</b> [] = &quot;host&quot;</td></tr>
+<tr class="separator:ga66c9397d36d9ba6b3db1787a34d8d090"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga4ddb3152872dbfde35ca1eaa1616e5da"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_General</b> [] = &quot;General&quot;</td></tr>
+<tr class="separator:ga4ddb3152872dbfde35ca1eaa1616e5da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1a3af3841f62bdd7d73c4ca2067a1983"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_mDNS</b> [] = &quot;mDNS&quot;</td></tr>
+<tr class="separator:ga1a3af3841f62bdd7d73c4ca2067a1983"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3a8a0aa2d85bfab0e5df5d7371ae112c"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_updateURL</b> [] = &quot;updateURL&quot;</td></tr>
+<tr class="separator:ga3a8a0aa2d85bfab0e5df5d7371ae112c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gacbf28419b6070ef0f6962320dfab544a"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_updateFreq</b> [] = &quot;updateFreq&quot;</td></tr>
+<tr class="separator:gacbf28419b6070ef0f6962320dfab544a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga59f28a60926a378c6683b99dfe8829c5"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_OTApassword</b> [] = &quot;OTApassword&quot;</td></tr>
+<tr class="separator:ga59f28a60926a378c6683b99dfe8829c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab0add749d0f680bed01b49c7e8cb531d"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_GUIusername</b> [] = &quot;GUIusername&quot;</td></tr>
+<tr class="separator:gab0add749d0f680bed01b49c7e8cb531d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1a8513a8118a6d308def153550f9d161"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_GUIpassword</b> [] = &quot;GUIpassword&quot;</td></tr>
+<tr class="separator:ga1a8513a8118a6d308def153550f9d161"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf06c58eac3e1727123e280cb6a366ac1"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_GUIhash</b> [] = &quot;GUIhash&quot;</td></tr>
+<tr class="separator:gaf06c58eac3e1727123e280cb6a366ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1269f00c618112321c4c4f3871c54ff9"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_OTAport</b> [] = &quot;OTAport&quot;</td></tr>
+<tr class="separator:ga1269f00c618112321c4c4f3871c54ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabb3d781128020dd895f0cbb760c85014"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_STA</b> [] = &quot;STA&quot;</td></tr>
+<tr class="separator:gabb3d781128020dd895f0cbb760c85014"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf11ffa4687a8dbb7fb69f1ec25a6c020"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_AP</b> [] = &quot;AP&quot;</td></tr>
+<tr class="separator:gaf11ffa4687a8dbb7fb69f1ec25a6c020"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaadda91cf63c060319fe82480a22b4de0"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_enabled</b> [] = &quot;enabled&quot;</td></tr>
+<tr class="separator:gaadda91cf63c060319fe82480a22b4de0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5baf6d6849f2db8851627f8094ad8eaa"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_ssid</b> [] = &quot;ssid&quot;</td></tr>
+<tr class="separator:ga5baf6d6849f2db8851627f8094ad8eaa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga897ac37e616c0f85231318dd15d91346"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_pass</b> [] = &quot;pass&quot;</td></tr>
+<tr class="separator:ga897ac37e616c0f85231318dd15d91346"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7527d66100cefaee3b982615c3f02a0c"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_changed</b> [] = &quot;changed&quot;</td></tr>
+<tr class="separator:ga7527d66100cefaee3b982615c3f02a0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab68b95c715e8849a6aac632f21255fb1"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_usePerminantSettings</b> [] = &quot;usePerminantSettings&quot;</td></tr>
+<tr class="separator:gab68b95c715e8849a6aac632f21255fb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga53307054e3b8a067451b108b248c1e87"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_IP</b> [] = &quot;IP&quot;</td></tr>
+<tr class="separator:ga53307054e3b8a067451b108b248c1e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga3dd7fdb85ce9567d2cc0ca85aed8f35b"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_GW</b> [] = &quot;GW&quot;</td></tr>
+<tr class="separator:ga3dd7fdb85ce9567d2cc0ca85aed8f35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa3688dc8626f0d8e2f12528e039d23ee"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_SN</b> [] = &quot;SN&quot;</td></tr>
+<tr class="separator:gaa3688dc8626f0d8e2f12528e039d23ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac304347daffa547c2017f298ead6ac16"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_MAC</b> [] = &quot;MAC&quot;</td></tr>
+<tr class="separator:gac304347daffa547c2017f298ead6ac16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab04631eac7bf89a77afdf0d665ca86a8"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_autoconnect</b> [] = &quot;autoconnect&quot;</td></tr>
+<tr class="separator:gab04631eac7bf89a77afdf0d665ca86a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae77204f01ca4b61ebe9d8f3dd2c65e69"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_autoreconnect</b> [] = &quot;autoreconnect&quot;</td></tr>
+<tr class="separator:gae77204f01ca4b61ebe9d8f3dd2c65e69"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8fda377c48bdb453c5c7bc6d8f5c54d2"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_mode</b> [] = &quot;mode&quot;</td></tr>
+<tr class="separator:ga8fda377c48bdb453c5c7bc6d8f5c54d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga468843e56d3497be9d4f80f632ed8db8"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_ap_boot_mode</b> [] = &quot;ap_boot_mode&quot;</td></tr>
+<tr class="separator:ga468843e56d3497be9d4f80f632ed8db8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga68a8678a0a61adb43c030697aca846d9"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_no_sta_mode</b> [] = &quot;no_sta_mode&quot;</td></tr>
+<tr class="separator:ga68a8678a0a61adb43c030697aca846d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gad04b20cc91e260e98169d63274732650"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_OTAupload</b> [] = &quot;OTAupload&quot;</td></tr>
+<tr class="separator:gad04b20cc91e260e98169d63274732650"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa944fd35d3168b1c7e09f482bb80f62c"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_visible</b> [] = &quot;visible&quot;</td></tr>
+<tr class="separator:gaa944fd35d3168b1c7e09f482bb80f62c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga71cb2fc70232fe4f0e0d7f4a72d78885"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_channel</b> [] = &quot;channel&quot;</td></tr>
+<tr class="separator:ga71cb2fc70232fe4f0e0d7f4a72d78885"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga8e7b14a37a6367f1a357e974b9781af8"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_saveandreboot</b> [] = &quot;Save and Reboot to Apply&quot;</td></tr>
+<tr class="separator:ga8e7b14a37a6367f1a357e974b9781af8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga00b28c4ee821b8da6c6d4edd258a4dac"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_yes</b> [] = &quot;yes&quot;</td></tr>
+<tr class="separator:ga00b28c4ee821b8da6c6d4edd258a4dac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga6f8bb5f7159106618e4389937034c22c"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_DNS1</b> [] = &quot;DNS1&quot;</td></tr>
+<tr class="separator:ga6f8bb5f7159106618e4389937034c22c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9b4014dd7a91c70a1de85659b3f650af"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_DNS2</b> [] = &quot;DNS2&quot;</td></tr>
+<tr class="separator:ga9b4014dd7a91c70a1de85659b3f650af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga2fc0c9ed8c70cc24c4491b43870528df"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_syslog</b> [] = &quot;syslog&quot;</td></tr>
+<tr class="separator:ga2fc0c9ed8c70cc24c4491b43870528df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaea40abd069e152ec751e6e246d9b77bb"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_usesyslog</b> [] = &quot;usesyslog&quot;</td></tr>
+<tr class="separator:gaea40abd069e152ec751e6e246d9b77bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga92b340b33f60cdf6f620c09b7a78143b"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_syslogIP</b> [] = &quot;syslogIP&quot;</td></tr>
+<tr class="separator:ga92b340b33f60cdf6f620c09b7a78143b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0e91475087760eec038d4b241fbd3dd9"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_syslogPort</b> [] = &quot;syslogPort&quot;</td></tr>
+<tr class="separator:ga0e91475087760eec038d4b241fbd3dd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0dafc2f3271af53113796982e3c01706"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_syslogProto</b> [] = &quot;syslogProto&quot;</td></tr>
+<tr class="separator:ga0dafc2f3271af53113796982e3c01706"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae98ba47679640373e6ff40d3371787bb"><td class="memItemLeft" align="right" valign="top">
+const char&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMAN::fstring_OK</b> [] = &quot;OK&quot;</td></tr>
+<tr class="separator:gae98ba47679640373e6ff40d3371787bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>ESPMAN file. </p>
-<p>Details. </p>
+<div class="textblock"><p>Extra helper classes for ESPManager. </p>
+<p><a class="el" href="namespace_e_s_p_m_a_n.html" title="Contains tools for ESPmanager. ">ESPMAN</a> is a file+namespace for extra features of the ESPManager lib. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

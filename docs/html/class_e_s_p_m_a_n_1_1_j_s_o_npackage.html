@@ -58,7 +58,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>ESPMAN</b></li><li class="navelem"><a class="el" href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html">JSONpackage</a></li>  </ul>
+<li class="navelem"><a class="el" href="namespace_e_s_p_m_a_n.html">ESPMAN</a></li><li class="navelem"><a class="el" href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html">JSONpackage</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -70,6 +70,11 @@ $(function() {
 <div class="title">ESPMAN::JSONpackage Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>A class to manage ArduinoJson objects.  
+ <a href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html#details">More...</a></p>
+
+<p><code>#include &lt;<a class="el" href="_e_s_p_m_a_n_8h_source.html">ESPMAN.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -82,12 +87,18 @@ JsonVariant &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getRoot<
 <tr class="memitem:a108cba1a08b67062cb4673e9dc1b6cce"><td class="memItemLeft" align="right" valign="top"><a id="a108cba1a08b67062cb4673e9dc1b6cce"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>parseSPIFS</b> (const char *file, FS &amp;fs=SPIFFS)</td></tr>
 <tr class="separator:a108cba1a08b67062cb4673e9dc1b6cce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55e9e8d479f2e6a8c739576cb39bad54"><td class="memItemLeft" align="right" valign="top"><a id="a55e9e8d479f2e6a8c739576cb39bad54"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>parseStream</b> (Stream &amp;in)</td></tr>
+<tr class="separator:a55e9e8d479f2e6a8c739576cb39bad54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8bca1bff6ca00d696f8cbea49b06da4a"><td class="memItemLeft" align="right" valign="top"><a id="a8bca1bff6ca00d696f8cbea49b06da4a"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><b>parse</b> (char *data, int size)</td></tr>
 <tr class="separator:a8bca1bff6ca00d696f8cbea49b06da4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a602fc85ee5b09b7d1eb7e08f3dbbe772"><td class="memItemLeft" align="right" valign="top"><a id="a602fc85ee5b09b7d1eb7e08f3dbbe772"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>save</b> (const char *file)</td></tr>
 <tr class="separator:a602fc85ee5b09b7d1eb7e08f3dbbe772"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdfb907739a7fecd37d7978b61840840"><td class="memItemLeft" align="right" valign="top"><a id="afdfb907739a7fecd37d7978b61840840"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>operator bool</b> () const</td></tr>
+<tr class="separator:afdfb907739a7fecd37d7978b61840840"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -95,7 +106,10 @@ Static Public Member Functions</h2></td></tr>
 static void&#160;</td><td class="memItemRight" valign="bottom"><b>mergejson</b> (JsonObject &amp;dest, JsonObject &amp;src)</td></tr>
 <tr class="separator:a6eb74788124b334b2c9da777867f1ca2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<hr/>The documentation for this class was generated from the following files:<ul>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A class to manage ArduinoJson objects. </p>
+<p>A class that manages the lifetime of a json object. Either a JsonObject or JsonArray. You can also parse a SPIFFS file directly into the <a class="el" href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html" title="A class to manage ArduinoJson objects. ">JSONpackage</a>. Provides a merge function to merge two Json objects</p><dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>template merge function. </dd></dl>
+</div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/<a class="el" href="_e_s_p_m_a_n_8h_source.html">ESPMAN.h</a></li>
 <li>src/<a class="el" href="_e_s_p_m_a_n_8cpp.html">ESPMAN.cpp</a></li>
 </ul>
