@@ -13,6 +13,13 @@ env:
   matrix:
   - PLATFORMIO_CI_SRC="$TRAVIS_BUILD_DIR/examples/ESPmanager-example/ESPmanager-example.ino" 
   - PLATFORMIO_CI_SRC="$TRAVIS_BUILD_DIR/examples/ESPmanager-example/ESPmanager-example.ino" PLATFORMIO_BUILD_FLAGS="-D Debug_ESPManager=Serial"
+# Handle git submodules yourself
+git:
+    submodules: false
+# Use sed to replace the SSH URL with the public URL, then initialize submodules
+before_install:
+    - sed -i 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+    - git submodule update --init --recursive
 install:
   - pip install -U platformio
   - platformio platform install https://github.com/platformio/platform-espressif8266.git#feature/stage
