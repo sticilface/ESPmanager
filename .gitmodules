@@ -3,4 +3,4 @@
 	url = https://github.com/sticilface/ESPdeviceFinder
 [submodule "src/Tasker"]
 	path = src/Tasker
-	url = https://github.com/sticilface/Tasker/tree/develop
+	url = https://github.com/sticilface/Tasker
