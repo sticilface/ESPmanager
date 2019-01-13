@@ -79,8 +79,7 @@ void setup()
 	});
 
 
-
-	DefaultHeaders::HTTP().addHeader("Access-Control-Allow-Origin", "*");
+	DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 	HTTP.begin();
 
 
