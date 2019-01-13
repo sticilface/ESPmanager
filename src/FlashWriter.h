@@ -79,11 +79,11 @@ class FlashWriter : public Stream
     void timeout(uint32_t value) {  _timeout = value; } 
 
     virtual size_t write(const uint8_t *data, size_t len) override;
-    virtual size_t write(uint8_t value) override { write(&value, 1);  };
+    virtual size_t write(uint8_t value) override { return write(&value, 1);  };
     virtual int available() override;
     virtual int read() override;
     virtual size_t readBytes(uint8_t *, size_t );
-    virtual int peek() override {};
+    virtual int peek() override { return 0; };
     virtual void flush() override {};
 
     int writeToStream(Stream * stream); 

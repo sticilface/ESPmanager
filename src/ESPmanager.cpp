@@ -114,7 +114,7 @@ ESPMAN_ERR_t ESPmanager::begin()
     using namespace std::placeholders;
     using namespace ESPMAN;
 
-    bool wizard = false;
+    //bool wizard = false;
 
     ESPMan_Debugf("Settings Manager V" ESPMANVERSION "\n");
     // ESPMan_Debugf("REPO: %s\n",  slugTag );
@@ -224,7 +224,7 @@ ESPMAN_ERR_t ESPmanager::begin()
     //
     int AP_ERROR = 0;
     int STA_ERROR = 0;
-    int AUTO_ERROR = 0;
+    //int AUTO_ERROR = 0;
 
     WiFi.hostname(_settings->GEN.host.c_str());
 
@@ -234,13 +234,13 @@ ESPMAN_ERR_t ESPmanager::begin()
         File f = _fs.open("/.wizard", "r");
 
         if (f && f.size() == sizeof(settings_t::AP_t)) {
-            wizard = true;
+            //wizard = true;
             ESPMan_Debugf("*** WIZARD MODE ENABLED ***\n");
             settings_t::AP_t ap;
 
             uint8_t * data = static_cast<uint8_t*>(static_cast<void*>(&ap));
 
-            for (int i = 0; i < sizeof(ap); i++) {
+            for (uint i = 0; i < sizeof(ap); i++) {
                 data[i] = f.read();
             }
 
@@ -448,7 +448,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
         if (_settings && !_settings->changed) {
             if (millis() - _settings->start_time > SETTINGS_MEMORY_TIMEOUT) {
-                uint32_t startheap = ESP.getFreeHeap();
+                uint32_t startheap __attribute__((unused)) = ESP.getFreeHeap();
                 delete _settings;
                 _settings = nullptr;
                 ESPMan_Debugf("Deleting Settings.  Heap freed = %u (%u)\n", ESP.getFreeHeap() - startheap, ESP.getFreeHeap() );
@@ -550,6 +550,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 #endif
 
+return SUCCESS;
 
 }
 
@@ -589,7 +590,7 @@ void ESPmanager::_APlogic(Task & t)
 {
     if ( _APtimer > 0 && !WiFi.softAPgetStationNum()) {
 
-        int32_t time_total {0};
+        uint32_t time_total {0};
 
         if (_APenabledAtBoot) {
             time_total = (int8_t)_ap_boot_mode * 60 * 1000;
@@ -646,7 +647,7 @@ void ESPmanager::_APlogic(Task & t)
     // this functions only work for a discconection and reconnection.. when settings have not changed...
     if ( (_APtimer2 || _APtimer ) && WiFi.isConnected() == true) {
 
-        if ( !_settings || (_settings && !_settings->changed) && !WiFi.softAPgetStationNum() ) { // stops the AP being disabled if it is the result of changing stuff
+        if ( !_settings || ( (_settings && !_settings->changed) && !WiFi.softAPgetStationNum() ) ) { // stops the AP being disabled if it is the result of changing stuff
 
             settings_t::AP_t APsettings;
             APsettings.enabled = false;
@@ -847,6 +848,8 @@ String ESPmanager::file_md5 (File & f)
     } else {
         ESPMan_Debugf("Seek failed on file\n");
     }
+
+    return String();
 }
 
 /**
@@ -1179,8 +1182,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
                 ESPhttpUpdate.rebootOnUpdate(false);
 
   //              MDNS.stop(); 
-
-                t_httpUpdate_return ret = ESPhttpUpdate.update(remote_path);
+                WiFiClient client;
+                t_httpUpdate_return ret = ESPhttpUpdate.update(client, remote_path);
 
                 switch (ret) {
 
@@ -1221,6 +1224,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
     event_send( FPSTR(fstring_UPGRADE), F("end"));
 
  //   MDNS.restart();
+ //  
+    return SUCCESS; 
 
 }
 
@@ -1260,6 +1265,7 @@ bool ESPmanager::event_send(myString topic, myString msg )
 {
     _events.send(msg.c_str(), topic.c_str() , millis(), 5000);
     ESPMan_Debugf("EVENT: top = %s, msg = %s\n", (topic.c_str()) ? topic.c_str() : "" , (msg.c_str()) ? msg.c_str() : "" );
+    return true; 
 }
 
 /**
@@ -1330,16 +1336,18 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
         return SPIFFS_FILE_OPEN_ERROR;
     }
 
-
-    http.begin(url);
+    WiFiClient client;
+    http.begin(client, url);
 
     int httpCode = http.GET();
 
     if (httpCode == 200) {
 
-        int len = http.getSize();
+        int slen = http.getSize();
 
-        if (len > 0 && len < freeBytes) {
+        if (slen > 0 && slen < freeBytes) {
+
+            uint len = slen;
 
             WiFiUDP::stopAll();
 
@@ -1347,13 +1355,13 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
             wifi_set_sleep_type(NONE_SLEEP_T);
 
             FlashWriter writer;
-            int byteswritten = 0;
+            uint byteswritten = 0;
 
             if (writer.begin(len)) {
-                uint32_t start_time = millis();
+                //uint32_t start_time = millis();
                 byteswritten = http.writeToStream(&writer);  //  this writes to the 1Mb Flash partition for the OTA upgrade.  zero latency...
                 if (byteswritten > 0 && byteswritten == len) {
-                    uint32_t start_time = millis();
+                    //uint32_t start_time = millis();
                     byteswritten = writer.writeToStream(&f); //  contains a yield to allow networking.  Can take minutes to complete.
                 } else {
                     ESPMan_Debugf("HTTP to Flash error, byteswritten = %i\n", byteswritten);
@@ -1368,7 +1376,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
 
             http.end();
 
-            if (f.size() == len && byteswritten == len) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
+            if (f.size() == len && byteswritten == len) { // len always positiive
 
                 if (md5_true) {
                     String crc = file_md5(f);
@@ -1442,8 +1450,9 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(JSONpackage & json, const char * path)
 {
     using namespace ESPMAN;
     ESPMan_Debugf("path = %s\n", path);
+    WiFiClient client;
     HTTPClient http;
-    http.begin(path);  //HTTP
+    http.begin(client, path);  //HTTP
     int httpCode = http.GET();
 
     if (httpCode != 200) {
@@ -1454,7 +1463,7 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(JSONpackage & json, const char * path)
     ESPMan_Debugf("Connected downloading json\n");
 
     size_t len = http.getSize();
-    const size_t length = len;
+    //const size_t length = len;
 
     if (len > MAX_BUFFER_SIZE) {
         ESPMan_Debugf("Receive update length too big.  Increase buffer");
@@ -1550,7 +1559,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     DynamicJsonBuffer jsonBuffer;
     JsonObject& root = jsonBuffer.createObject();
 
-    static uint32_t last_handle_time = 0;
+    //static uint32_t last_handle_time = 0;
     bool sendsaveandreboot = false;
 
     //if (millis() - last_handle_time < 50) {
@@ -1560,7 +1569,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     //     return;
     // }
 
-    last_handle_time = millis();
+    //last_handle_time = millis();
 
     if (!_settings) {
         _getAllSettings();
@@ -2084,7 +2093,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             uint8_t * data = static_cast<uint8_t*>(static_cast<void*>(&set.AP));
 
             if (f) {
-                for (int i = 0; i < sizeof(set.AP); i++) {
+                for (uint i = 0; i < sizeof(set.AP); i++) {
                     f.write(  data[i]);
                 }
 
@@ -2146,7 +2155,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     if (millis() - _deviceFinderTimer > _ESPdeviceTimeout) {
                         t.setRepeat(false);
                         if (_devicefinder) {
-                            uint32_t pre_heap = ESP.getFreeHeap();
+                            uint32_t pre_heap __attribute__((unused)) = ESP.getFreeHeap();
                             _devicefinder->cacheResults(false);
                             ESPMan_Debugf("Removing Found Devices after %us freeing %u\n", _ESPdeviceTimeout / 1000, ESP.getFreeHeap() - pre_heap  );
                         }
@@ -3155,7 +3164,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     if (request->hasParam(FPSTR(fstring_updateFreq), true) ) {
 
-        int updateFreq = request->getParam(FPSTR(fstring_updateFreq), true)->value().toInt();
+        uint updateFreq = request->getParam(FPSTR(fstring_updateFreq), true)->value().toInt();
 
         if (updateFreq < 0) {
             updateFreq = 0;
@@ -3209,7 +3218,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 ESPMAN_ERR_t ESPmanager::_initialiseAP(bool override)
 {
     using namespace ESPMAN;
-    int ERROR = 0;
+    //int ERROR = 0;
 
     //  get the settings from SPIFFS if settings PTR is null
     if (!_settings) {
@@ -3333,7 +3342,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 {
     using namespace ESPMAN;
-    ESPMAN_ERR_t ERROR = SUCCESS;
+    //ESPMAN_ERR_t ERROR = SUCCESS;
     bool portal_enabled = _dns;
 
     if (portal_enabled) {
@@ -3663,7 +3672,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
     using namespace ESPMAN;
     JSONpackage json;
     uint8_t settingsversion = 0;
-    uint32_t start_heap = ESP.getFreeHeap();
+    //uint32_t start_heap = ESP.getFreeHeap();
 
     ESPMAN_ERR_t ERROR = SUCCESS;
     ERROR = static_cast<ESPMAN_ERR_t> (json.parseSPIFS(SETTINGS_FILE));

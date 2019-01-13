@@ -182,7 +182,7 @@ int FlashWriter::writeToStream(Stream * stream)
         readBytes(_buffer, left); 
       }
 
-      uint32_t write_time = millis(); 
+      //uint32_t write_time = millis(); 
       int val = stream->write(_buffer, _bufferLen); 
 
       if (val > 0) {

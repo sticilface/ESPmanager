@@ -188,9 +188,8 @@ private:
   void _removePreGzFiles();
   void _APlogic(Task & t);
   
-
-  FS & _fs;
   AsyncWebServer & _HTTP;
+  FS & _fs;
   AsyncEventSource _events;
   DNSServer * _dns{nullptr};
   bool save_flag {false};
