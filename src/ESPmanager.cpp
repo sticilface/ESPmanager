@@ -3402,7 +3402,9 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
     } else {
         set.dhcp = true;
-        WiFi.config( INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        //WiFi.config( INADDR_NONE, INADDR_NONE, INADDR_NONE);
+        WiFi.config( INADDR_ANY, INADDR_ANY, INADDR_ANY);
+
     }
 
 
