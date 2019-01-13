@@ -31,6 +31,6 @@ install:
   - platformio lib -g install "https://github.com/me-no-dev/ESPAsyncTCP" "https://github.com/me-no-dev/ESPAsyncWebServer" "ArduinoJson"
 
 script:
-  - platformio ci --project-option="platform=espressif8266_stage" --board="esp12e" --build-dir="/tmp/build" 
+  - platformio ci --project-option="platform=https://github.com/platformio/platform-espressif8266.git#feature/stage" --board="esp12e" --build-dir="/tmp/build" 
     --lib="$TRAVIS_BUILD_DIR" 
 
