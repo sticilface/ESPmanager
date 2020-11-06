@@ -7,7 +7,8 @@
 #include "FlashWriter.h"
 #include <flash_utils.h>
 
-extern "C" uint32_t _SPIFFS_start;
+//extern "C" uint32_t _SPIFFS_start;
+extern "C" uint32_t _FS_start; 
 
 FlashWriter::~FlashWriter()
 {
@@ -23,7 +24,7 @@ bool FlashWriter::begin(size_t size)
 {
   uint32_t currentSketchSize = (ESP.getSketchSize() + FLASH_SECTOR_SIZE - 1) & (~(FLASH_SECTOR_SIZE - 1));
   //address of the end of the space available for sketch and update
-  uint32_t updateEndAddress = (uint32_t)&_SPIFFS_start - 0x40200000;
+  uint32_t updateEndAddress = (uint32_t)&_FS_start - 0x40200000;
   //size of the update rounded to a sector
   uint32_t roundedSize = (size + FLASH_SECTOR_SIZE - 1) & (~(FLASH_SECTOR_SIZE - 1));
   //address where we will start writing the update
