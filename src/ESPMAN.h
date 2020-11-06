@@ -181,29 +181,31 @@ static const int SETTINGS_MEMORY_TIMEOUT = 1 * 60 * 1000; /**< @brief Time setti
  * You can also parse a SPIFFS file directly into the JSONpackage. 
  * Provides a merge function to merge two Json objects @todo template merge function. 
  */
-class JSONpackage
-{
+// class JSONpackage
+// {
 
-private:
-    DynamicJsonBuffer _jsonBuffer;
-    JsonVariant _root;
-    std::unique_ptr<char[]> _data;
-    bool _isArray {false};
+// private:
+//     //DynamicJsonBuffer _jsonBuffer;
+//     std::unique_ptr<DynamicJsonDocument> _jsonDoc;
+//     JsonVariant _root;
+//     std::unique_ptr<char[]> _data;
+//     //bool _isArray {false};
+//     DeserializationError _error; 
 
-public:
-    JSONpackage(bool isArray = false);
-    ~JSONpackage() { }
+// public:
+//     JSONpackage(bool isArray = false, size_t default_size = 1024);
+//     ~JSONpackage() { }
 
-    JsonVariant & getRoot() { return _root; }
+//     JsonVariant & getRoot() { /*return _root; */}
 
-    int parseSPIFS(const char * file, FS & fs = SPIFFS);
-    int parseStream(Stream & in); 
-    int parse(char * data, int size);
-    static void mergejson(JsonObject& dest, JsonObject& src);
-    bool save(const char * file);
-    operator bool() const; 
+//     int parseSPIFS(const char * file, FS & fs = SPIFFS);
+//     int parseStream(Stream & in); 
+//     int parse(char * data, int size);
+//     static void mergejson(JsonObject& dest, JsonObject& src);
+//     bool save(const char * file);
+//     operator bool() const; 
 
-};
+// };
 
 /**
  * @brief A class to manage Strings.

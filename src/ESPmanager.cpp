@@ -21,6 +21,7 @@
 #include <list>
 #include "Tasker/src/Tasker.h"
 #include "FlashWriter.h"
+#include "StreamString.h"
 
 extern "C" {
 #include "user_interface.h"
@@ -33,7 +34,7 @@ static const char _compile_date_time[] = __DATE__ " " __TIME__;
 static const uint16_t _ESPdeviceFinderPort = 8888;
 static const uint32_t _ESPdeviceTimeout = 1200000;// 300000;  //  when is the devicefinder deleted.
 
-
+uint32_t jsonSize = 4096; 
 
 //#define LAST_MODIFIED_DATE "Mon, 20 Jun 2016 14:00:00 GMT"
 
@@ -72,6 +73,17 @@ extern File _DebugFile;
 #define ESPMANAGER_GIT_TAG "NOT DEFINED"
 #endif
 
+uint32_t allocateJSON()
+{
+    uint32_t value = ESP.getMaxFreeBlockSize() - 512; 
+    Serial.printf("Json: Max Free Block = %u\n", value);
+    if (value > jsonSize) {
+        return jsonSize;
+    } else {
+        return value; 
+    }
+    
+}
 
 /**
  *
@@ -111,8 +123,10 @@ ESPmanager::~ESPmanager()
  */
 ESPMAN_ERR_t ESPmanager::begin()
 {
+
     using namespace std::placeholders;
     using namespace ESPMAN;
+
 
     bool wizard = false;
 
@@ -263,10 +277,14 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     } else if (_settings->configured) {
 
+
+
         ESPMan_Debugf("settings->configured = true \n");
         AP_ERROR = _initialiseAP();
         ESPMan_Debugf("_initialiseAP = %i \n", AP_ERROR);
+
         STA_ERROR = _initialiseSTA();
+
         ESPMan_Debugf("_initialiseSTA = %i \n", STA_ERROR);
 
     } else {
@@ -323,7 +341,18 @@ ESPMAN_ERR_t ESPmanager::begin()
 
         ArduinoOTA.onStart([this]() {
             //MDNS.stop();
-            _fs.end();
+            
+            String type;
+            if (ArduinoOTA.getCommand() == U_FLASH) {
+              type = "sketch";
+            } else { // U_FS
+              type = "filesystem";
+              _fs.end();
+            }
+
+            // NOTE: if updating FS this would be the place to unmount FS using FS.end()
+            Serial.println("**** Start updating " + type);
+
             event_send( F("update") , F("begin"));
 #ifdef Debug_ESPManager
             Debug_ESPManager.print(F(   "[              Performing OTA Upgrade              ]\n["));
@@ -373,14 +402,16 @@ ESPMAN_ERR_t ESPmanager::begin()
             else if (error == OTA_END_ERROR) {  Debug_ESPManager.println(F("End Failed")); }
 #endif
 
+            StreamString ss;
+            Update.printError(ss);
+            
             if (error) {
                 //event_printf(string_UPDATE, string_ERROR_toString, getError(error).c_str());
                 event_send( FPSTR(fstring_UPDATE), myStringf_P( fstring_ERROR_toString, getError(error).c_str()));
+                event_send( FPSTR(fstring_UPDATE), myStringf_P( fstring_ERROR_toString, ss.c_str()));
+                ESPMan_Debugf("Updater err:%s\n", ss.c_str()); 
+                delay(100); 
             }
-
-            delay(1000);
-            ESP.restart();
-
         });
 
         ArduinoOTA.begin();
@@ -860,7 +891,7 @@ String ESPmanager::file_md5 (File & f)
  */
 template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServerRequest *request)
 {
-    int len = root.measureLength();
+    int len = measureJson(root);
     if (len < 4000) {
 
         AsyncResponseStream *response = request->beginResponseStream("text/json");
@@ -868,7 +899,8 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
         if (response) {
             response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
             response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
-            root.printTo(*response);
+            //root.printTo(*response);
+            serializeJson(root, *response); 
             request->send(response);
         } else {
             //Serial.println("ERROR: No Stream Response");
@@ -1024,7 +1056,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
     int file_count = 1;
     int firmwareIndex = -1;
     bool overwriteFiles = false;
-    JSONpackage json;
+    //DynamicJsonDocument json(ESP.getMaxFreeBlockSize() - 512); 
+    DynamicJsonDocument json(allocateJSON()); 
 
     event_send( FPSTR(fstring_UPGRADE) , F("begin")) ;
     ESPMan_Debugf("Checking for Updates: %s\n", path);
@@ -1045,6 +1078,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         save_flag = true;
     }
 
+
     int ret = _parseUpdateJson(json, path);
 
     if (ret) {
@@ -1055,15 +1089,17 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         return MANIFST_FILE_ERROR;
     }
 
+    json.shrinkToFit(); 
+
     ESPMan_Debugf("_parseUpdateJson success\n");
 
-    if (!json) {
+    if (!json.is<JsonObject>()) {
         event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR_toString, getError(JSON_OBJECT_ERROR).c_str() ) );
         ESPMan_Debugf("JSON ERROR [%i]\n", JSON_OBJECT_ERROR );
         return JSON_PARSE_ERROR;
     }
 
-    JsonObject & root = json.getRoot();
+    JsonObject root = json.as<JsonObject>();
 
     /**
      *      Global settings for upgrade
@@ -1097,11 +1133,11 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
     if (root.containsKey(F("files"))) {
 
-        JsonArray & array = root[F("files")];
+        JsonArray array = root[F("files")];
         files_expected = array.size();
 
         for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
-            JsonObject& item = *it;
+            JsonObject item = *it;
             String remote_path = String();
 
             //  if the is url is set to true then don't prepend the rootUri...
@@ -1162,8 +1198,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
     if (firmwareIndex != -1) {
 
         //  for (JsonArray::iterator it = array.begin(); it != array.end(); ++it) {
-        JsonArray & array = root["files"];
-        JsonObject & item = array.get<JsonObject&>(firmwareIndex);
+        JsonArray array = root["files"];
+        JsonObject item = array.getElement(firmwareIndex);
 
         String remote_path = rooturi + String(item["location"].as<const char *>());
         String filename = item[F("saveto")];
@@ -1438,7 +1474,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
  *
  */
 
-ESPMAN_ERR_t ESPmanager::_parseUpdateJson(JSONpackage & json, const char * path)
+ESPMAN_ERR_t ESPmanager::_parseUpdateJson(DynamicJsonDocument & json, const char * path)
 {
     using namespace ESPMAN;
     ESPMan_Debugf("path = %s\n", path);
@@ -1463,10 +1499,13 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(JSONpackage & json, const char * path)
 
     // get tcp stream
     WiFiClient * stream = http.getStreamPtr();
-    int ret = json.parseStream(*stream);
+
+    auto jsonError = deserializeJson(json, *stream); 
+
+    //int ret = json.parseStream(*stream);
     http.end();
 
-    if (ret == SUCCESS) {
+    if (jsonError == DeserializationError::Ok) {
         ESPMan_Debugf("root->success() = true\n");
         return SUCCESS;
     } else {
@@ -1547,8 +1586,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     using namespace ESPMAN;
     String buf;
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject& root = jsonBuffer.createObject();
+    DynamicJsonDocument jsonBuffer(allocateJSON());
+    JsonObject root = jsonBuffer.to<JsonObject>();
 
     static uint32_t last_handle_time = 0;
     bool sendsaveandreboot = false;
@@ -1710,8 +1749,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 int wifiScanState = WiFi.scanComplete();
 
-                DynamicJsonBuffer jsonBuffer;
-                JsonObject& root = jsonBuffer.createObject();
+                DynamicJsonDocument jsonBuffer(allocateJSON());
+                JsonObject root = jsonBuffer.to<JsonObject>();
 
                 if (wifiScanState == -2) {
                     WiFi.scanNetworks(true);
@@ -1738,7 +1777,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                         return (first.second > second.second);
                     });
 
-                    JsonArray& Networkarray = root.createNestedArray("networks");
+                    JsonArray Networkarray = root.createNestedArray("networks");
 
 
                     if (_wifinetworksfound > MAX_WIFI_NETWORKS) {
@@ -1762,7 +1801,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                         int i = it->first;
 
-                        JsonObject& ssidobject = Networkarray.createNestedObject();
+                        JsonObject ssidobject = Networkarray.createNestedObject();
 
                         bool connectedbool = (WiFi.status() == WL_CONNECTED && WiFi.SSID(i) == WiFi.SSID()) ? true : false;
                         uint8_t encryptiontype = WiFi.encryptionType(i);
@@ -1811,7 +1850,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //root[string_changed] = (set.changed) ? true : false;
 
 
-            JsonObject& generalobject = root.createNestedObject(FPSTR(fstring_General));
+            JsonObject generalobject = root.createNestedObject(FPSTR(fstring_General));
 
             generalobject[FPSTR(fstring_deviceid)] = getHostname();
             //generalobject[F("OTAenabled")] = (_OTAenabled) ? true : false;
@@ -1827,14 +1866,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             generalobject[FPSTR(fstring_updateURL)] = (set.GEN.updateURL) ? set.GEN.updateURL() : "";
             generalobject[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
 
-            JsonObject& GenericObject = root.createNestedObject(F("generic"));
+            JsonObject GenericObject = root.createNestedObject(F("generic"));
 
             GenericObject[F("channel")] = WiFi.channel();
             GenericObject[F("sleepmode")] = (int)WiFi.getSleepMode();
             GenericObject[F("phymode")] = (int)WiFi.getPhyMode();
 
 
-            JsonObject& STAobject = root.createNestedObject(FPSTR(fstring_STA));
+            JsonObject STAobject = root.createNestedObject(FPSTR(fstring_STA));
 
 
             STAobject[F("connectedssid")] = WiFi.SSID();
@@ -1850,7 +1889,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             STAobject[FPSTR(fstring_DNS1)] = WiFi.dnsIP(0).toString();
             STAobject[FPSTR(fstring_DNS2)] = WiFi.dnsIP(1).toString();
             STAobject[FPSTR(fstring_MAC)] = WiFi.macAddress();
-            JsonObject& APobject = root.createNestedObject(F("AP"));
+            JsonObject APobject = root.createNestedObject(F("AP"));
             APobject[FPSTR(fstring_ssid)] = set.GEN.host();
             //APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
             APobject[F("state")] = set.AP.enabled;
@@ -1926,7 +1965,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             root[F("vcc_var")] = ESP.getVcc();
             root[F("rssi_var")] = WiFi.RSSI();
 
-            JsonObject& SPIFFSobject = root.createNestedObject("SPIFFS");
+            JsonObject SPIFFSobject = root.createNestedObject("SPIFFS");
             /*
 
                struct FSInfo {
@@ -1959,7 +1998,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //   unsigned short int maxFreeContiguousBlocks;
             // }
 
-            JsonObject& UMMobject = root.createNestedObject("UMM");
+            JsonObject UMMobject = root.createNestedObject("UMM");
             UMMobject[F("totalEntries")] = ummHeapInfo.totalEntries;
             UMMobject[F("usedEntries")] = ummHeapInfo.usedEntries;
             UMMobject[F("freeEntries")] = ummHeapInfo.freeEntries;
@@ -1968,7 +2007,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             UMMobject[F("freeBlocks")] = ummHeapInfo.freeBlocks;
             UMMobject[F("maxFreeContiguousBlocks")] = ummHeapInfo.maxFreeContiguousBlocks;
 
-            JsonObject& Resetobject = root.createNestedObject("reset");
+            JsonObject Resetobject = root.createNestedObject("reset");
 
             Resetobject[F("reason")] = ESP.getResetReason();
             Resetobject[F("info")] = ESP.getResetInfo();
@@ -2122,7 +2161,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
         if (plainCommand == FPSTR(fstring_syslog)) {
 
-            JsonObject& syslogobject = root.createNestedObject( FPSTR(fstring_syslog));
+            JsonObject syslogobject = root.createNestedObject( FPSTR(fstring_syslog));
 
             syslogobject[FPSTR(fstring_usesyslog)] = set.GEN.usesyslog;
             syslogobject[FPSTR(fstring_syslogIP)] = set.GEN.syslogIP.toString();
@@ -3310,6 +3349,8 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA()
     if (!_settings) {
         _getAllSettings();
     }
+    
+
 
     if (_settings) {
         ERROR = _initialiseSTA(_settings->STA);
@@ -3443,12 +3484,17 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
         return NO_CHANGES;
     } else {
 
+        //  this appears to be a work around for a corrupted flash causing endless boot loops.  https://github.com/esp8266/Arduino/issues/1997 
+        //  https://github.com/esp8266/Arduino/pull/6965
+        
+        WiFi.persistent(false);
+        WiFi.disconnect(true);
+
         if (  set.ssid && set.pass  ) {
             ESPMan_Debugf( "Using ssid = %s, pass = %s\n", set.ssid.c_str(), set.pass.c_str()  );
-            if (!WiFi.begin( set.ssid.c_str(), set.pass.c_str())) {
+            if (!WiFi.begin( set.ssid.c_str(), set.pass.c_str())) {    
                 return ERROR_WIFI_BEGIN;
             }
-
         } else if ( set.ssid ) {
             ESPMan_Debugf( "Using ssid = %s\n", set.ssid.c_str());
             if (!WiFi.begin( set.ssid.c_str())) {
@@ -3629,7 +3675,11 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings()
 
     ESPMAN_ERR_t ERROR = SUCCESS;
 
+    
+
     ERROR =  _getAllSettings(*_settings);
+
+
 
     if (!ERROR) {
 
@@ -3661,29 +3711,44 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
 {
 
     using namespace ESPMAN;
-    JSONpackage json;
+    //DynamicJsonDocument json(ESP.getMaxFreeBlockSize() - 512);
+    DynamicJsonDocument json(allocateJSON()); 
     uint8_t settingsversion = 0;
     uint32_t start_heap = ESP.getFreeHeap();
 
     ESPMAN_ERR_t ERROR = SUCCESS;
-    ERROR = static_cast<ESPMAN_ERR_t> (json.parseSPIFS(SETTINGS_FILE));
 
-    if (ERROR) {
+    File f = SPIFFS.open(SETTINGS_FILE, "r");
+    int totalBytes = f.size();
+
+    if (!f) {
+        return SPIFFS_FILE_OPEN_ERROR;
+    }
+
+
+    auto jsonError = deserializeJson(json, f); 
+
+    // ERROR = static_cast<ESPMAN_ERR_t> (json.parseSPIFS(SETTINGS_FILE));
+
+    if (jsonError != DeserializationError::Ok) {
         return ERROR;
     }
 
-    JsonObject & root = json.getRoot();
+    json.shrinkToFit();
+
+    JsonObject root = json.as<JsonObject>();
 
     /*
           General Settings
      */
 
+
     if (root.containsKey(FPSTR(fstring_General))) {
 
-        JsonObject & settingsJSON = root[FPSTR(fstring_General)];
+        JsonObject settingsJSON = root[FPSTR(fstring_General)];
 
         if (settingsJSON.containsKey(FPSTR(fstring_settingsversion))) {
-            settingsversion = settingsJSON[FPSTR(fstring_settingsversion)];
+            settingsversion = settingsJSON[FPSTR(fstring_settingsversion)].as<uint8_t>();
         }
 
         if (settingsJSON.containsKey(FPSTR(fstring_host))) {
@@ -3772,7 +3837,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
 
 #endif
 
-    }
+    } 
 
     /*
            STA settings
@@ -3781,7 +3846,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
     if (root.containsKey(FPSTR(fstring_STA))) {
 
 
-        JsonObject & STAjson = root[FPSTR(fstring_STA)];
+        JsonObject STAjson = root[FPSTR(fstring_STA)];
 
         if (STAjson.containsKey(FPSTR(fstring_enabled))) {
             set.STA.enabled = STAjson[FPSTR(fstring_enabled)];
@@ -3852,7 +3917,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
      */
     if (root.containsKey(FPSTR(fstring_AP))) {
 
-        JsonObject & APjson = root[FPSTR(fstring_AP)];
+        JsonObject APjson = root[FPSTR(fstring_AP)];
 
         if (APjson.containsKey(FPSTR(fstring_enabled))) {
             set.AP.enabled = APjson[FPSTR(fstring_enabled)];
@@ -3897,7 +3962,9 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
     }
 
     if (settingsversion != SETTINGS_FILE_VERSION) {
-        ESPMan_Debugf("Settings File Version Wrong expecting:%u got:%u\n", SETTINGS_FILE_VERSION, settingsversion);
+        ESPMan_Debugf("Settings File Version Wrong expecting v%u got v%u\n", SETTINGS_FILE_VERSION, settingsversion);
+        // serializeJsonPretty(settingsJSON, Serial);
+        // Serial.println();
         return WRONG_SETTINGS_FILE_VERSION;
     }
 
@@ -3910,13 +3977,13 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     using namespace ESPMAN;
 
-    DynamicJsonBuffer jsonBuffer;
-    JsonObject & root = jsonBuffer.createObject();
+    DynamicJsonDocument jsonBuffer(allocateJSON());
+    JsonObject root = jsonBuffer.to<JsonObject>();
 
     /*
             General Settings
      */
-    JsonObject & settingsJSON = root.createNestedObject(FPSTR(fstring_General));
+    JsonObject settingsJSON = root.createNestedObject(FPSTR(fstring_General));
 
     settingsJSON[FPSTR(fstring_mDNS)] = set.GEN.mDNSenabled;
 
@@ -3958,7 +4025,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     settingsJSON[FPSTR(fstring_usesyslog)] = set.GEN.usesyslog;
 
     if (set.GEN.usesyslog) {
-        JsonArray & IP = settingsJSON.createNestedArray(FPSTR(fstring_syslogIP));
+        JsonArray IP = settingsJSON.createNestedArray(FPSTR(fstring_syslogIP));
         IP.add(set.GEN.syslogIP[0]);
         IP.add(set.GEN.syslogIP[1]);
         IP.add(set.GEN.syslogIP[2]);
@@ -3977,7 +4044,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
             STA Settings
     *****************************************/
 
-    JsonObject & STAjson = root.createNestedObject(FPSTR(fstring_STA));
+    JsonObject STAjson = root.createNestedObject(FPSTR(fstring_STA));
 
     STAjson[FPSTR(fstring_enabled)] = set.STA.enabled;
 
@@ -3992,29 +4059,29 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     if (set.STA.hasConfig) {
 
-        JsonArray & IP = STAjson.createNestedArray(FPSTR(fstring_IP));
+        JsonArray IP = STAjson.createNestedArray(FPSTR(fstring_IP));
         IP.add(set.STA.IP[0]);
         IP.add(set.STA.IP[1]);
         IP.add(set.STA.IP[2]);
         IP.add(set.STA.IP[3]);
-        JsonArray & GW = STAjson.createNestedArray(FPSTR(fstring_GW));
+        JsonArray GW = STAjson.createNestedArray(FPSTR(fstring_GW));
         GW.add(set.STA.GW[0]);
         GW.add(set.STA.GW[1]);
         GW.add(set.STA.GW[2]);
         GW.add(set.STA.GW[3]);
-        JsonArray & SN = STAjson.createNestedArray(FPSTR(fstring_SN));
+        JsonArray SN = STAjson.createNestedArray(FPSTR(fstring_SN));
         SN.add(set.STA.SN[0]);
         SN.add(set.STA.SN[1]);
         SN.add(set.STA.SN[2]);
         SN.add(set.STA.SN[3]);
-        JsonArray & DNS1 = STAjson.createNestedArray(FPSTR(fstring_DNS1));
+        JsonArray DNS1 = STAjson.createNestedArray(FPSTR(fstring_DNS1));
         DNS1.add(set.STA.DNS1[0]);
         DNS1.add(set.STA.DNS1[1]);
         DNS1.add(set.STA.DNS1[2]);
         DNS1.add(set.STA.DNS1[3]);
 
         if (set.STA.DNS2 != INADDR_NONE) {
-            JsonArray & DNS2 = STAjson.createNestedArray(FPSTR(fstring_DNS2));
+            JsonArray DNS2 = STAjson.createNestedArray(FPSTR(fstring_DNS2));
             DNS2.add(set.STA.DNS2[0]);
             DNS2.add(set.STA.DNS2[1]);
             DNS2.add(set.STA.DNS2[2]);
@@ -4026,7 +4093,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     }
 
     if (set.STA.hasMAC) {
-        JsonArray & MAC = STAjson.createNestedArray(FPSTR(fstring_MAC));
+        JsonArray MAC = STAjson.createNestedArray(FPSTR(fstring_MAC));
 
         for (uint8_t i = 0; i < 6; i++) {
             MAC.add(set.STA.MAC[i]);
@@ -4044,7 +4111,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
             AP Settings
     ****************************************/
 
-    JsonObject & APjson = root.createNestedObject(FPSTR(fstring_AP));
+    JsonObject APjson = root.createNestedObject(FPSTR(fstring_AP));
 
     APjson[FPSTR(fstring_enabled)] = set.AP.enabled;
 
@@ -4061,17 +4128,17 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
 
     if (set.AP.hasConfig) {
 
-        JsonArray & IP = APjson.createNestedArray(FPSTR(fstring_IP));
+        JsonArray IP = APjson.createNestedArray(FPSTR(fstring_IP));
         IP.add(set.AP.IP[0]);
         IP.add(set.AP.IP[1]);
         IP.add(set.AP.IP[2]);
         IP.add(set.AP.IP[3]);
-        JsonArray & GW = APjson.createNestedArray(FPSTR(fstring_GW));
+        JsonArray GW = APjson.createNestedArray(FPSTR(fstring_GW));
         GW.add(set.AP.GW[0]);
         GW.add(set.AP.GW[1]);
         GW.add(set.AP.GW[2]);
         GW.add(set.AP.GW[3]);
-        JsonArray & SN = APjson.createNestedArray(FPSTR(fstring_SN));
+        JsonArray SN = APjson.createNestedArray(FPSTR(fstring_SN));
         SN.add(set.AP.SN[0]);
         SN.add(set.AP.SN[1]);
         SN.add(set.AP.SN[2]);
@@ -4080,7 +4147,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     }
 
     if (set.AP.hasMAC) {
-        JsonArray & MAC = APjson.createNestedArray(FPSTR(fstring_MAC));
+        JsonArray MAC = APjson.createNestedArray(FPSTR(fstring_MAC));
 
         for (uint8_t i = 0; i < 6; i++) {
             MAC.add(set.AP.MAC[i]);
@@ -4097,7 +4164,8 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
         return SPIFFS_FILE_OPEN_ERROR;
     }
 
-    root.prettyPrintTo(f);
+    //root.prettyPrintTo(f);
+    serializeJsonPretty(root, f); 
     f.close();
     return SUCCESS;
 
@@ -4351,12 +4419,12 @@ void ESPmanager::_populateFoundDevices(JsonObject & root)
         root[F("founddevices")] = _devicefinder->count();
 
         if (_devicefinder->count()) {
-            JsonArray & devicelist = root.createNestedArray(F("devices"));
-            JsonObject & listitem = devicelist.createNestedObject();
+            JsonArray  devicelist = root.createNestedArray(F("devices"));
+            JsonObject  listitem = devicelist.createNestedObject();
             listitem[F("name")] = host;
             listitem[F("IP")] = WiFi.localIP().toString();
             for (uint8_t i = 0; i < _devicefinder->count(); i++) {
-                JsonObject & listitem = devicelist.createNestedObject();
+                JsonObject listitem = devicelist.createNestedObject();
                 const char * name = _devicefinder->getName(i);
                 IPAddress IP = _devicefinder->getIP(i);
                 listitem[F("name")] = name;

@@ -6,108 +6,119 @@
 #include "ESPMAN.h"
 
 
-ESPMAN::JSONpackage::JSONpackage(bool isArray)
-{
-    if (isArray) {
-        _isArray = true;
-        _root = _jsonBuffer.createArray();
-    } else {
-        _isArray = false;
-        _root = _jsonBuffer.createObject();
-    }
-}
+// ESPMAN::JSONpackage::JSONpackage(bool isArray, size_t default_size) :
+//     _jsonDoc( new DynamicJsonDocument(default_size))
+// {
 
 
-int ESPMAN::JSONpackage::parse(char * data, int size)
-{
 
-    using namespace ESPMAN;
-
-    if (!data) {
-        return EMPTY_BUFFER;
-    }
-
-    if (_isArray) {
-        _root = _jsonBuffer.parseArray(_data.get(), size);
-    } else {
-        _root = _jsonBuffer.parseObject(_data.get(), size);
-    }
-
-    if (!_root.success()) {
-        return JSON_PARSE_ERROR;
-    }
-
-    return 0;
-
-}
-
-int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs)
-{
-
-    using namespace ESPMAN;
-
-    File f = fs.open(file, "r");
-    int totalBytes = f.size();
-
-    if (!f) {
-        return SPIFFS_FILE_OPEN_ERROR;
-    }
-
-    if (totalBytes > MAX_BUFFER_SIZE) {
-        return FILE_TOO_LARGE;
-    }
-
-    // if (_isArray) {
-    //     _root = _jsonBuffer.parseArray(f);
-    // } else {
-    //     _root = _jsonBuffer.parseObject(f);
-    // }
-
-    return parseStream(f); 
-
-}
-
-int ESPMAN::JSONpackage::parseStream(Stream & in)
-{
-    if (_isArray) {
-        _root = _jsonBuffer.parseArray(in);
-    } else {
-        _root = _jsonBuffer.parseObject(in);
-    }
     
-    if (!_root.success()) {
-        return JSON_PARSE_ERROR;
-    }
 
-    return 0; 
+//     // if (isArray) {
+//     //     _isArray = true;
+//     //     //_root = _jsonBuffer.createArray();
+//     // } else {
+//     //     _isArray = false;
+//     //     //_root = _jsonBuffer.createObject();
+//     // }
+// }
 
-}
 
-void ESPMAN::JSONpackage::mergejson(JsonObject& dest, JsonObject& src)
-{
-    for (auto kvp : src) {
-        dest[kvp.key] = kvp.value;
-    }
-}
+// int ESPMAN::JSONpackage::parse(char * data, int size)
+// {
 
-bool ESPMAN::JSONpackage::save(const char * file)
-{
-    File f = SPIFFS.open(file, "w");
 
-    if (!f) {
-        return -1;
-    }
 
-    _root.prettyPrintTo(f);
 
-    f.close();
+//     using namespace ESPMAN;
 
-    return 0;
-}
+//     if (!data) {
+//         return EMPTY_BUFFER;
+//     }
 
-ESPMAN::JSONpackage::operator bool() const {
-    return _root.success(); 
-}
+//     // if (_isArray) {
+//     //     //_root = _jsonBuffer.parseArray(_data.get(), size);
+//     // } else {
+//     //     //_root = _jsonBuffer.parseObject(_data.get(), size);
+//     // }
+
+//     // if (!_root.success()) {
+//     //     return JSON_PARSE_ERROR;
+//     // }
+
+//     return 0;
+
+// }
+
+// int ESPMAN::JSONpackage::parseSPIFS(const char * file, FS & fs)
+// {
+
+//     using namespace ESPMAN;
+
+//     File f = fs.open(file, "r");
+//     int totalBytes = f.size();
+
+//     if (!f) {
+//         return SPIFFS_FILE_OPEN_ERROR;
+//     }
+
+//     if (totalBytes > MAX_BUFFER_SIZE) {
+//         return FILE_TOO_LARGE;
+//     }
+
+//     // if (_isArray) {
+//     //     _root = _jsonBuffer.parseArray(f);
+//     // } else {
+//     //     _root = _jsonBuffer.parseObject(f);
+//     // }
+
+//     return parseStream(f); 
+
+// }
+
+// int ESPMAN::JSONpackage::parseStream(Stream & in)
+// {
+
+//     if (_jsonDoc) {
+//         _error = deserializeJson(*_jsonDoc, in); 
+
+//         if (_error != DeserializationError::Ok) {
+//             return 1; 
+//         }
+//     } else {
+//         return 1; 
+//     }
+
+//     return 0; 
+
+// }
+
+// void ESPMAN::JSONpackage::mergejson(JsonObject& dest, JsonObject& src)
+// {
+//     for (auto kvp : src) {
+// /*  MUST FIX THIS FUNCTION */
+//         //dest[kvp.key] = kvp.value;
+//     }
+// }
+
+// bool ESPMAN::JSONpackage::save(const char * file)
+// {
+//     File f = SPIFFS.open(file, "w");
+
+//     if (!f) {
+//         return -1;
+//     }
+
+//     serializeJsonPretty(_root, f); 
+//     f.close();
+
+//     return 0;
+// }
+
+// /*MUST FIX THIS */
+// ESPMAN::JSONpackage::operator bool() const {
+//     return 0; //_root.success(); 
+// }
 
 
 ESPMAN::myString::myString(const char *cstr)
