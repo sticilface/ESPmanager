@@ -130,6 +130,7 @@ public:
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
   AsyncEventSource & getEvent();
+  void FSDirIterator(FS & fs, const char * dirName, std::function<void(File & f)> Cb );
 
 
   bool event_send(myString topic, myString msg ); 

@@ -28,7 +28,6 @@ extern "C" {
 }
 
 extern UMM_HEAP_INFO ummHeapInfo;
-extern "C" uint32_t _SPIFFS_start;
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
 static const uint16_t _ESPdeviceFinderPort = 8888;
@@ -147,7 +146,7 @@ ESPMAN_ERR_t ESPmanager::begin()
     }
 
     if (!_fs.begin()) {
-        return ERROR_SPIFFS_MOUNT;
+        return ERROR_FS_MOUNT;
     }
 
 #ifdef Debug_ESPManager
@@ -172,23 +171,20 @@ ESPMAN_ERR_t ESPmanager::begin()
         }
     }).setTimeout(60000).setRepeat(true);
 
-    Debug_ESPManager.println(F("SPIFFS FILES:"));
+    Debug_ESPManager.println(F("FS FILES:"));
     {
-        Dir dir = _fs.openDir("/");
-        while (dir.next()) {
-            String fileName = dir.fileName();
-            size_t fileSize = dir.fileSize();
-            Debug_ESPManager.printf_P(PSTR("     FS File: %s\n"), fileName.c_str());
-        }
-        Debug_ESPManager.printf("\n");
+        FSDirIterator(_fs, "/", [](File & f){ 
+            Debug_ESPManager.printf_P(PSTR(" File: %-35s [%8uB]\n"), f.fullName(), f.size() );
+        });
     }
 
     File f = _fs.open(SETTINGS_FILE, "r");
     Debug_ESPManager.printf_P(PSTR("ESP MANAGER Settings [%u]B:\n"), f.size());
     if (f) {
-        for (int i = 0; i < f.size(); i++) {
-            Debug_ESPManager.write(f.read());
-        }
+        Debug_ESPManager.write(f);
+        // for (int i = 0; i < f.size(); i++) {
+        //     Debug_ESPManager.write(f.read());
+        // }
         Debug_ESPManager.println();
         f.close();
     }
@@ -211,7 +207,7 @@ ESPMAN_ERR_t ESPmanager::begin()
         ESP.restart();
     }
 
-    if (getallERROR == SPIFFS_FILE_OPEN_ERROR) {
+    if (getallERROR == FS_FILE_OPEN_ERROR) {
 
         ESPMan_Debugf("no settings file found\n");
 
@@ -596,7 +592,7 @@ ESPMAN_ERR_t ESPmanager::begin(myString ssid, myString pass)
     ESPMan_Debugf("ssid = %s, pass = %s\n", ssid(), pass());
 
     if (!_fs.begin()) {
-        return ERROR_SPIFFS_MOUNT;
+        return ERROR_FS_MOUNT;
     }
 
     _getAllSettings();
@@ -1108,7 +1104,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
     if (root.containsKey(F("formatSPIFFS"))) {
         if (root[F("formatSPIFFS")] == true) {
-            ESPMan_Debugf("Formatting SPIFFS....");
+            ESPMan_Debugf("Formatting FS");
             _getAllSettings();
             _fs.format();
             if (_settings) {
@@ -1347,7 +1343,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
 
 
     if (!_fs.info(_FSinfo)) {
-        return SPIFFS_INFO_FAIL;
+        return FS_INFO_FAIL;
 
     }
 
@@ -1356,14 +1352,14 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
     ESPMan_Debugf("totalBytes = %u, usedBytes = %u, freebytes = %u\n", _FSinfo.totalBytes, _FSinfo.usedBytes, freeBytes);
 
     if (filename.length() > _FSinfo.maxPathLength) {
-        return SPIFFS_FILENAME_TOO_LONG;
+        return FS_FILENAME_TOO_LONG;
     }
 
     File f = _fs.open("/tempfile", "w+"); //  w+ is to allow read operations on file.... otherwise crc gets 255!!!!!
 
     if (!f) {
 
-        return SPIFFS_FILE_OPEN_ERROR;
+        return FS_FILE_OPEN_ERROR;
     }
 
 
@@ -3718,11 +3714,11 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
 
     ESPMAN_ERR_t ERROR = SUCCESS;
 
-    File f = SPIFFS.open(SETTINGS_FILE, "r");
+    File f = _fs.open(SETTINGS_FILE, "r");
     int totalBytes = f.size();
 
     if (!f) {
-        return SPIFFS_FILE_OPEN_ERROR;
+        return FS_FILE_OPEN_ERROR;
     }
 
 
@@ -4161,7 +4157,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     File f = _fs.open(SETTINGS_FILE, "w");
 
     if (!f) {
-        return SPIFFS_FILE_OPEN_ERROR;
+        return FS_FILE_OPEN_ERROR;
     }
 
     //root.prettyPrintTo(f);
@@ -4314,8 +4310,8 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
         return F("Unkown Error"); break;
     case NO_UPDATE_URL:
         return F("No Update Url"); break;
-    case SPIFFS_FILES_ABSENT:
-        return F("SPIFFS files missing"); break;
+    case FS_FILES_ABSENT:
+        return F("FS files missing"); break;
     case FILE_NOT_CHANGED:
         return F("File not changed"); break;
     case MD5_CHK_ERROR:
@@ -4338,12 +4334,12 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
         return F("Manifest file ERROR"); break;
     case UNKNOWN_NUMBER_OF_FILES:
         return F("Unknown number of files"); break;
-    case SPIFFS_INFO_FAIL:
-        return F("SPIFFS info fail"); break;
-    case SPIFFS_FILENAME_TOO_LONG:
+    case FS_INFO_FAIL:
+        return F("FS info fail"); break;
+    case FS_FILENAME_TOO_LONG:
         return F("Filename too long"); break;
-    case SPIFFS_FILE_OPEN_ERROR:
-        return F("SPIFFS file open ERROR"); break;
+    case FS_FILE_OPEN_ERROR:
+        return F("FS file open ERROR"); break;
     case FILE_TOO_LARGE:
         return F("File too large"); break;
     case INCOMPLETE_DOWNLOAD:
@@ -4380,8 +4376,8 @@ myString ESPmanager::getError(ESPMAN_ERR_t err)
         return F("Connect Failed"); break;
     case UNITITIALISED:
         return F("Uninitialised"); break;
-    case ERROR_SPIFFS_MOUNT:
-        return F("SPIFFS mount FAIL"); break;
+    case ERROR_FS_MOUNT:
+        return F("FS mount FAIL"); break;
     case AUTO_CONNECTED_STA:
         return F("Auto connected to STA"); break;
     case ERROR_DISABLING_STA:
@@ -4441,7 +4437,20 @@ void ESPmanager::_populateFoundDevices(JsonObject & root)
 }
 
 
-
+void ESPmanager::FSDirIterator(FS & fs, const char * dirName, std::function<void(File & f)> Cb )
+{
+    Dir dir = fs.openDir(dirName);
+    while (dir.next()) {
+      if (dir.isFile()) {
+        File f =  dir.openFile("r");
+        if (Cb) {
+          Cb(f); 
+        }
+      } else {
+        FSDirIterator(fs, dir.fileName().c_str() , Cb);
+      }
+    }
+}
 
 
 
