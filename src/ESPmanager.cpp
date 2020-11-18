@@ -72,10 +72,11 @@ extern File _DebugFile;
 #define ESPMANAGER_GIT_TAG "NOT DEFINED"
 #endif
 
+//  move this out of global...  
 uint32_t allocateJSON()
 {
     uint32_t value = ESP.getMaxFreeBlockSize() - 512; 
-    Serial.printf("Json: Max Free Block = %u\n", value);
+    //Serial.printf("Json: Max Free Block = %u\n", value);
     if (value > jsonSize) {
         return jsonSize;
     } else {
@@ -87,7 +88,7 @@ uint32_t allocateJSON()
 /**
  *
  * @param [HTTP] pass an instance of AsyncWebServer. Optional.
- * @param [fs] pass an instance of SPIFFS file system.  Defaults to SPIFFS, as per arduino. Optional.
+ * @param [fs] pass an instance of FS file system.  Defaults to FS, as per arduino. Optional.
  *
  */
 ESPmanager::ESPmanager(
@@ -433,9 +434,9 @@ ESPMAN_ERR_t ESPmanager::begin()
         request->send(200);
     }, std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6)  );
 
-    _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" );
-    _HTTP.serveStatic("/espman/ajax-loader.gif", _fs, "/espman/ajax-loader.gif" );
-    _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" );
+    _HTTP.serveStatic("/espman/index.htm", _fs, "/espman/index.htm" ).setLastModified(__DATE__ " " __TIME__ " GMT");
+    _HTTP.serveStatic("/espman/ajax-loader.gif", _fs, "/espman/ajax-loader.gif" ).setLastModified(__DATE__ " " __TIME__ " GMT");
+    _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" ).setLastModified(__DATE__ " " __TIME__ " GMT");
 
     _events.onConnect([](AsyncEventSourceClient * client) {
         client->send(NULL, NULL, 0, 1000);
@@ -1161,7 +1162,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
 
  //           MDNS.stop();
 
-            int ret = _DownloadToSPIFFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
+            int ret = _DownloadToFS(remote_path.c_str(), filename.c_str(), md5, overwriteFiles );
+
             if (ret == 0 || ret == FILE_NOT_CHANGED) {
                 event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : %s"), file_count, files_expected, filename.c_str(), (!ret) ? "Downloaded" : "Not changed" ) );
             } else {
@@ -1202,7 +1204,10 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
         String commit = root[F("commit")];
 
         if (remote_path.endsWith("bin") && filename == "sketch" ) {
-            if ( String( item["md5"].as<const char *>() ) != getSketchMD5() ) {
+            if ( item["md5"].as<String>() != getSketchMD5() ) {
+                ESPMan_Debugf("Current Sketch MD5 = %s\n", getSketchMD5().c_str()  );
+                ESPMan_Debugf("New     Sketch MD5 = %s\n",  item["md5"].as<String>().c_str()  );
+
                 ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
                 event_send( FPSTR(fstring_UPGRADE), F("firmware"));
                 delay(10);
@@ -1295,7 +1300,7 @@ bool ESPmanager::event_send(myString topic, myString msg )
 }
 
 /**
- * Saves settings to SPIFFS.
+ * Saves settings to FS.
  * @return ESPMAN::ESPMAN_ERR_t
  */
 ESPMAN_ERR_t ESPmanager::save()
@@ -1315,7 +1320,7 @@ ESPMAN_ERR_t ESPmanager::save()
 
 #ifdef ESPMANAGER_UPDATER
 
-ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filename_c, const char * md5_true, bool overwrite)
+ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char * url, const char * filename_c, const char * md5_true, bool overwrite)
 {
     using namespace ESPMAN;
     String filename = filename_c;
@@ -1351,6 +1356,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
 
     ESPMan_Debugf("totalBytes = %u, usedBytes = %u, freebytes = %u\n", _FSinfo.totalBytes, _FSinfo.usedBytes, freeBytes);
 
+    //  filename is 
     if (filename.length() > _FSinfo.maxPathLength) {
         return FS_FILENAME_TOO_LONG;
     }
@@ -1441,20 +1447,29 @@ ESPMAN_ERR_t ESPmanager::_DownloadToSPIFFS(const char * url, const char * filena
 
         if (filename.endsWith(".gz") ) {
             String withOutgz = filename.substring(0, filename.length() - 3);
-            ESPMan_Debugf("NEW File ends in .gz: without = %s...", withOutgz.c_str());
+            ESPMan_Debugf("NEW File ends in .gz: without = %s...\n", withOutgz.c_str());
 
             if (_fs.remove(withOutgz)) {
-                ESPMan_Debugf("%s DELETED...", withOutgz.c_str());
+                ESPMan_Debugf("%s DELETED...\n", withOutgz.c_str());
             }
         }
 
         if (_fs.exists(filename + ".gz")) {
             if (_fs.remove(filename + ".gz")) {
-                ESPMan_Debugf("%s.gz DELETED...", filename.c_str());
+                ESPMan_Debugf("%s.gz DELETED...\n", filename.c_str());
             }
         }
 
-        _fs.rename("/tempfile", filename);
+        if (!_fs.rename("/tempfile", filename)) {
+            ERROR = FILE_RENAME_FAILED; 
+             _fs.remove("/tempfile");
+        } else {
+            if (!_fs.exists(filename)) {
+                ERROR = FILE_RENAME_FAILED; 
+            }
+        }
+
+
 
     } else {
         _fs.remove("/tempfile");
@@ -1961,7 +1976,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             root[F("vcc_var")] = ESP.getVcc();
             root[F("rssi_var")] = WiFi.RSSI();
 
-            JsonObject SPIFFSobject = root.createNestedObject("SPIFFS");
+            JsonObject FSobject = root.createNestedObject("SPIFFS"); //  currently everywhere will be still using SPIIFFS
             /*
 
                struct FSInfo {
@@ -1973,14 +1988,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 size_t maxPathLength;
                };
              */
-            SPIFFSobject[F("totalBytes")] = formatBytes(info.totalBytes);
-            SPIFFSobject[F("usedBytes")] = formatBytes(info.usedBytes);
-            SPIFFSobject[F("blockSize")] = formatBytes(info.blockSize);
-            SPIFFSobject[F("pageSize")] = formatBytes(info.pageSize);
-            //SPIFFSobject[F("allocatedPages")] = info.allocatedPages;
-            //SPIFFSobject[F("deletedPages")] = info.deletedPages;
-            SPIFFSobject[F("maxOpenFiles")] = info.maxOpenFiles;
-            SPIFFSobject[F("maxPathLength")] = info.maxPathLength;
+            FSobject[F("totalBytes")] = formatBytes(info.totalBytes);
+            FSobject[F("usedBytes")] = formatBytes(info.usedBytes);
+            FSobject[F("blockSize")] = formatBytes(info.blockSize);
+            FSobject[F("pageSize")] = formatBytes(info.pageSize);
+            //FSobject[F("allocatedPages")] = info.allocatedPages;
+            //FSobject[F("deletedPages")] = info.deletedPages;
+            FSobject[F("maxOpenFiles")] = info.maxOpenFiles;
+            FSobject[F("maxPathLength")] = info.maxPathLength;
 
             // typedef struct UMM_HEAP_INFO_t {
             //   unsigned short int totalEntries;
@@ -2039,7 +2054,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //event_printf_P(NULL, PSTR("Formatting SPIFFS"));
             //event_printf(NULL, "Formatting SPIFFS");
 
-            event_send(nullptr, F("Formatting SPIFFS"));
+            event_send(nullptr, F("Formatting FS"));
             _sendTextResponse(request, 200, FPSTR(fstring_OK));
 
             _tasker.add( [this](Task & t) {

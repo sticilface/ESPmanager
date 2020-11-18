@@ -114,7 +114,7 @@ static File _DebugFile;
 class ESPmanager
 {
 public:
-  ESPmanager(AsyncWebServer & HTTP, FS & fs = SPIFFS);
+  ESPmanager(AsyncWebServer & HTTP, FS & fs);
   ~ESPmanager();
   ESPMAN_ERR_t begin();
   ESPMAN_ERR_t begin(myString ssid, myString pass); 
@@ -130,7 +130,7 @@ public:
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
   AsyncEventSource & getEvent();
-  void FSDirIterator(FS & fs, const char * dirName, std::function<void(File & f)> Cb );
+  static void FSDirIterator(FS & fs, const char * dirName, std::function<void(File & f)> Cb );
 
 
   bool event_send(myString topic, myString msg ); 
@@ -165,7 +165,7 @@ private:
   
 #ifdef ESPMANAGER_UPDATER
   ESPMAN_ERR_t _upgrade(const char * path);
-  ESPMAN_ERR_t   _DownloadToSPIFFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
+  ESPMAN_ERR_t   _DownloadToFS(const char * url, const char * path, const char * md5 = nullptr, bool overwrite = false);
   ESPMAN_ERR_t   _parseUpdateJson(DynamicJsonDocument & json, const char * path);
   
   void  _HandleSketchUpdate(AsyncWebServerRequest * request);

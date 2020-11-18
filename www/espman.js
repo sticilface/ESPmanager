@@ -1127,15 +1127,15 @@ function GetAboutVars() {
             $("#aboutvars").append("<br>SDK Version = " + results.sdk_var);
             $("#aboutvars").append("<br>Boot Version = " + results.bootverion_var);
             $("#aboutvars").append("<br>Boot Mode = " + results.bootmode_var);
-            $("#aboutvars").append("<br> CPU Speed = " + results.cpu_var + "Mhz");
+            $("#aboutvars").append("<br>CPU Speed = " + results.cpu_var + "Mhz");
             $("#aboutvars").append("<br>");
 
-            $("#aboutvars").append("<br>SPIFFS Size = " + results.SPIFFS.totalBytes);
-            $("#aboutvars").append("<br>SPIFFS Used = " + results.SPIFFS.usedBytes);
-            $("#aboutvars").append("<br>SPIFFS Blocksize = " + results.SPIFFS.blockSize);
-            $("#aboutvars").append("<br>SPIFFS Pagesize = " + results.SPIFFS.pageSize);
-            $("#aboutvars").append("<br>SPIFFS Max Open Files = " + results.SPIFFS.maxOpenFiles);
-            $("#aboutvars").append("<br>SPIFFS Max Path Length = " + results.SPIFFS.maxPathLength);
+            $("#aboutvars").append("<br>FS Size = " + results.SPIFFS.totalBytes);
+            $("#aboutvars").append("<br>FS Used = " + results.SPIFFS.usedBytes);
+            $("#aboutvars").append("<br>FS Blocksize = " + results.SPIFFS.blockSize);
+            $("#aboutvars").append("<br>FS Pagesize = " + results.SPIFFS.pageSize);
+            $("#aboutvars").append("<br>FS Max Open Files = " + results.SPIFFS.maxOpenFiles);
+            $("#aboutvars").append("<br>FS Max Path Length = " + results.SPIFFS.maxPathLength);
 
             $("#aboutvars").append("<br>");
 

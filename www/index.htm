@@ -156,7 +156,7 @@ $(function() {
             <a id="rebootbutton" data-role="button" class="ui-btn">Reboot</a>
             <a href="#popupDialogClearWiFi" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Clear WiFi</a>
             <a href="#popupDialogDeleteSettings" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Delete Settings</a>
-            <a href="#popupDialogSPIFFS" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Format SPIFFS</a>
+            <a href="#popupDialogSPIFFS" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Format FS</a>
             <a href="#my-header" data-rel="close" class="ui-btn upgradebutton">Upgrade</a>
             <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
             <!--             <label for="removesaftey-1">Disable Checks:</label>
@@ -168,11 +168,11 @@ $(function() {
     </div>
     <div id="popupDialogSPIFFS" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
         <div data-role="header" data-theme="a">
-            <h2>FORMAT SPIFFS?</h2>
+            <h2>FORMAT FS?</h2>
         </div>
         <div role="main" class="ui-content">
-            <h3 class="ui-title">Are you sure you want to Format SPIFFS?</h3>
-            <p>This action cannot be undone, and will require all javascript files to be uploaded to SPIFFs.</p>
+            <h3 class="ui-title">Are you sure you want to Format FS?</h3>
+            <p>This action cannot be undone, and will require all javascript files to be uploaded to FS.</p>
             <p>It will BREAK settings manager</p>
             <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
             <a id="formatspiffsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
@@ -596,7 +596,7 @@ $(function() {
             <h1>Rules for HTTP JSON manifest file</h1>
         </div>
         <div data-role="content">
-            <p>I've had a look and I agree that the link doesn't work. I'll make an issue and fix that. The structure is a JSON object.&nbsp;&nbsp;<code>saveto</code>&nbsp;is the SPIFFS filename, must have the preceding&nbsp;<code>/</code>,&nbsp;<code>location</code>&nbsp;is the relative path to the manifest file that the file can be found,&nbsp;<code>md5</code>&nbsp;is the md5sum of the new file. This is used to compare against the current file to avoid downloading it if it is unchanged. The new binary must be called&nbsp;<code>firmware.bin</code>&nbsp;and save to = "sketch". Finally the keys&nbsp;<code>filecount</code>&nbsp;tell the updater how many to expect, and&nbsp;<code>overwrite</code>&nbsp;means the md5 is ignored and all files are written. there is an&nbsp;<code>isurl</code>&nbsp;option for each file as well, that can be used to specify that the location is a whole url, and not a relative one. Allows you to download external resources, otherwise the link is treated as relative.</p>
+            <p>I've had a look and I agree that the link doesn't work. I'll make an issue and fix that. The structure is a JSON object.&nbsp;&nbsp;<code>saveto</code>&nbsp;is the FS filename, must have the preceding&nbsp;<code>/</code>,&nbsp;<code>location</code>&nbsp;is the relative path to the manifest file that the file can be found,&nbsp;<code>md5</code>&nbsp;is the md5sum of the new file. This is used to compare against the current file to avoid downloading it if it is unchanged. The new binary must be called&nbsp;<code>firmware.bin</code>&nbsp;and save to = "sketch". Finally the keys&nbsp;<code>filecount</code>&nbsp;tell the updater how many to expect, and&nbsp;<code>overwrite</code>&nbsp;means the md5 is ignored and all files are written. there is an&nbsp;<code>isurl</code>&nbsp;option for each file as well, that can be used to specify that the location is a whole url, and not a relative one. Allows you to download external resources, otherwise the link is treated as relative.</p>
             <div class="highlight highlight-source-json">
                 <pre>{  
   "files":[  

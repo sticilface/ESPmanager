@@ -68,7 +68,8 @@ enum ESPMAN_ERR_t : int8_t {
     PASSWORD_MISMATCH        = -88,
     NO_CHANGES               = -89,
     PASSWOROD_INVALID        = -90,
-    WRONG_SETTINGS_FILE_VERSION = -91
+    WRONG_SETTINGS_FILE_VERSION = -91,
+    FILE_RENAME_FAILED          = -92
 };
 
 /**
