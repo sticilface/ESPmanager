@@ -348,7 +348,7 @@ ESPMAN_ERR_t ESPmanager::begin()
             }
 
             // NOTE: if updating FS this would be the place to unmount FS using FS.end()
-            Serial.println("**** Start updating " + type);
+            //Serial.println("**** Start updating " + type);
 
             event_send( F("update") , F("begin"));
 #ifdef Debug_ESPManager
