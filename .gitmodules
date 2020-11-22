@@ -4,3 +4,6 @@
 [submodule "src/Tasker"]
 	path = src/Tasker
 	url = https://github.com/sticilface/Tasker/tree/develop
+[submodule "src/ESP8266RTCMemory"]
+	path = src/ESP8266RTCMemory
+	url = /Users/amelvin/git/ESP8266RTCMemory
