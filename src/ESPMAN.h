@@ -164,79 +164,11 @@ enum no_sta_mode_t : int8_t {
  *  @}
  */
 
-// static const char * string_
-// static const char * string_
-// static const char * string_
-// static const char * string_
-
 static const int MAX_BUFFER_SIZE = 2048;  /**< @brief max permitted size for a buffer, generally used to receive network data */
 static const int MAX_SSID_LENGTH = 32;  /**< @brief max permitted length of SSID */
 static const int MAX_PASS_LENGTH = 64;  /**< @brief max permitted length of PASS */
 static const int AP_START_DELAY = 2 * 60 * 1000; /**< @brief Fixed time constant before checking that there is no wifi before starting AP */
 static const int SETTINGS_MEMORY_TIMEOUT = 1 * 60 * 1000; /**< @brief Time settings are kept in memory before being deleted.  Default is 1min */
-
-
-class myString
-{
-public:
-    myString() : buffer(nullptr) { }
-    myString(const char *cstr);
-    myString(const myString &str);
-    myString(myString &&str);
-    myString(const __FlashStringHelper *str); 
-    myString(String str);
-    myString(nullptr_t ptr);
-    virtual ~myString();
-
-    myString & operator =(const char *cstr);
-    myString & operator =(const __FlashStringHelper *str);
-    myString & operator =(const myString &str);
-    myString & operator =(myString &&str);
-    
-
-    bool operator ==(const myString &rhs);
-    bool operator !=(const myString &rhs) { return !(*this == rhs); }
-
-    const char * operator()() const;
-    const char * operator()(const char *) const;
-    const char * c_str() const;
-    operator bool() const;
-    operator String() const; 
-
-    static const char * _nullString;// = "NULL";
-
-protected:
-    char *buffer {nullptr};
-private:
-
-};
-
-/**
- *  @brief Derived from myString to allow printf type functionality. 
- *  
- *  @code
- *  myStringf abc("use of %s\n", "myString"); 
- *  @endcode
- */
-class myStringf : public myString {
-public:
-    myStringf(const char *, ...);
-    myStringf(const __FlashStringHelper *, ...);
-private:
-
-}; 
-
-/**
- * @brief Derived from myString to allow use of printf but with buffers stored in progmem.  
- *  
- *  Probably better to just use F() macro. 
- *  
- */
-class myStringf_P : public myString {
-public:
-    myStringf_P(PGM_P, ... );
-private:
-};
 
 
 /**
@@ -310,14 +242,6 @@ struct settings_t {
     } GEN;
 
 };
-/**
- * @private
- * Not in use. 
- */
-struct password_t {
-    myString pass;
-    myString salt;
-    myString hash;
-};
+
 
 };

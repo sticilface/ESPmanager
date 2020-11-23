@@ -32,7 +32,7 @@
 
    NEW TODO...
 
-   3)  change download serial output to work without Debug_ESPManager, if debug output is enambled.
+   3)  change download serial output to work without DEBUGESPMANAGER, if debug output is enambled.
    4)  Some form of versioning output / control....
 
 
@@ -71,7 +71,7 @@
 #define ESPMANAGER_UPDATER      /**< @brief Enable the remote updater, update via http see ::upgrade, uses 1K heap */
 #define ESPMANAGER_DEVICEFINDER /**< @brief Enable deviceFinder.  ESPmanager will now locate all other ESPmanager instances, see ::ESPdeviceFinder, uses 200 bytes heap */
 //#define ESPMANAGER_LOG   /*  experimental logging not enabled by default*/
-//#define Debug_ESPManager Serial /* 1760 bytes  */
+//#define DEBUGESPMANAGER Serial /* 1760 bytes  */
 
 #ifdef ESPMANAGER_SAVESTACK
 #include "SaveStack.h"
@@ -95,23 +95,23 @@
 //   }
 // #endif
 
-#if defined(Debug_ESPManager)
+#if defined(DEBUGESPMANAGER)
 static File _DebugFile;
-#define ESPMan_Debugf(_1, ...)                                                                                                  \
+#define DEBUGESPMANAGERF(_1, ...)                                                                                                  \
   {                                                                                                                             \
-    Debug_ESPManager.printf_P(PSTR("[%-10u][%5.5s][%15.15s:L%-4u] " _1), millis(), "ESPMA", __func__, __LINE__, ##__VA_ARGS__); \
+    DEBUGESPMANAGER.printf_P(PSTR("[%-10u][%5.5s][%15.15s:L%-4u] " _1), millis(), "ESPMA", __func__, __LINE__, ##__VA_ARGS__); \
   } //  this saves around 5K RAM...  39,604 K ram left
-#define ESPMan_Debugf_raw(_1, ...)                      \
+#define DEBUGESPMANAGERFRAW(_1, ...)                      \
   {                                                     \
-    Debug_ESPManager.printf_P(PSTR(_1), ##__VA_ARGS__); \
+    DEBUGESPMANAGER.printf_P(PSTR(_1), ##__VA_ARGS__); \
   }
 
 #pragma message("DEBUG enabled for ESPManager.")
 #else
-#define ESPMan_Debugf(...) \
+#define DEBUGESPMANAGERF(...) \
   {                        \
   } // leaves 40,740 K, so flash debug uses 1.1K of ram...
-#define ESPMan_Debugf_raw(_1, ...) \
+#define DEBUGESPMANAGERFRAW(_1, ...) \
   {                                \
   }
 #endif
@@ -227,7 +227,7 @@ private:
 
   ESP8266RTCMemory<bool> _rtc;
 
-#ifdef Debug_ESPManager
+#ifdef DEBUGESPMANAGER
 
   void _dumpSettings();
   void _dumpSTA(settings_t::STA_t &set);
