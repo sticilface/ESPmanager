@@ -4,3 +4,4 @@ terminal.glue
 scripts/data
 
 docs/html
+src/staticHandler

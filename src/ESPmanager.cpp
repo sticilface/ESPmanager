@@ -23,6 +23,9 @@
 #include "FlashWriter.h"
 #include "StreamString.h"
 
+#include "staticHandler/src/staticHandler.h"
+#include "staticHandler/src/jqueryStatic.h"
+
 extern "C" {
 #include "user_interface.h"
 }
@@ -33,7 +36,7 @@ static const char _compile_date_time[] = __DATE__ " " __TIME__;
 static const uint16_t _ESPdeviceFinderPort = 8888;
 static const uint32_t _ESPdeviceTimeout = 1200000;// 300000;  //  when is the devicefinder deleted.
 
-uint32_t jsonSize = 4096; 
+
 
 //#define LAST_MODIFIED_DATE "Mon, 20 Jun 2016 14:00:00 GMT"
 
@@ -72,6 +75,7 @@ extern File _DebugFile;
 #define ESPMANAGER_GIT_TAG "NOT DEFINED"
 #endif
 
+uint32_t jsonSize = 4096; 
 //  move this out of global...  
 uint32_t allocateJSON()
 {
@@ -97,6 +101,13 @@ ESPmanager::ESPmanager(
     , _fs(fs)
     , _events("/espman/events")
 {
+    //  These need to be added here to force linking...
+#ifdef USESTATICPROGMEMJQUERY
+    _staticHandlerInstance.add(JQUERYdata::JQdata); 
+    _staticHandlerInstance.add(JQUERYdata::JQMdata); 
+    _staticHandlerInstance.add(JQUERYdata::JQMCSSdata); 
+#endif
+    _staticHandlerInstance.enableRedirect() = false; 
 }
 
 
@@ -192,7 +203,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
 #endif
 
-    myString old_settings_name = F("/espman/settings.txt");
+    String old_settings_name = F("/espman/settings.txt");
 
     if (!_fs.exists(SETTINGS_FILE) && _fs.exists(old_settings_name.c_str())) {
         if (_fs.rename(old_settings_name.c_str(), SETTINGS_FILE)) {
@@ -330,8 +341,8 @@ ESPMAN_ERR_t ESPmanager::begin()
         // }
         //
         if (_settings->GEN.OTApassword) {
-            ESPMan_Debugf("OTApassword: %s\n", _settings->GEN.OTApassword() );
-            ArduinoOTA.setPassword( (const char *)_settings->GEN.OTApassword() );
+            ESPMan_Debugf("OTApassword: %s\n", _settings->GEN.OTApassword.c_str() );
+            ArduinoOTA.setPassword( (const char *)_settings->GEN.OTApassword.c_str()  );
 
 
         }
@@ -423,6 +434,8 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     _HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
     _HTTP.rewrite("/espman/", "/espman/index.htm");
+    _HTTP.rewrite("/espman", "/espman/index.htm");
+
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1 ));
 
     //  kept to allow cached sites to refresh...
@@ -438,11 +451,26 @@ ESPMAN_ERR_t ESPmanager::begin()
     _HTTP.serveStatic("/espman/ajax-loader.gif", _fs, "/espman/ajax-loader.gif" ).setLastModified(__DATE__ " " __TIME__ " GMT");
     _HTTP.serveStatic("/espman/setup.htm", _fs, "/espman/setup.htm" ).setLastModified(__DATE__ " " __TIME__ " GMT");
 
+    _HTTP.addHandler( &_staticHandlerInstance ); 
+
+
+
+
+
+    // ESPMan_Debugf("[staticHan] len = %u\n", staticHandleFileList.size()); 
+    //     uint i = 0; 
+    //     for (auto item : staticHandleFileList )
+    //     {
+    //         Serial.println( FPSTR(item->local));
+    //     }
+
+
     _events.onConnect([](AsyncEventSourceClient * client) {
         client->send(NULL, NULL, 0, 1000);
     });
 
     _HTTP.addHandler(&_events);
+
 
 #ifdef ESPMANAGER_UPDATER
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1 ));
@@ -457,7 +485,7 @@ ESPMAN_ERR_t ESPmanager::begin()
             _getAllSettings();
 
             if (_settings) {
-                _upgrade(_settings->GEN.updateURL());
+                _upgrade( _settings->GEN.updateURL.c_str() );
             }
 
         }).setRepeat(true).setTimeout(_settings->GEN.updateFreq * 60000);
@@ -528,25 +556,25 @@ ESPMAN_ERR_t ESPmanager::begin()
 #endif
 
 
-#if defined(ESPMANAGER_SYSLOG)
+// #if defined(ESPMANAGER_SYSLOG)
 
-    if (_settings->GEN.usesyslog) {
+//     if (_settings->GEN.usesyslog) {
 
-        ESPMan_Debugf("Created syslog client\n");
+//         ESPMan_Debugf("Created syslog client\n");
 
-        _syslog = new SysLog( _settings->GEN.syslogIP, _settings->GEN.syslogPort, (_settings->GEN.syslogProto) ? SYSLOG_PROTO_BSD : SYSLOG_PROTO_IETF );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
+//         _syslog = new SysLog( _settings->GEN.syslogIP, _settings->GEN.syslogPort, (_settings->GEN.syslogProto) ? SYSLOG_PROTO_BSD : SYSLOG_PROTO_IETF );  //SYSLOG_PROTO_BSD or SYSLOG_PROTO_IETF
 
 
-        if (_syslog) {
-            _syslog->setDeviceName( _settings->GEN.host ) ;
-            _syslog->log(LOG_INFO, F("Device Started"));
+//         if (_syslog) {
+//             _syslog->setDeviceName( _settings->GEN.host ) ;
+//             _syslog->log(LOG_INFO, F("Device Started"));
 
-            ESPMan_Debugf("Address of syslog %p, ip = %s, port = %u, proto=%u, hostname =%s\n", _syslog, _settings->GEN.syslogIP.toString().c_str(), _settings->GEN.syslogPort , _settings->GEN.syslogProto, "ESPManager");
+//             ESPMan_Debugf("Address of syslog %p, ip = %s, port = %u, proto=%u, hostname =%s\n", _syslog, _settings->GEN.syslogIP.toString().c_str(), _settings->GEN.syslogPort , _settings->GEN.syslogProto, "ESPManager");
 
-        }
-    }
+//         }
+//     }
 
-#endif
+// #endif
 
 
 //  autodiscover code
@@ -557,7 +585,7 @@ ESPMAN_ERR_t ESPmanager::begin()
 
     if (_devicefinder) {
 
-        myString host = getHostname();
+        String host = getHostname();
         _devicefinder->cacheResults(false);
         _devicefinder->setAppName( "ESPmanager" );
         _devicefinder->begin(host.c_str(), _ESPdeviceFinderPort);
@@ -588,9 +616,9 @@ ESPMAN_ERR_t ESPmanager::begin()
  * @param [pass] desired default password to connect to ssid.  Can be `const char *`, `String`, `myString` or `F()`.
  * @return ESPMAN::ESPMAN_ERR_t
  */
-ESPMAN_ERR_t ESPmanager::begin(myString ssid, myString pass)
+ESPMAN_ERR_t ESPmanager::begin(const String & ssid, const String & pass)
 {
-    ESPMan_Debugf("ssid = %s, pass = %s\n", ssid(), pass());
+    ESPMan_Debugf("ssid = %s, pass = %s\n", ssid.c_str() , pass.c_str() );
 
     if (!_fs.begin()) {
         return ERROR_FS_MOUNT;
@@ -894,8 +922,8 @@ template <class T> void ESPmanager::sendJsontoHTTP( const T & root, AsyncWebServ
         AsyncResponseStream *response = request->beginResponseStream("text/json");
 
         if (response) {
-            response->addHeader( myString( FPSTR( ESPMAN::fstring_CORS) ).c_str() , "*");
-            response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
+            response->addHeader(  FPSTR( ESPMAN::fstring_CORS)  , "*");
+            response->addHeader(  FPSTR(ESPMAN::fstring_CACHE_CONTROL) , "no-store");
             //root.printTo(*response);
             serializeJson(root, *response); 
             request->send(response);
@@ -992,7 +1020,7 @@ ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 
     _getAllSettings();
 
-    myString newpath;
+    String newpath;
 
     if (!_settings) {
         return CONFIG_FILE_ERROR;
@@ -1064,8 +1092,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
     ESPMan_Debugf("rooturi=%s\n", rooturi.c_str());
 
     //  save new update path for future update checks...  (if done via url only for example)
-    if (_settings->GEN.updateURL()) {
-        if (strcmp(_settings->GEN.updateURL(), path) != 0) {
+    if (_settings->GEN.updateURL ) {
+        if (_settings->GEN.updateURL != path ) {
             _settings->GEN.updateURL = path;
             save_flag = true;
         }
@@ -1211,7 +1239,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char * path)
                 ESPMan_Debugf("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str()  );
                 event_send( FPSTR(fstring_UPGRADE), F("firmware"));
                 delay(10);
-                _events.send(  myString(F("Upgrading sketch")).c_str() , nullptr, 0, 5000);
+                _events.send( "Upgrading sketch" , nullptr, 0, 5000);
                 delay(10);
                 ESPhttpUpdate.rebootOnUpdate(false);
 
@@ -1287,16 +1315,10 @@ AsyncEventSource & ESPmanager::getEvent()
     return _events;
 }
 
-/**
- * Send event function. Topic and message are myString, allowing use of F(), as well as, ESPMAN::myStringf and ESPMAN::myStringf_P.
- * @param [topic] topic
- * @param [msg] message
- * @return
- */
-bool ESPmanager::event_send(myString topic, myString msg )
+bool ESPmanager::event_send(const String & topic, const String & msg )
 {
     _events.send(msg.c_str(), topic.c_str() , millis(), 5000);
-    ESPMan_Debugf("EVENT: top = %s, msg = %s\n", (topic.c_str()) ? topic.c_str() : "" , (msg.c_str()) ? msg.c_str() : "" );
+    ESPMan_Debugf("EVENT: top = %s, msg = %s\n", topic.c_str() , msg.c_str() );
 }
 
 /**
@@ -1406,7 +1428,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char * url, const char * filename_c
 
             http.end();
 
-            if (f.size() == len && byteswritten == len) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
+            if (f.size() == (uint)len && byteswritten == len) { // byteswritten > 0 means no error writing.   ,len = -1 means server did not provide length...
 
                 if (md5_true) {
                     String crc = file_md5(f);
@@ -1553,7 +1575,9 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
         if (!filename.startsWith("/")) { filename = "/" + filename; }
         request->_tempFile = _fs.open(filename, "w");
         ESPMan_Debugf("UploadStart: %s\n", filename.c_str());
-        event_send( nullptr , myStringf_P( PSTR("UploadStart: %s"), filename.c_str()  ));
+        String reply(F("UploadStart: ")); 
+        reply.concat(filename); 
+        event_send("" , reply  );
     }
 
     if (_uploadAuthenticated && request->_tempFile && len) {
@@ -1563,7 +1587,7 @@ void ESPmanager::_handleFileUpload(AsyncWebServerRequest *request, String filena
     if (_uploadAuthenticated && final) {
         if (request->_tempFile) { request->_tempFile.close(); }
         ESPMan_Debugf("UploadEnd: %s, %u B\n", filename.c_str(), index + len);
-        event_send( nullptr, myStringf_P( PSTR("UploadFinished:%s (%u)"), filename.c_str(), request->_tempFile.size()  ));
+        event_send("", myStringf_P( PSTR("UploadFinished:%s (%u)"), filename.c_str(), request->_tempFile.size()  ));
     }
 }
 
@@ -1696,12 +1720,12 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 if (ERROR) {
                     //event_printf(NULL, string_ERROR_toString, getError(ERROR).c_str());
-                    event_send( nullptr, myStringf_P(fstring_ERROR_toString, getError(ERROR).c_str() ));
+                    event_send("", myStringf_P(fstring_ERROR_toString, getError(ERROR).c_str() ));
                     //event_printf(NULL, "There is an error %u\n", ERROR);
                 } else {
 
                     //event_printf(NULL, "Settings Saved", ERROR);
-                    event_send(nullptr, F("Settings Saved"));
+                    event_send("", F("Settings Saved"));
 
                     set.changed = false;
                     if (_fs.remove("/.wizard")) {
@@ -1728,7 +1752,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             _tasker.add( [this](Task & t) {
                 //event_printf(NULL, "Rebooting");
                 //event_printf_P(NULL, PSTR("Rebooting"));
-                event_send(nullptr, F("Rebooting"));
+                event_send("", F("Rebooting"));
 
                 delay(100);
                 _events.close();
@@ -1766,7 +1790,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 if (wifiScanState == -2) {
                     WiFi.scanNetworks(true);
                     //_sendTextResponse(request, 200, "started");
-                    event_send(nullptr, F("WiFi Scan Started") );
+                    event_send("", F("WiFi Scan Started") );
                     root[F("scan")] = "started";
                 } else if (wifiScanState == -1) {
                     root[F("scan")] = "running";
@@ -1798,8 +1822,8 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     // event_printf_P(NULL, PSTR("%u Networks Found"), _wifinetworksfound);
                     //event_printf(NULL, "%u Networks Found", _wifinetworksfound);
-
-                    event_send(nullptr, myStringf_P( PSTR("%u Networks Found"), _wifinetworksfound  ));
+                    String reply = String(_wifinetworksfound) + "Networks Found"; 
+                    event_send("",  reply );
 
                     std::list<std::pair <int, int>>::iterator it;
 
@@ -1874,7 +1898,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             generalobject[FPSTR(fstring_mDNS)] = (set.GEN.mDNSenabled) ? true : false;
             //generalobject[string_usePerminantSettings] = (set.GEN.usePerminantSettings) ? true : false;
             generalobject[FPSTR(fstring_OTAupload)] = (set.GEN.OTAupload) ? true : false;
-            generalobject[FPSTR(fstring_updateURL)] = (set.GEN.updateURL) ? set.GEN.updateURL() : "";
+            generalobject[FPSTR(fstring_updateURL)] = set.GEN.updateURL;
             generalobject[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
 
             JsonObject GenericObject = root.createNestedObject(F("generic"));
@@ -1901,14 +1925,14 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             STAobject[FPSTR(fstring_DNS2)] = WiFi.dnsIP(1).toString();
             STAobject[FPSTR(fstring_MAC)] = WiFi.macAddress();
             JsonObject APobject = root.createNestedObject(F("AP"));
-            APobject[FPSTR(fstring_ssid)] = set.GEN.host();
+            APobject[FPSTR(fstring_ssid)] = set.GEN.host;
             //APobject[F("state")] = (mode == WIFI_AP || mode == WIFI_AP_STA) ? true : false;
             APobject[F("state")] = set.AP.enabled;
             //APobject[F("APenabled")] = (int)set.AP.mode;
             //APobject[string_mode] = (int)_ap_mode;
             APobject[FPSTR(fstring_IP)] = (WiFi.softAPIP() == IPAddress(0, 0, 0, 0)) ? F("192.168.4.1") : WiFi.softAPIP().toString();
             APobject[FPSTR(fstring_visible)] = (set.AP.visible) ? true : false;
-            APobject[FPSTR(fstring_pass)] = (set.AP.pass()) ? set.AP.pass() : "";
+            APobject[FPSTR(fstring_pass)] = set.AP.pass; 
 
             softap_config config;
 
@@ -2041,7 +2065,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             // char shortcommit[8] = {0};
             // strncpy(shortcommit, commitTag, 7);
             // root[F( "COMMIT")] = shortcommit;
-            root[FPSTR(fstring_updateURL)] = set.GEN.updateURL();
+            root[FPSTR(fstring_updateURL)] = set.GEN.updateURL;
             root[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
             //sendJsontoHTTP(root, request);
             //return;
@@ -2054,7 +2078,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             //event_printf_P(NULL, PSTR("Formatting SPIFFS"));
             //event_printf(NULL, "Formatting SPIFFS");
 
-            event_send(nullptr, F("Formatting FS"));
+            event_send("", F("Formatting FS"));
             _sendTextResponse(request, 200, FPSTR(fstring_OK));
 
             _tasker.add( [this](Task & t) {
@@ -2067,7 +2091,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 ESPMan_Debugf(" done\n");
                 //event_printf_P(NULL, PSTR("Formatting done"));
 
-                event_send(nullptr, F("Formatting done"));
+                event_send("", F("Formatting done"));
                 //event_printf(NULL, "Formatting done");
 
 
@@ -2088,7 +2112,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             if (_fs.remove(SETTINGS_FILE)) {
                 ESPMan_Debugf(" done");
                 //event_printf_P(NULL, PSTR("Settings File Removed"));
-                event_send(nullptr, F("Settings File Removed"));
+                event_send("", F("Settings File Removed"));
                 //event_printf(NULL, "Settings File Removed");
 
             } else {
@@ -2103,7 +2127,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 //event_printf(NULL, "Reset WiFi and Reboot");
                 //event_printf_P(NULL, PSTR("Reset WiFi and Reboot"));
-                event_send(nullptr, F("Settings File Removed"));
+                event_send("", F("Settings File Removed"));
 
                 delay(100);
                 _events.close();
@@ -2270,7 +2294,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     newsettings->pass = psk.c_str();
                     newsettings->enabled = true;
 
-                    ESPMan_Debugf("applied new ssid & psk to tmp obj ssid =%s, pass=%s\n", newsettings->ssid(), newsettings->pass() );
+                    ESPMan_Debugf("applied new ssid & psk to tmp obj ssid =%s, pass=%s\n", newsettings->ssid.c_str(), newsettings->pass.c_str() );
 
                     if (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA ) {
 
@@ -2316,7 +2340,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             //event_printf(NULL, "Changing AP Channel...");
                             //event_printf_P(NULL, PSTR("Changing AP Channel..."));
-                            event_send(nullptr, F("Changing AP Channel..."));
+                            event_send("", F("Changing AP Channel..."));
 
                             // delay(10);
                             // WiFi.enableAP(false);
@@ -2396,7 +2420,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                         starttime = millis() ;// reset the start timer....
                         //event_printf_P(NULL, PSTR("Updating WiFi Settings"));
-                        event_send(nullptr, F("Updating WiFi Settings"));
+                        event_send("", F("Updating WiFi Settings"));
                         //event_printf(NULL, "Updating WiFi Settings");
 
                         delay(10);
@@ -2430,13 +2454,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             //WiFi.enableSTA(false); //  turns it off....
                             if (_settings) {
                                 if (!_initialiseSTA(_settings->STA)) { //  go back to old settings...
-                                    event_send(nullptr, F("Old Settings Restored"));
+                                    event_send("", F("Old Settings Restored"));
                                 }
                             }
                         }
 
                         //event_printf_P(NULL, PSTR("WiFi Settings Updated"));
-                        event_send(nullptr, F("WiFi Settings Updated"));
+                        event_send("", F("WiFi Settings Updated"));
                         //event_printf(NULL, "WiFi Settings Updated");
 
                         if (newsettings) {
@@ -2656,7 +2680,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     //event_printf(NULL, "Updating WiFi Settings");
                     //event_printf_P(NULL, PSTR("Updating WiFi Settings"));
-                    event_send(nullptr, F("Updating WiFi Settings"));
+                    event_send("", F("Updating WiFi Settings"));
 
                     delay(10);
 
@@ -2686,18 +2710,18 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             // _dumpSettings();
                             //event_printf(NULL, "Success");
                             //event_printf_P(NULL, PSTR("Success"));
-                            event_send(nullptr, F("Success"));
+                            event_send("", F("Success"));
 
                             //save_flag = true;
                         } else {
                             //event_printf(NULL, string_ERROR_toString, getError(SETTINGS_NOT_IN_MEMORY).c_str());
-                            event_send(nullptr, myStringf_P( fstring_ERROR_toString, getError(SETTINGS_NOT_IN_MEMORY).c_str()));
+                            event_send("", getError(SETTINGS_NOT_IN_MEMORY));
                         }
 
                     } else {
                         ESPMan_Debugf("ERORR: Settings NOT applied successfull %i\n", ERROR);
                         //event_printf(NULL, string_ERROR_toString, getError(ERROR).c_str());
-                        event_send( nullptr,  myStringf_P( fstring_ERROR_toString, getError(ERROR).c_str()));
+                        event_send("",   getError(ERROR));
 
                         _getAllSettings();
                         if (_settings) {
@@ -2714,7 +2738,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             } else {
                 //event_printf(NULL, "No Changes Made");
                 //event_printf_P(NULL, PSTR("No Changes Made"));
-                event_send( nullptr, F("No Changes Made"));
+                event_send("", F("No Changes Made"));
 
                 ESPMan_Debugf("No changes Made\n");
 
@@ -2740,7 +2764,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     ENABLED
              */
 
-            newsettings->ssid = set.GEN.host();
+            newsettings->ssid = set.GEN.host;
 
             bool enabled = request->getParam(F("enable-AP"), true)->value().equals("on");
 
@@ -2759,13 +2783,13 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     ESPMan_Debugf("[AP] fail passphrase to long or short!\n");
                     //event_printf(nullptr, string_ERROR_toString, getError(PASSWOROD_INVALID).c_str());
 
-                    event_send(nullptr, myStringf_P( fstring_ERROR_toString, getError(PASSWOROD_INVALID).c_str()));
+                    event_send("", getError(PASSWOROD_INVALID));
                     abortchanges = true;
                 }
 
                 if (pass && newsettings->pass != myString(pass)) {
                     newsettings->pass = pass;
-                    ESPMan_Debugf("New AP pass = %s\n", newsettings->pass() );
+                    ESPMan_Debugf("New AP pass = %s\n", newsettings->pass.c_str() );
                     changes = true;
                 }
 
@@ -2868,7 +2892,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                     //event_printf(NULL, "Updating AP Settings");
                     //event_printf_P(NULL, PSTR("Updating AP Settings"));
-                    event_send(nullptr, F("Updating AP Settings") );
+                    event_send("", F("Updating AP Settings") );
 
                     delay(10);
 
@@ -2890,11 +2914,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             //event_printf(NULL, "Success");
                             //event_printf_P(NULL, PSTR("Success"));
-                            event_send(nullptr, F("Success"));
+                            event_send("", F("Success"));
                             //save_flag = true;
                         } else {
                             //event_printf(NULL, string_ERROR_toString, getError(SETTINGS_NOT_IN_MEMORY).c_str());
-                            event_send(nullptr, myStringf_P( fstring_ERROR_toString, getError(SETTINGS_NOT_IN_MEMORY).c_str()));
+                            event_send("", getError(SETTINGS_NOT_IN_MEMORY) );
                         }
 
                     } else {
@@ -2910,7 +2934,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 
                         //event_printf(NULL, string_ERROR_toString, getError(ERROR).c_str() ) ;
-                        event_send(nullptr, myStringf_P( fstring_ERROR_toString, getError(ERROR).c_str() ) );
+                        event_send("", getError(ERROR) );
                     }
 
                     delete newsettings;
@@ -2920,7 +2944,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             } else {
                 //event_printf(NULL, "No Changes Made");
                 //event_printf_P(NULL, PSTR("No Changes Made"));
-                event_send(nullptr, F("No Changes Made"));
+                event_send("", F("No Changes Made"));
 
                 ESPMan_Debugf("No changes Made\n");
 
@@ -2935,20 +2959,17 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     if ( request->hasParam(FPSTR(fstring_deviceid), true)) {
 
-        String newidString = request->getParam(FPSTR(fstring_deviceid), true)->value();
-        const char * newid = newidString.c_str();
+        String newid = request->getParam(FPSTR(fstring_deviceid), true)->value();
 
-        ESPMan_Debugf( "Device ID func hit %s\n", newid  );
+        ESPMan_Debugf( "Device ID func hit %s\n", newid.c_str()  );
 
-        if (newid && strnlen(newid, 100) > 0 && strnlen(newid, 100) < 32 && set.GEN.host != myString(newid)) {
+        if (newid.length() && newid.length() < 32 && newid != set.GEN.host ) {
 
             set.GEN.host = newid;
             set.changed = true;
             //event_printf(NULL, "Device ID: %s", set.GEN.host() );
-
-            event_send(nullptr, myStringf_P( PSTR("Device ID: %s"), set.GEN.host() )) ;
-
-
+            String reply = "Device ID: " + set.GEN.host; 
+            event_send("",  reply ) ;
             sendsaveandreboot = true;
         }
 
@@ -3028,7 +3049,10 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
             } else {
                 //event_printf(nullptr, string_ERROR_toString, getError(PASSWORD_MISMATCH).c_str() ) ;
-                event_send(nullptr, myStringf_P( fstring_ERROR_toString, getError(PASSWORD_MISMATCH).c_str() ) );
+                
+                event_send( "", getError(PASSWORD_MISMATCH) );
+
+
             }
         }
 
@@ -3090,60 +3114,60 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
        ------------------------------------------------------------------------------------------------------------------*/
 
-#ifdef ESPMANAGER_SYSLOG
+// #ifdef ESPMANAGER_SYSLOG
 
-    if ( request->hasParam(FPSTR(fstring_usesyslog), true)) {
+//     if ( request->hasParam(FPSTR(fstring_usesyslog), true)) {
 
-        bool value = request->getParam(FPSTR(fstring_usesyslog), true)->value().equals( "on");
+//         bool value = request->getParam(FPSTR(fstring_usesyslog), true)->value().equals( "on");
 
-        if (value != _settings->GEN.usesyslog) {
-            _settings->GEN.usesyslog = value;
-            set.changed = true;
-            //ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
+//         if (value != _settings->GEN.usesyslog) {
+//             _settings->GEN.usesyslog = value;
+//             set.changed = true;
+//             //ESPMan_Debugf("[ESPmanager::handle()] settings->GEN.portal = %s\n", (command) ? "enabled" : "disabled");
 
-            sendsaveandreboot = true;
-        }
+//             sendsaveandreboot = true;
+//         }
 
-    }
+//     }
 
-    if ( request->hasParam(FPSTR(fstring_syslogIP), true)) {
+//     if ( request->hasParam(FPSTR(fstring_syslogIP), true)) {
 
-        IPAddress value;
-        bool result = value.fromString(request->getParam(FPSTR(fstring_syslogIP), true)->value()) ;
+//         IPAddress value;
+//         bool result = value.fromString(request->getParam(FPSTR(fstring_syslogIP), true)->value()) ;
 
-        if (result && value != _settings->GEN.syslogIP) {
-            _settings->GEN.syslogIP = value;
-            set.changed = true;
-            sendsaveandreboot = true;
-        }
+//         if (result && value != _settings->GEN.syslogIP) {
+//             _settings->GEN.syslogIP = value;
+//             set.changed = true;
+//             sendsaveandreboot = true;
+//         }
 
-    }
+//     }
 
-    if ( request->hasParam(FPSTR(fstring_syslogPort), true)) {
+//     if ( request->hasParam(FPSTR(fstring_syslogPort), true)) {
 
-        int value = request->getParam(FPSTR(fstring_syslogPort), true)->value().toInt();
-        if (value != _settings->GEN.syslogPort) {
-            _settings->GEN.syslogPort = value;
-            set.changed = true;
+//         int value = request->getParam(FPSTR(fstring_syslogPort), true)->value().toInt();
+//         if (value != _settings->GEN.syslogPort) {
+//             _settings->GEN.syslogPort = value;
+//             set.changed = true;
 
-            sendsaveandreboot = true;
-        }
-    }
+//             sendsaveandreboot = true;
+//         }
+//     }
 
-    if ( request->hasParam(FPSTR(fstring_syslogProto), true)) {
+//     if ( request->hasParam(FPSTR(fstring_syslogProto), true)) {
 
-        int value = request->getParam(FPSTR(fstring_syslogProto), true)->value().toInt();
-        if (value != _settings->GEN.syslogProto) {
-            _settings->GEN.syslogProto = value;
-            set.changed = true;
+//         int value = request->getParam(FPSTR(fstring_syslogProto), true)->value().toInt();
+//         if (value != _settings->GEN.syslogProto) {
+//             _settings->GEN.syslogProto = value;
+//             set.changed = true;
 
-            sendsaveandreboot = true;
-        }
+//             sendsaveandreboot = true;
+//         }
 
-    }
+//     }
 
 
-#endif
+// #endif
 
     /*------------------------------------------------------------------------------------------------------------------
 
@@ -3190,13 +3214,11 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     if (request->hasParam(FPSTR(fstring_updateURL), true) ) {
 
-        String S_newpath = request->getParam(FPSTR(fstring_updateURL), true)->value();
+        String newpath = request->getParam(FPSTR(fstring_updateURL), true)->value();
 
-        const char * newpath = S_newpath.c_str();
+        ESPMan_Debugf("UpgradeURL: %s\n", newpath.c_str() );
 
-        ESPMan_Debugf("UpgradeURL: %s\n", newpath);
-
-        if (newpath && strnlen(newpath, 100) > 0 && set.GEN.updateURL != myString(newpath)) {
+        if (newpath && newpath.length() && set.GEN.updateURL != newpath ) {
 
             set.GEN.updateURL = newpath;
             set.changed = true;
@@ -3205,7 +3227,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
     if (request->hasParam(FPSTR(fstring_updateFreq), true) ) {
 
-        int updateFreq = request->getParam(FPSTR(fstring_updateFreq), true)->value().toInt();
+        uint updateFreq = request->getParam(FPSTR(fstring_updateFreq), true)->value().toInt();
 
         if (updateFreq < 0) {
             updateFreq = 0;
@@ -3250,7 +3272,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
     sendJsontoHTTP<JsonObject>(root, request);
 
     if (sendsaveandreboot) {
-        event_send(nullptr, FPSTR(fstring_saveandreboot ));
+        event_send("", FPSTR(fstring_saveandreboot ));
     }
 
 }
@@ -3259,7 +3281,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 ESPMAN_ERR_t ESPmanager::_initialiseAP(bool override)
 {
     using namespace ESPMAN;
-    int ERROR = 0;
+    //int ERROR = 0;
 
     //  get the settings from SPIFFS if settings PTR is null
     if (!_settings) {
@@ -3331,7 +3353,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseAP( settings_t::AP_t & settings )
         settings.ssid = buf;
     }
 
-    ESPMan_Debugf("ENABLING AP : channel %u, name %s, channel = %u, hidden = %u, pass = %s \n", settings.channel, settings.ssid.c_str(), settings.channel , !settings.visible , settings.pass() );
+    ESPMan_Debugf("ENABLING AP : channel %u, name %s, channel = %u, hidden = %u, pass = %s \n", settings.channel, settings.ssid.c_str(), settings.channel , !settings.visible , settings.pass.c_str() );
 
 
     if (!WiFi.softAP(settings.ssid.c_str(), (settings.pass) ? settings.pass.c_str() : nullptr , settings.channel, !settings.visible )) {
@@ -3385,7 +3407,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 {
     using namespace ESPMAN;
-    ESPMAN_ERR_t ERROR = SUCCESS;
+    //ESPMAN_ERR_t ERROR = SUCCESS;
     bool portal_enabled = _dns;
 
     if (portal_enabled) {
@@ -3546,78 +3568,78 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA( settings_t::STA_t & set)
 
 }
 
-#ifdef ESPMANAGER_SYSLOG
+// #ifdef ESPMANAGER_SYSLOG
 
-/**
- * Syslog:  Send msg to configured syslog server.
- * @param [msg] message
- * @return bool
- * @warning not implemented
- */
-bool ESPmanager::log(myString msg)
-{
-    if (_syslog) {
-        return _syslog->log(std::move(msg) );
-    }
-    return false;
-}
+// /**
+//  * Syslog:  Send msg to configured syslog server.
+//  * @param [msg] message
+//  * @return bool
+//  * @warning not implemented
+//  */
+// bool ESPmanager::log(myString msg)
+// {
+//     if (_syslog) {
+//         return _syslog->log(std::move(msg) );
+//     }
+//     return false;
+// }
 
-/**
- * @param [pri] priority
- * @param [msg] message
- * @return bool
- * @warning not implemented
- */
-bool ESPmanager::log(uint16_t pri, myString  msg)
-{
-    if (_syslog) {
-        return _syslog->log(pri, std::move(msg) );
-    }
-    return false;
-}
+// /**
+//  * @param [pri] priority
+//  * @param [msg] message
+//  * @return bool
+//  * @warning not implemented
+//  */
+// bool ESPmanager::log(uint16_t pri, myString  msg)
+// {
+//     if (_syslog) {
+//         return _syslog->log(pri, std::move(msg) );
+//     }
+//     return false;
+// }
 
-/**
- * @param
- * @param
- * @return bool
- * @warning not implemented
- */
-bool ESPmanager::log(myString appName, myString  msg)
-{
-    if (_syslog) {
-        return _syslog->log( std::move(appName), std::move(msg) );
-    }
-    return false;
-}
-/**
- * @param
- * @param
- * @param
- * @return bool
- * @warning not implemented
- */
-bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
-{
-    if (_syslog) {
-        return _syslog->log(pri, std::move(appName), std::move(msg));
-    }
-    return false;
-}
+// /**
+//  * @param
+//  * @param
+//  * @return bool
+//  * @warning not implemented
+//  */
+// bool ESPmanager::log(myString appName, myString  msg)
+// {
+//     if (_syslog) {
+//         return _syslog->log( std::move(appName), std::move(msg) );
+//     }
+//     return false;
+// }
+// /**
+//  * @param
+//  * @param
+//  * @param
+//  * @return bool
+//  * @warning not implemented
+//  */
+// bool ESPmanager::log(uint16_t pri, myString appName, myString  msg)
+// {
+//     if (_syslog) {
+//         return _syslog->log(pri, std::move(appName), std::move(msg));
+//     }
+//     return false;
+// }
 
-/**
- * @param
- * @param
- * @warning not implemented
- */
-void ESPmanager::_log(uint16_t pri, myString  msg)
-{
-    log(pri, msg);
-    event_send( F("LOG"), myStringf( F("[%3u] %s"), pri, msg.c_str()));
+// /**
+//  * @param
+//  * @param
+//  * @warning not implemented
+//  */
+// void ESPmanager::_log(uint16_t pri, myString  msg)
+// {
+//     log(pri, msg);
+//     event_send( F("LOG"), myStringf( F("[%3u] %s"), pri, msg.c_str()));
 
-}
+// }
 
 
-#endif
+// #endif
 
 
 
@@ -3707,7 +3729,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings()
 
     //_applyPermenent(*settings);
 
-    if (!_settings->GEN.host()) {
+    if (!_settings->GEN.host.length()) {
         char tmp[33] = {'\0'};
         snprintf(tmp, 32, "esp8266-%06x", ESP.getChipId());
         _settings->GEN.host = tmp;
@@ -3819,34 +3841,34 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t & set)
             set.GEN.OTAupload = settingsJSON[FPSTR(fstring_OTAupload)];
         }
 
-#ifdef ESPMANAGER_SYSLOG
+// #ifdef ESPMANAGER_SYSLOG
 
-        if (settingsJSON.containsKey( FPSTR(fstring_usesyslog))) {
+//         if (settingsJSON.containsKey( FPSTR(fstring_usesyslog))) {
 
-            set.GEN.usesyslog = settingsJSON[FPSTR(fstring_usesyslog)];
+//             set.GEN.usesyslog = settingsJSON[FPSTR(fstring_usesyslog)];
 
-            if (set.GEN.usesyslog) {
+//             if (set.GEN.usesyslog) {
 
-                if (settingsJSON.containsKey(FPSTR(fstring_syslogIP)) &&  settingsJSON.containsKey(FPSTR(fstring_syslogPort)) ) {
+//                 if (settingsJSON.containsKey(FPSTR(fstring_syslogIP)) &&  settingsJSON.containsKey(FPSTR(fstring_syslogPort)) ) {
 
-                    set.GEN.syslogPort = settingsJSON[FPSTR(fstring_syslogPort)];
+//                     set.GEN.syslogPort = settingsJSON[FPSTR(fstring_syslogPort)];
 
-                    for (uint8_t i = 0; i < 4; i++) {
-                        set.GEN.syslogIP[i] = settingsJSON[ FPSTR(fstring_syslogIP)][i];
-                    }
-                }
+//                     for (uint8_t i = 0; i < 4; i++) {
+//                         set.GEN.syslogIP[i] = settingsJSON[ FPSTR(fstring_syslogIP)][i];
+//                     }
+//                 }
 
-                if (settingsJSON.containsKey(FPSTR(fstring_syslogProto))) {
+//                 if (settingsJSON.containsKey(FPSTR(fstring_syslogProto))) {
 
-                    set.GEN.syslogProto = settingsJSON[FPSTR(fstring_syslogProto)];
-                }
+//                     set.GEN.syslogProto = settingsJSON[FPSTR(fstring_syslogProto)];
+//                 }
 
 
 
-            }
-        }
+//             }
+//         }
 
-#endif
+// #endif
 
     } 
 
@@ -4001,17 +4023,17 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     settingsJSON[FPSTR(fstring_settingsversion)] = SETTINGS_FILE_VERSION;
 
     if (set.GEN.host) {
-        settingsJSON[FPSTR(fstring_host)] = set.GEN.host();
+        settingsJSON[FPSTR(fstring_host)] = set.GEN.host;
     }
 
     if (set.GEN.updateURL) {
-        settingsJSON[FPSTR(fstring_updateURL)] = set.GEN.updateURL();
+        settingsJSON[FPSTR(fstring_updateURL)] = set.GEN.updateURL;
     }
 
     settingsJSON[FPSTR(fstring_updateFreq)] = set.GEN.updateFreq;
 
     if (set.GEN.OTApassword) {
-        settingsJSON[FPSTR(fstring_OTApassword)] = set.GEN.OTApassword();
+        settingsJSON[FPSTR(fstring_OTApassword)] = set.GEN.OTApassword;
     }
 
     // if (set.GEN.GUIusername) {
@@ -4023,7 +4045,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     // }
 
     if (set.GEN.GUIhash) {
-        settingsJSON[FPSTR(fstring_GUIhash)] = set.GEN.GUIhash();
+        settingsJSON[FPSTR(fstring_GUIhash)] = set.GEN.GUIhash;
     }
 
     // static const char * string_usesyslog = "usesyslog";
@@ -4060,11 +4082,11 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     STAjson[FPSTR(fstring_enabled)] = set.STA.enabled;
 
     if (set.STA.ssid) {
-        STAjson[FPSTR(fstring_ssid)] = set.STA.ssid();
+        STAjson[FPSTR(fstring_ssid)] = set.STA.ssid;
     }
 
     if (set.STA.pass) {
-        STAjson[FPSTR(fstring_pass)] = set.STA.pass();
+        STAjson[FPSTR(fstring_pass)] = set.STA.pass;
 
     }
 
@@ -4133,7 +4155,7 @@ ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t & set)
     // }
 
     if (set.AP.pass) {
-        APjson[FPSTR(fstring_pass)] = set.AP.pass();
+        APjson[FPSTR(fstring_pass)] = set.AP.pass;
 
     }
 
@@ -4190,25 +4212,25 @@ void ESPmanager::_dumpGEN(settings_t::GEN_t & settings)
 {
 
     ESPMan_Debugf_raw("---- GEN ----\n");
-    ESPMan_Debugf_raw("host = %s\n", (settings.host) ? settings.host() : "null" );
-    ESPMan_Debugf_raw("updateURL = %s\n", (settings.updateURL) ? settings.updateURL() : "null" );
+    ESPMan_Debugf_raw("host = %s\n", (settings.host) ? settings.host.c_str() : "null" );
+    ESPMan_Debugf_raw("updateURL = %s\n", (settings.updateURL) ? settings.updateURL.c_str() : "null" );
     ESPMan_Debugf_raw("updateFreq = %u\n", (uint32_t)settings.updateFreq );
     ESPMan_Debugf_raw("OTAport = %u\n", (uint32_t)settings.OTAport );
     ESPMan_Debugf_raw("mDNSenabled = %s\n", (settings.mDNSenabled) ? "true" : "false" );
 
-    ESPMan_Debugf_raw("OTApassword = %s\n", (settings.OTApassword()) ? settings.OTApassword() : "null" );
-    ESPMan_Debugf_raw("GUIhash = %s\n", (settings.GUIhash()) ? settings.GUIhash() : "null" );
+    ESPMan_Debugf_raw("OTApassword = %s\n", (settings.OTApassword.c_str()) ? settings.OTApassword.c_str() : "null" );
+    ESPMan_Debugf_raw("GUIhash = %s\n", (settings.GUIhash.c_str()) ? settings.GUIhash.c_str() : "null" );
     ESPMan_Debugf_raw("ap_boot_mode = %i\n", (int8_t)settings.ap_boot_mode );
     ESPMan_Debugf_raw("no_sta_mode = %i\n", (int8_t)settings.no_sta_mode );
     ESPMan_Debugf_raw("IDEupload = %s\n", (settings.OTAupload) ? "true" : "false" );
 
-#ifdef ESPMANAGER_SYSLOG
-    ESPMan_Debugf_raw("usesyslog = %s\n", (settings.usesyslog) ? "true" : "false" );
-    ESPMan_Debugf_raw("syslogIP = %u.%u.%u.%u\n", settings.syslogIP[0], settings.syslogIP[1], settings.syslogIP[2], settings.syslogIP[3] );
-    ESPMan_Debugf_raw("syslogPort = %u\n", settings.syslogPort );
-    ESPMan_Debugf_raw("syslogProto = %u\n", settings.syslogProto );
+// #ifdef ESPMANAGER_SYSLOG
+//     ESPMan_Debugf_raw("usesyslog = %s\n", (settings.usesyslog) ? "true" : "false" );
+//     ESPMan_Debugf_raw("syslogIP = %u.%u.%u.%u\n", settings.syslogIP[0], settings.syslogIP[1], settings.syslogIP[2], settings.syslogIP[3] );
+//     ESPMan_Debugf_raw("syslogPort = %u\n", settings.syslogPort );
+//     ESPMan_Debugf_raw("syslogProto = %u\n", settings.syslogProto );
 
-#endif
+// #endif
 
 }
 
@@ -4235,8 +4257,8 @@ void ESPmanager::_dumpSTA(settings_t::STA_t & settings)
 
     ESPMan_Debugf_raw("---- STA ----\n");
     ESPMan_Debugf_raw("enabled = %s\n", (settings.enabled) ? "true" : "false" );
-    ESPMan_Debugf_raw("ssid = %s\n", (settings.ssid()) ? settings.ssid() : "null" );
-    ESPMan_Debugf_raw("pass = %s\n", (settings.pass()) ? settings.pass() : "null" );
+    ESPMan_Debugf_raw("ssid = %s\n", (settings.ssid.c_str()) ? settings.ssid.c_str() : "null" );
+    ESPMan_Debugf_raw("pass = %s\n", (settings.pass.c_str()) ? settings.pass.c_str() : "null" );
     ESPMan_Debugf_raw("dhcp = %s\n", (settings.dhcp) ? "true" : "false" );
     ESPMan_Debugf_raw("hasConfig = %s\n", (settings.hasConfig) ? "true" : "false" );
     ESPMan_Debugf_raw("IP = %s\n", settings.IP.toString().c_str() );
@@ -4283,11 +4305,11 @@ void ESPmanager::factoryReset()
     _fs.remove("/.wizard");
 }
 
-void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, myString text)
+void ESPmanager::_sendTextResponse(AsyncWebServerRequest * request, uint16_t code, const String & text)
 {
     AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text.c_str() );
-    response->addHeader( myString( FPSTR(ESPMAN::fstring_CORS) ).c_str() , "*");
-    response->addHeader( myString( FPSTR(ESPMAN::fstring_CACHE_CONTROL)).c_str() , "no-store");
+    response->addHeader(  FPSTR(ESPMAN::fstring_CORS)  , "*");
+    response->addHeader(  FPSTR(ESPMAN::fstring_CACHE_CONTROL) , "no-store");
     request->send(response);
 }
 
@@ -4318,7 +4340,7 @@ void ESPmanager::_removePreGzFiles()
  * @param
  * @return
  */
-myString ESPmanager::getError(ESPMAN_ERR_t err)
+const String ESPmanager::getError(ESPMAN_ERR_t err)
 {
     switch (err) {
     case UNKNOWN_ERROR:

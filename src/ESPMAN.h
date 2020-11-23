@@ -175,47 +175,7 @@ static const int MAX_PASS_LENGTH = 64;  /**< @brief max permitted length of PASS
 static const int AP_START_DELAY = 2 * 60 * 1000; /**< @brief Fixed time constant before checking that there is no wifi before starting AP */
 static const int SETTINGS_MEMORY_TIMEOUT = 1 * 60 * 1000; /**< @brief Time settings are kept in memory before being deleted.  Default is 1min */
 
-/**
- * @brief A class to manage ArduinoJson objects. 
- * 
- * A class that manages the lifetime of a json object.  Either a JsonObject or JsonArray. 
- * You can also parse a SPIFFS file directly into the JSONpackage. 
- * Provides a merge function to merge two Json objects @todo template merge function. 
- */
-// class JSONpackage
-// {
 
-// private:
-//     //DynamicJsonBuffer _jsonBuffer;
-//     std::unique_ptr<DynamicJsonDocument> _jsonDoc;
-//     JsonVariant _root;
-//     std::unique_ptr<char[]> _data;
-//     //bool _isArray {false};
-//     DeserializationError _error; 
-
-// public:
-//     JSONpackage(bool isArray = false, size_t default_size = 1024);
-//     ~JSONpackage() { }
-
-//     JsonVariant & getRoot() { /*return _root; */}
-
-//     int parseSPIFS(const char * file, FS & fs = SPIFFS);
-//     int parseStream(Stream & in); 
-//     int parse(char * data, int size);
-//     static void mergejson(JsonObject& dest, JsonObject& src);
-//     bool save(const char * file);
-//     operator bool() const; 
-
-// };
-
-/**
- * @brief A class to manage Strings.
- * 
- * Not stricly speaking necessary, but this is an interface class to allow odd cool stuff with strings. 
- * Initialisable from lots of different types. 
- * move semantics so buffers can be moved without copy penalty. 
- * 
- */
 class myString
 {
 public:
@@ -299,8 +259,8 @@ struct settings_t {
         bool enabled {false};
         bool hasConfig {false};
         bool hasMAC {false};
-        myString ssid;
-        myString pass;
+        String ssid;
+        String pass;
         IPAddress IP;
         IPAddress GW;
         IPAddress SN;
@@ -316,8 +276,8 @@ struct settings_t {
         bool hasConfig {false};
         bool hasMAC {false};
         bool dhcp {true};
-        myString ssid;
-        myString pass;
+        String ssid;
+        String pass;
         IPAddress IP;
         IPAddress GW;
         IPAddress SN;
@@ -332,12 +292,12 @@ struct settings_t {
      */
     struct GEN_t {
         bool mDNSenabled {true};
-        myString host;
-        myString updateURL;
+        String host;
+        String updateURL;
         uint32_t updateFreq {0};
         uint16_t OTAport {8266};
-        myString OTApassword;
-        myString GUIhash;
+        String OTApassword;
+        String GUIhash;
         //bool usePerminantSettings {true};
         ESPMAN::ap_boot_mode_t ap_boot_mode {ESPMAN::NO_STA_BOOT};
         ESPMAN::no_sta_mode_t no_sta_mode {ESPMAN::NO_STA_NOTHING};

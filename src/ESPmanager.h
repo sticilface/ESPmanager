@@ -61,10 +61,12 @@
 #include "Tasker/src/Tasker.h"
 #include "ESPdeviceFinder/src/ESPdeviceFinder.h"
 #include "ESPMAN.h" //  has to go after
-#include <ESPmanSysLog.h>
+// #include <ESPmanSysLog.h>//
+#include <ESP8266RTCMemory/src/ESP8266RTCMemory.h>
+#include "staticHandler/src/staticHandler.h"
 
 //  These are the Features that can be turned off to save more FLASH and RAM space.
-#define ESPMANAGER_SYSLOG       /**< @brief Enable the SysLog (uses 16 bytes) @warning not implemented yet */
+//#define ESPMANAGER_SYSLOG       /**< @brief Enable the SysLog (uses 16 bytes) @warning not implemented yet */
 #define ESPMANAGER_SAVESTACK    /**< @brief Save the Stack when the ESP crashes to SPIFFS.  This helps with remote debugging*/
 #define ESPMANAGER_UPDATER      /**< @brief Enable the remote updater, update via http see ::upgrade, uses 1K heap */
 #define ESPMANAGER_DEVICEFINDER /**< @brief Enable deviceFinder.  ESPmanager will now locate all other ESPmanager instances, see ::ESPdeviceFinder, uses 200 bytes heap */
@@ -82,22 +84,22 @@
 #define SETTINGS_FILE_VERSION 2               /**< @brief Settings file.  Version number increments are not backwards compatible. @todo implement version checking in settings file  */
 
 //  New logging methods... just send the message to the logging function, otherwise squash it all... NOT in use yet...
-#ifdef ESPMANAGER_LOG
-#define ESP_LOG(a, b) \
-  {                   \
-    _log(a, b);       \
-  } /**<  Attempt at logging @warning {not implemented} */
-#else
-#define ESP_LOG(a, b) \
-  {                   \
-  }
-#endif
+// #ifdef ESPMANAGER_LOG
+// #define ESP_LOG(a, b) \
+//   {                   \
+//     _log(a, b);       \
+//   } /**<  Attempt at logging @warning {not implemented} */
+// #else
+// #define ESP_LOG(a, b) \
+//   {                   \
+//   }
+// #endif
 
 #if defined(Debug_ESPManager)
 static File _DebugFile;
-#define ESPMan_Debugf(_1, ...)                                                                                               \
-  {                                                                                                                          \
-    Debug_ESPManager.printf_P(PSTR("[%-10u][%5.5s][%15.15s:L%-4u] " _1), millis(), "ESPMA" , __func__, __LINE__, ##__VA_ARGS__); \
+#define ESPMan_Debugf(_1, ...)                                                                                                  \
+  {                                                                                                                             \
+    Debug_ESPManager.printf_P(PSTR("[%-10u][%5.5s][%15.15s:L%-4u] " _1), millis(), "ESPMA", __func__, __LINE__, ##__VA_ARGS__); \
   } //  this saves around 5K RAM...  39,604 K ram left
 #define ESPMan_Debugf_raw(_1, ...)                      \
   {                                                     \
@@ -114,7 +116,7 @@ static File _DebugFile;
   }
 #endif
 
-//using namespace ESPMAN;
+using namespace ESPMAN;
 
 /**
  * @brief Manager for ESP8266.
@@ -127,7 +129,7 @@ public:
   ESPmanager(AsyncWebServer &HTTP, FS &fs);
   ~ESPmanager();
   ESPMAN_ERR_t begin();
-  ESPMAN_ERR_t begin(myString ssid, myString pass);
+  ESPMAN_ERR_t begin(const String &ssid, const String &pass);
   void handle();
   static String formatBytes(size_t bytes);
   static bool StringtoMAC(uint8_t *mac, const String &input);
@@ -136,14 +138,14 @@ public:
   template <class T = JsonObject>
   static void sendJsontoHTTP(const T &root, AsyncWebServerRequest *request);
   String getHostname();
-  myString getError(ESPMAN_ERR_t err);
-  myString getError(int err) { return getError((ESPMAN_ERR_t)err); } /**< Returns error as String. @return ESPMAN::myString &  */
+  const String getError(ESPMAN_ERR_t err);
+  const String getError(int err) { return getError((ESPMAN_ERR_t)err); } /**< Returns error as String. @return ESPMAN::myString &  */
   inline uint32_t trueSketchSize();
   inline String getSketchMD5();
   AsyncEventSource &getEvent();
   static void FSDirIterator(FS &fs, const char *dirName, std::function<void(File &f)> Cb);
 
-  bool event_send(myString topic, myString msg);
+  bool event_send(const String & topic, const String & msg);
   ESPMAN_ERR_t upgrade(String path = String(), bool runasync = true);
   ESPMAN_ERR_t upgrade(bool runasync) { return upgrade(String(), runasync); }
   void factoryReset();
@@ -154,19 +156,19 @@ public:
   // ASyncTasker & getTaskManager() { return _tasker; } *< Returns tasker. @return ASyncTasker &
   // ASyncTasker & tasker() { return _tasker; } /**< Returns tasker. @return ASyncTasker &  */
 
-#ifdef ESPMANAGER_SYSLOG
+  // #ifdef ESPMANAGER_SYSLOG
 
-public:
-  SysLog *logger() { return _syslog; } /**< Returns logger instance. @return SysLog * @warning{not implemented}  */
-  bool log(myString msg);
-  bool log(uint16_t pri, myString msg);
-  bool log(myString appName, myString msg);
-  bool log(uint16_t pri, myString appName, myString msg);
+  // public:
+  //   SysLog *logger() { return _syslog; } /**< Returns logger instance. @return SysLog * @warning{not implemented}  */
+  //   bool log(myString msg);
+  //   bool log(uint16_t pri, myString msg);
+  //   bool log(myString appName, myString msg);
+  //   bool log(uint16_t pri, myString appName, myString msg);
 
-private:
-  void _log(uint16_t pri, myString msg);
+  // private:
+  //   void _log(uint16_t pri, myString msg);
 
-#endif
+  // #endif
 
 private:
   void _HandleDataRequest(AsyncWebServerRequest *request);
@@ -184,7 +186,7 @@ private:
   }
 #endif
 
-  SysLog *_syslog{nullptr};
+  //SysLog *_syslog{nullptr};
   ESPMAN_ERR_t _getAllSettings();                //  gets settings to settings ptr, uses new if it doesn't exist.  overwrite current data
   ESPMAN_ERR_t _getAllSettings(settings_t &set); //only populates the set... used to retrieve certain vailue...
   ESPMAN_ERR_t _saveAllSettings(settings_t &set);
@@ -193,7 +195,7 @@ private:
   ESPMAN_ERR_t _initialiseSTA();                     //  reads the settings from SPIFFS....  then calls _initialiseAP(ESPMAN::STA_settings_t settings);
   ESPMAN_ERR_t _initialiseSTA(settings_t::STA_t &settings);
   ESPMAN_ERR_t _emergencyMode(bool shutdown = false, int channel = -1);
-  void _sendTextResponse(AsyncWebServerRequest *request, uint16_t code, myString text);
+  void _sendTextResponse(AsyncWebServerRequest *request, uint16_t code, const String & text);
 
   void _populateFoundDevices(JsonObject &root);
 
@@ -220,6 +222,10 @@ private:
   ESPdeviceFinder *_devicefinder{nullptr};
   uint32_t _deviceFinderTimer{0};
   String _appName;
+
+  staticHandler _staticHandlerInstance;
+
+  ESP8266RTCMemory<bool> _rtc;
 
 #ifdef Debug_ESPManager
 
