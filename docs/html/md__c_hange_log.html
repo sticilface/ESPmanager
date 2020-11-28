@@ -82,6 +82,8 @@ $(function() {
 <li>new RTC class that allows structs/arrays to be written to the RTC.</li>
 <li>sketch MD5 is now written to RTC and compared on boot so the sketch knows when it has been upgraded, this allows the dreaded wifi config crash to be handled correctly. no more rebooting after an upgrade.</li>
 <li>autoconnect and autoreconnect options removed. wiFi now just connects... otherwise what is the point of the lib, and autoreconnect is true.</li>
+<li>remove all using <a class="el" href="namespace_e_s_p_m_a_n.html" title="Contains tools for ESPmanager. ">ESPMAN</a> napespaces. just include it for this translation unit via anonimous namespace.</li>
+<li>Improve Debug level reporting with func,line and millis.</li>
 <li>Bugfixes<ul>
 <li>ESP device finder re-init logic</li>
 <li>Fixed wifi reconnect. I had not actually tested it corretly, now it works and it will reconnect to STA after power outage, or WiFi loss.</li>
