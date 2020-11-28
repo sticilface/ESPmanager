@@ -1,8 +1,43 @@
 # ChangeLog
 
 ## To Do
- - Add manual SSID and password. 
  - Add multi WiFi implementaion to search for and join a number of WiFi Networks. 
+
+## V3.0
+- Major rework, optimised for efficiency, code size and actual utility. 
+- LittleFS as standard. 
+- ArduinoJson V6 as standard. 
+- Authentication added.  default user:admin, pass:esprocks. 
+- Authentication can only be set in the sketch, must be called after begin().
+- WiFi AP and STA logic completely overhauled with all the unnecesary complexity removed. 
+- If WiFi STA is lost it just tries to reconnect. Every second if only STA active, every 60 seconds if AP is active. 
+- If rebooted and there is NO access to device ie. no AP and no STA it will make an AP. If WiFi STA is configured it will keep attempting to connect. 
+- Added a simple PROGMEM webpage at /espman/quick to be served in AP mode to connect to AP.  This removes any dependencey on jquery. 
+- Added a staticHandler web class that allows flexibility of how static web pages are served.  SPIFFS/PROGMEM/REDIRECT
+- WiFi logic now uses the correct callback API - no polling
+- new RTC class that allows structs/arrays to be written to the RTC. 
+- sketch MD5 is now written to RTC and compared on boot so the sketch knows when it has been upgraded, this allows the dreaded wifi config crash to be handled correctly.  no more rebooting after an upgrade. 
+- autoconnect and autoreconnect options removed.  wiFi now just connects... otherwise what is the point of the lib, and autoreconnect is true. 
+
+
+- Bugfixes
+  - ESP device finder re-init logic
+  - Fixed wifi reconnect.  I had not actually tested it corretly, now it works and it will reconnect to STA after power outage, or WiFi loss. 
+  - Fixed incorrect jscript host path generation that required /espman/ as path.  now both work. 
+
+- REMOVED
+  - myString
+  - crazy and pointless boot AP/STA modes. 
+  - Removed the endless configuration options that were not used. 
+  - Removed the endless settings reported in about.  just because you can.... 
+  - many endless settings and config options removed. 
+  - String definitions of errors removed.  just report the number, then look it up, or upload with debug enabled. 
+  - crash dump removed
+  - wifi wizard removed - nice but needs jquery which is bulky and makes a working FS a requirement.  
+  - removed syslog - pointless
+  - Captive portal.  just use /espman
+  - Removed setting of MAC address
+
 
 # V2.2
 ## New Features

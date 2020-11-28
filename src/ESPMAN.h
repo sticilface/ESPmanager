@@ -77,30 +77,30 @@ namespace ESPMAN
  *  \public
  *  Enum actions if no wifi found on boot 
  */
-    enum ap_boot_mode_t : int8_t
-    {
-        DISABLED = -1,
-        NO_STA_BOOT = 0,
-        NO_STA_BOOT_AP_5 = 5,
-        NO_STA_BOOT_AP_10 = 10,
-        NO_STA_BOOT_AP_30 = 30,
-        NO_STA_BOOT_AP_60 = 60,
-    };
+    // enum ap_boot_mode_t : int8_t
+    // {
+    //     DISABLED = -1,
+    //     NO_STA_BOOT = 0,
+    //     NO_STA_BOOT_AP_5 = 5,
+    //     NO_STA_BOOT_AP_10 = 10,
+    //     NO_STA_BOOT_AP_30 = 30,
+    //     NO_STA_BOOT_AP_60 = 60,
+    // };
 
     /**
  *  \public
  *  Enum actions if wifi fails after boot
  */
-    enum no_sta_mode_t : int8_t
-    {
-        NO_STA_NOTHING = -2, ///< Do nothing if there is no wifi connection on device boot.
-        NO_STA_REBOOT = -1,  ///< Reboot if there is no wifi on device boot, device waits for ::AP_START_DELAY
-        NO_STA_START_AP = 0,
-        NO_STA_START_AP_5 = 5,
-        NO_STA_START_AP_10 = 10,
-        NO_STA_START_AP_30 = 30,
-        NO_STA_START_AP_60 = 60
-    };
+    // enum no_sta_mode_t : int8_t
+    // {
+    //     NO_STA_NOTHING = -2, ///< Do nothing if there is no wifi connection on device boot.
+    //     NO_STA_REBOOT = -1,  ///< Reboot if there is no wifi on device boot, device waits for ::AP_START_DELAY
+    //     NO_STA_START_AP = 0,
+    //     NO_STA_START_AP_5 = 5,
+    //     NO_STA_START_AP_10 = 10,
+    //     NO_STA_START_AP_30 = 30,
+    //     NO_STA_START_AP_60 = 60
+    // };
 
     /**
  *  @brief Collection of const progrem strings used in ESPmanager. 
@@ -112,10 +112,10 @@ namespace ESPMAN
     const char fstring_UPGRADE[] PROGMEM = "upgrade";
     const char fstring_UPDATE[] PROGMEM = "update";
     const char fstring_CONSOLE[] PROGMEM = "console";
-    const char fstring_ERROR[] PROGMEM = "ERROR [%i]";
-    const char fstring_ERROR2[] PROGMEM = "ERROR [%i] [%i]";
-    const char fstring_ERROR2_toString[] PROGMEM = "ERROR [%s] [%s]";
-    const char fstring_ERROR_toString[] PROGMEM = "ERROR [%s]";
+    // const char fstring_ERROR[] PROGMEM = "ERROR [%i]";
+    // const char fstring_ERROR2[] PROGMEM = "ERROR [%i] [%i]";
+    // const char fstring_ERROR2_toString[] PROGMEM = "ERROR [%s] [%s]";
+    // const char fstring_ERROR_toString[] PROGMEM = "ERROR [%s]";
     const char fstring_deviceid[] PROGMEM = "deviceid";
     const char fstring_settingsversion[] PROGMEM = "settingversion";
 
@@ -125,9 +125,9 @@ namespace ESPMAN
     const char fstring_updateURL[] PROGMEM = "updateURL";
     const char fstring_updateFreq[] PROGMEM = "updateFreq";
     const char fstring_OTApassword[] PROGMEM = "OTApassword";
-    const char fstring_GUIusername[] PROGMEM = "GUIusername";
-    const char fstring_GUIpassword[] PROGMEM = "GUIpassword";
-    const char fstring_GUIhash[] PROGMEM = "GUIhash";
+    // const char fstring_GUIusername[] PROGMEM = "GUIusername";
+    // const char fstring_GUIpassword[] PROGMEM = "GUIpassword";
+    //const char fstring_GUIhash[] PROGMEM = "GUIhash";
     const char fstring_OTAport[] PROGMEM = "OTAport";
     const char fstring_STA[] PROGMEM = "STA";
     const char fstring_AP[] PROGMEM = "AP";
@@ -135,17 +135,17 @@ namespace ESPMAN
     const char fstring_ssid[] PROGMEM = "ssid";
     const char fstring_pass[] PROGMEM = "pass";
     const char fstring_changed[] PROGMEM = "changed";
-    const char fstring_usePerminantSettings[] PROGMEM = "usePerminantSettings";
+    //const char fstring_usePerminantSettings[] PROGMEM = "usePerminantSettings";
 
     const char fstring_IP[] PROGMEM = "IP";
     const char fstring_GW[] PROGMEM = "GW";
     const char fstring_SN[] PROGMEM = "SN";
     const char fstring_MAC[] PROGMEM = "MAC";
-    const char fstring_autoconnect[] PROGMEM = "autoconnect";
-    const char fstring_autoreconnect[] PROGMEM = "autoreconnect";
+    // const char fstring_autoconnect[] PROGMEM = "autoconnect";
+    // const char fstring_autoreconnect[] PROGMEM = "autoreconnect";
     const char fstring_mode[] PROGMEM = "mode";
-    const char fstring_ap_boot_mode[] PROGMEM = "ap_boot_mode";
-    const char fstring_no_sta_mode[] PROGMEM = "no_sta_mode";
+    // const char fstring_ap_boot_mode[] PROGMEM = "ap_boot_mode";
+    // const char fstring_no_sta_mode[] PROGMEM = "no_sta_mode";
     const char fstring_OTAupload[] PROGMEM = "OTAupload";
 
     const char fstring_visible[] PROGMEM = "visible";
@@ -156,11 +156,11 @@ namespace ESPMAN
     const char fstring_DNS1[] PROGMEM = "DNS1";
     const char fstring_DNS2[] PROGMEM = "DNS2";
 
-    const char fstring_syslog[] PROGMEM = "syslog";
-    const char fstring_usesyslog[] PROGMEM = "usesyslog";
-    const char fstring_syslogIP[] PROGMEM = "syslogIP";
-    const char fstring_syslogPort[] PROGMEM = "syslogPort";
-    const char fstring_syslogProto[] PROGMEM = "syslogProto";
+    // const char fstring_syslog[] PROGMEM = "syslog";
+    // const char fstring_usesyslog[] PROGMEM = "usesyslog";
+    // const char fstring_syslogIP[] PROGMEM = "syslogIP";
+    // const char fstring_syslogPort[] PROGMEM = "syslogPort";
+    // const char fstring_syslogProto[] PROGMEM = "syslogProto";
 
     const char fstring_OK[] PROGMEM = "OK";
     /**
@@ -194,13 +194,11 @@ namespace ESPMAN
         {
             bool enabled{false};
             bool hasConfig{false};
-            bool hasMAC{false};
             String ssid;
             String pass;
             IPAddress IP;
             IPAddress GW;
             IPAddress SN;
-            uint8_t MAC[6] = {'\0'};
             bool visible{true};
             uint8_t channel{1};
         } AP;
@@ -211,7 +209,6 @@ namespace ESPMAN
         {
             bool enabled{false};
             bool hasConfig{false};
-            bool hasMAC{false};
             bool dhcp{true};
             String ssid;
             String pass;
@@ -220,9 +217,8 @@ namespace ESPMAN
             IPAddress SN;
             IPAddress DNS1;
             IPAddress DNS2;
-            uint8_t MAC[6] = {'\0'};
-            bool autoConnect{true};
-            bool autoReconnect{true};
+            //bool autoConnect{true};
+            //bool autoReconnect{true};
         } STA;
         /**
      * @brief General settings struct, used for storing ESPmanager variables.
@@ -235,16 +231,19 @@ namespace ESPMAN
             uint32_t updateFreq{0};
             uint16_t OTAport{8266};
             String OTApassword;
-            String GUIhash;
+
+            // String WebPassword; 
+            // bool WebPasswordSet{false}; 
+            //String GUIhash;
             //bool usePerminantSettings {true};
-            ESPMAN::ap_boot_mode_t ap_boot_mode{ESPMAN::NO_STA_BOOT};
-            ESPMAN::no_sta_mode_t no_sta_mode{ESPMAN::NO_STA_NOTHING};
+            // ESPMAN::ap_boot_mode_t ap_boot_mode{ESPMAN::NO_STA_BOOT};
+            // ESPMAN::no_sta_mode_t no_sta_mode{ESPMAN::NO_STA_NOTHING};
             bool OTAupload{true};
-            bool portal{true};
-            bool usesyslog{false};
-            IPAddress syslogIP;
-            uint16_t syslogPort{514};
-            uint8_t syslogProto{0};
+           // bool portal{true};
+            //bool usesyslog{false};
+            // IPAddress syslogIP;
+            // uint16_t syslogPort{514};
+            // uint8_t syslogProto{0};
         } GEN;
     };
 

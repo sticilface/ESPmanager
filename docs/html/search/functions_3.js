@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['factoryreset',['factoryReset',['../class_e_s_pmanager.html#a5974ea776024c990c28376fd237515ed',1,'ESPmanager']]],
-  ['file_5fmd5',['file_md5',['../class_e_s_pmanager.html#a6cfff38606f5ed12b49aada480b23cab',1,'ESPmanager']]],
-  ['formatbytes',['formatBytes',['../class_e_s_pmanager.html#acb4e20b06625138b15c0f39c3522d9ea',1,'ESPmanager']]]
+  ['getevent',['getEvent',['../class_e_s_pmanager.html#ad620b2481d8b8d575f21c8f70f069235',1,'ESPmanager']]],
+  ['gethostname',['getHostname',['../class_e_s_pmanager.html#a2ac01b9cca5905187732d6c6eeee433c',1,'ESPmanager']]],
+  ['getsketchmd5',['getSketchMD5',['../class_e_s_pmanager.html#ac4cd153ca61c45180fa138431a2eaaf2',1,'ESPmanager']]]
 ];

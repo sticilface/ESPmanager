@@ -1,7 +1,13 @@
 var searchData=
 [
-  ['max_5fwifi_5fnetworks',['MAX_WIFI_NETWORKS',['../_e_s_pmanager_8h.html#ab6fffac1a45245ab9b105e57a76c2bde',1,'ESPmanager.h']]],
-  ['mystring',['myString',['../class_e_s_p_m_a_n_1_1my_string.html',1,'ESPMAN']]],
-  ['mystringf',['myStringf',['../class_e_s_p_m_a_n_1_1my_stringf.html',1,'ESPMAN']]],
-  ['mystringf_5fp',['myStringf_P',['../class_e_s_p_m_a_n_1_1my_stringf___p.html',1,'ESPMAN']]]
+  ['strings',['strings',['../group__progmem.html',1,'']]],
+  ['save',['save',['../class_e_s_pmanager.html#a44270d8af72bbc67207f0f9577f2e16e',1,'ESPmanager']]],
+  ['sendjsontohttp',['sendJsontoHTTP',['../class_e_s_pmanager.html#ade55619386f08492b0b6d4dbd2cf32c3',1,'ESPmanager']]],
+  ['settings_5ffile',['SETTINGS_FILE',['../_e_s_pmanager_8h.html#ad13ef9fc86d531a6c7ead593b38e3d12',1,'ESPmanager.h']]],
+  ['settings_5ffile_5fversion',['SETTINGS_FILE_VERSION',['../_e_s_pmanager_8h.html#a07c1d24d0ee26ae4fac3eea66fd78ba1',1,'ESPmanager.h']]],
+  ['settings_5ft',['settings_t',['../struct_e_s_p_m_a_n_1_1settings__t.html',1,'ESPMAN']]],
+  ['sta_5ft',['STA_t',['../struct_e_s_p_m_a_n_1_1settings__t_1_1_s_t_a__t.html',1,'ESPMAN::settings_t']]],
+  ['statichandler',['staticHandler',['../classstatic_handler.html',1,'']]],
+  ['statichandlerdata_5ft',['staticHandlerData_t',['../structstatic_handler_data__t.html',1,'']]],
+  ['stringtomac',['StringtoMAC',['../class_e_s_pmanager.html#a73dc4833b3cd7bfbc6dfb81bee54ab36',1,'ESPmanager']]]
 ];

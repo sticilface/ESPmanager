@@ -64,8 +64,44 @@ $(function() {
 <div class="contents">
 <div class="textblock"><h2>To Do</h2>
 <ul>
-<li>Add manual SSID and password.</li>
 <li>Add multi WiFi implementaion to search for and join a number of WiFi Networks.</li>
+</ul>
+<h2>V3.0</h2>
+<ul>
+<li>Major rework, optimised for efficiency, code size and actual utility.</li>
+<li>LittleFS as standard.</li>
+<li>ArduinoJson V6 as standard.</li>
+<li>Authentication added. default user:admin, pass:esprocks.</li>
+<li>Authentication can only be set in the sketch, must be called after begin().</li>
+<li>WiFi AP and STA logic completely overhauled with all the unnecesary complexity removed.</li>
+<li>If WiFi STA is lost it just tries to reconnect. Every second if only STA active, every 60 seconds if AP is active.</li>
+<li>If rebooted and there is NO access to device ie. no AP and no STA it will make an AP. If WiFi STA is configured it will keep attempting to connect.</li>
+<li>Added a simple PROGMEM webpage at /espman/quick to be served in AP mode to connect to AP. This removes any dependencey on jquery.</li>
+<li>Added a <a class="el" href="classstatic_handler.html">staticHandler</a> web class that allows flexibility of how static web pages are served. SPIFFS/PROGMEM/REDIRECT</li>
+<li>WiFi logic now uses the correct callback API - no polling</li>
+<li>new RTC class that allows structs/arrays to be written to the RTC.</li>
+<li>sketch MD5 is now written to RTC and compared on boot so the sketch knows when it has been upgraded, this allows the dreaded wifi config crash to be handled correctly. no more rebooting after an upgrade.</li>
+<li>autoconnect and autoreconnect options removed. wiFi now just connects... otherwise what is the point of the lib, and autoreconnect is true.</li>
+<li>Bugfixes<ul>
+<li>ESP device finder re-init logic</li>
+<li>Fixed wifi reconnect. I had not actually tested it corretly, now it works and it will reconnect to STA after power outage, or WiFi loss.</li>
+<li>Fixed incorrect jscript host path generation that required /espman/ as path. now both work.</li>
+</ul>
+</li>
+<li>REMOVED<ul>
+<li>myString</li>
+<li>crazy and pointless boot AP/STA modes.</li>
+<li>Removed the endless configuration options that were not used.</li>
+<li>Removed the endless settings reported in about. just because you can....</li>
+<li>many endless settings and config options removed.</li>
+<li>String definitions of errors removed. just report the number, then look it up, or upload with debug enabled.</li>
+<li>crash dump removed</li>
+<li>wifi wizard removed - nice but needs jquery which is bulky and makes a working FS a requirement.</li>
+<li>removed syslog - pointless</li>
+<li>Captive portal. just use /espman</li>
+<li>Removed setting of MAC address</li>
+</ul>
+</li>
 </ul>
 <h1>V2.2</h1>
 <h2>New Features</h2>
@@ -75,7 +111,7 @@ $(function() {
 <li>Added in Jsonupdater manifest example. <a href="https://github.com/sticilface/ESPmanager/issues/16">https://github.com/sticilface/ESPmanager/issues/16</a>.</li>
 <li>Add Error to String responses. <code>myString getError(code)</code></li>
 <li>Big improvements to myString. Lots of implicit convertions, use with FLASH strings, and PSTR(). Derived classes that allow printf and printf_P with convertion back to myString. Addition of c_str(). move semantics to allow efficient copying of tempories. implicit convertion to String.</li>
-<li>Added <a class="el" href="class_sys_log.html">SysLog</a> implementation. Allows sending of data, and priorities and unique appNames to a syslog server from sketch. Configured in web interface <div class="fragment"><div class="line"><span class="keywordtype">bool</span> ESPManager::log(myString  msg); </div><div class="line"><span class="keywordtype">bool</span> ESPManager::log(uint16_t pri, myString  msg); </div><div class="line"><span class="keywordtype">bool</span> ESPManager::log(myString appName, myString  msg);</div><div class="line"><span class="keywordtype">bool</span> ESPManager::log(uint16_t pri, myString appName, myString  msg);</div></div><!-- fragment --> You can use const char *, printf and printf_P to send log messages as follows <div class="fragment"><div class="line">manager.log( <span class="stringliteral">&quot;Simple Error&quot;</span> );</div><div class="line">manager.log( myStringf( <span class="stringliteral">&quot;MSG: %s, error code %u&quot;</span>, <span class="stringliteral">&quot;String Error&quot;</span>, 120) ); </div><div class="line">manager.log( myStringf_P( PSTR(<span class="stringliteral">&quot;MSG: %s, error code %u&quot;</span>), <span class="stringliteral">&quot;String Error&quot;</span>, 120) );  <span class="comment">//  String stored in FLASH. </span></div></div><!-- fragment --></li>
+<li>Added SysLog implementation. Allows sending of data, and priorities and unique appNames to a syslog server from sketch. Configured in web interface <div class="fragment"><div class="line"><span class="keywordtype">bool</span> ESPManager::log(myString  msg); </div><div class="line"><span class="keywordtype">bool</span> ESPManager::log(uint16_t pri, myString  msg); </div><div class="line"><span class="keywordtype">bool</span> ESPManager::log(myString appName, myString  msg);</div><div class="line"><span class="keywordtype">bool</span> ESPManager::log(uint16_t pri, myString appName, myString  msg);</div></div><!-- fragment --> You can use const char *, printf and printf_P to send log messages as follows <div class="fragment"><div class="line">manager.log( <span class="stringliteral">&quot;Simple Error&quot;</span> );</div><div class="line">manager.log( myStringf( <span class="stringliteral">&quot;MSG: %s, error code %u&quot;</span>, <span class="stringliteral">&quot;String Error&quot;</span>, 120) ); </div><div class="line">manager.log( myStringf_P( PSTR(<span class="stringliteral">&quot;MSG: %s, error code %u&quot;</span>), <span class="stringliteral">&quot;String Error&quot;</span>, 120) );  <span class="comment">//  String stored in FLASH. </span></div></div><!-- fragment --></li>
 <li>Added manual SSID specification. Fixes <a href="https://github.com/sticilface/ESPmanager/issues/13">https://github.com/sticilface/ESPmanager/issues/13</a></li>
 </ul>
 <h2>Improvements</h2>

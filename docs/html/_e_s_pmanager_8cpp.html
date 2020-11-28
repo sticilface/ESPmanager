@@ -58,12 +58,13 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_8f4efe16832601b4fa62013d5b6bcba4.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">ESPmanager.cpp File Reference</div>  </div>
@@ -74,20 +75,21 @@ $(function() {
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="_e_s_pmanager_8h_source.html">ESPmanager.h</a>&quot;</code><br />
 <code>#include &lt;WiFiUdp.h&gt;</code><br />
-<code>#include &lt;ArduinoOTA.h&gt;</code><br />
 <code>#include &lt;flash_utils.h&gt;</code><br />
 <code>#include &lt;ArduinoJson.h&gt;</code><br />
 <code>#include &lt;ESP8266mDNS.h&gt;</code><br />
 <code>#include &lt;MD5Builder.h&gt;</code><br />
 <code>#include &lt;AsyncJson.h&gt;</code><br />
-<code>#include &lt;umm_malloc/umm_malloc.h&gt;</code><br />
-<code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
-<code>#include &lt;WebAuthentication.h&gt;</code><br />
 <code>#include &lt;Hash.h&gt;</code><br />
-<code>#include &lt;list&gt;</code><br />
 <code>#include &quot;Tasker/src/Tasker.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="_flash_writer_8h_source.html">FlashWriter.h</a>&quot;</code><br />
+<code>#include &quot;StreamString.h&quot;</code><br />
+<code>#include &quot;staticHandler/src/staticHandler.h&quot;</code><br />
+<code>#include &quot;staticHandler/src/jqueryStatic.h&quot;</code><br />
+<code>#include &quot;pgmspace.h&quot;</code><br />
+<code>#include &lt;cstdlib&gt;</code><br />
+<code>#include &quot;QuickSetup.h&quot;</code><br />
 <code>#include &quot;user_interface.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
@@ -96,14 +98,17 @@ Macros</h2></td></tr>
 #define&#160;</td><td class="memItemRight" valign="bottom"><b>ESPMANAGER_GIT_TAG</b>&#160;&#160;&#160;&quot;NOT DEFINED&quot;</td></tr>
 <tr class="separator:afa047aa3ce412a43c328eb9527433818"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a77abcb8d7caddbe481c4724ae6f641b1"><td class="memItemLeft" align="right" valign="top"><a id="a77abcb8d7caddbe481c4724ae6f641b1"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>allocateJSON</b> ()</td></tr>
+<tr class="separator:a77abcb8d7caddbe481c4724ae6f641b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:af943fe6ef5c41707adbf4c6c56448165"><td class="memItemLeft" align="right" valign="top"><a id="af943fe6ef5c41707adbf4c6c56448165"></a>
-UMM_HEAP_INFO&#160;</td><td class="memItemRight" valign="bottom"><b>ummHeapInfo</b></td></tr>
-<tr class="separator:af943fe6ef5c41707adbf4c6c56448165"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39217f4a317d9376abd1434c535576db"><td class="memItemLeft" align="right" valign="top"><a id="a39217f4a317d9376abd1434c535576db"></a>
-uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>_SPIFFS_start</b></td></tr>
-<tr class="separator:a39217f4a317d9376abd1434c535576db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a083ef6b702403b69129b3d2104f266db"><td class="memItemLeft" align="right" valign="top"><a id="a083ef6b702403b69129b3d2104f266db"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>jsonSize</b> = 4096</td></tr>
+<tr class="separator:a083ef6b702403b69129b3d2104f266db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a> implementations. </p>

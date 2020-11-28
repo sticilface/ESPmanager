@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['jsonpackage',['JSONpackage',['../class_e_s_p_m_a_n_1_1_j_s_o_npackage.html',1,'ESPMAN']]]
+  ['max_5fwifi_5fnetworks',['MAX_WIFI_NETWORKS',['../_e_s_pmanager_8h.html#ab6fffac1a45245ab9b105e57a76c2bde',1,'ESPmanager.h']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['disableportal',['disablePortal',['../class_e_s_pmanager.html#a9c392a712f02fb7ca1c54783f7b45ab4',1,'ESPmanager']]]
+  ['espmanager',['ESPmanager',['../class_e_s_pmanager.html#a98ab8fc66cba5aff13210e1757bddf1a',1,'ESPmanager']]]
 ];

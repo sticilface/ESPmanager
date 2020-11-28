@@ -5,3 +5,4 @@ scripts/data
 
 docs/html
 src/staticHandler
+docs/*.tmp

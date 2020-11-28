@@ -72,18 +72,6 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html">JSONpackage</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class to manage ArduinoJson objects.  <a href="class_e_s_p_m_a_n_1_1_j_s_o_npackage.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1my_string.html">myString</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class to manage Strings.  <a href="class_e_s_p_m_a_n_1_1my_string.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1my_stringf.html">myStringf</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived from <a class="el" href="class_e_s_p_m_a_n_1_1my_string.html" title="A class to manage Strings. ">myString</a> to allow printf type functionality.  <a href="class_e_s_p_m_a_n_1_1my_stringf.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_e_s_p_m_a_n_1_1my_stringf___p.html">myStringf_P</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Derived from <a class="el" href="class_e_s_p_m_a_n_1_1my_string.html" title="A class to manage Strings. ">myString</a> to allow use of printf but with buffers stored in progmem.  <a href="class_e_s_p_m_a_n_1_1my_stringf___p.html#details">More...</a><br /></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_e_s_p_m_a_n_1_1settings__t.html">settings_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Master settings struct. Contains all the settings. This struct is not kept in memory all the time. It gets deleted and reloaded as required.  <a href="struct_e_s_p_m_a_n_1_1settings__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -94,7 +82,7 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>SUCCESS</b> = 0, 
 <b>UNKNOWN_ERROR</b> = -20, 
 <b>NO_UPDATE_URL</b> = -21, 
-<b>SPIFFS_FILES_ABSENT</b> = -22, 
+<b>FS_FILES_ABSENT</b> = -22, 
 <br />
 &#160;&#160;<b>FILE_NOT_CHANGED</b> = -23, 
 <b>MD5_CHK_ERROR</b> = -24, 
@@ -109,10 +97,10 @@ Enumerations</h2></td></tr>
 &#160;&#160;<b>MALLOC_FAIL</b> = -31, 
 <b>MANIFST_FILE_ERROR</b> = -32, 
 <b>UNKNOWN_NUMBER_OF_FILES</b> = -33, 
-<b>SPIFFS_INFO_FAIL</b> = -34, 
+<b>FS_INFO_FAIL</b> = -34, 
 <br />
-&#160;&#160;<b>SPIFFS_FILENAME_TOO_LONG</b> = -35, 
-<b>SPIFFS_FILE_OPEN_ERROR</b> = -36, 
+&#160;&#160;<b>FS_FILENAME_TOO_LONG</b> = -35, 
+<b>FS_FILE_OPEN_ERROR</b> = -36, 
 <b>FILE_TOO_LARGE</b> = -37, 
 <b>INCOMPLETE_DOWNLOAD</b> = -38, 
 <br />
@@ -136,7 +124,7 @@ Enumerations</h2></td></tr>
 <b>CONNECT_FAILED</b> = -80, 
 <b>UNITITIALISED</b> = -81, 
 <br />
-&#160;&#160;<b>ERROR_SPIFFS_MOUNT</b> = -82, 
+&#160;&#160;<b>ERROR_FS_MOUNT</b> = -82, 
 <b>AUTO_CONNECTED_STA</b> = -83, 
 <b>ERROR_DISABLING_STA</b> = -84, 
 <b>STA_DISABLED</b> = -85, 
@@ -147,33 +135,11 @@ Enumerations</h2></td></tr>
 <b>NO_CHANGES</b> = -89, 
 <br />
 &#160;&#160;<b>PASSWOROD_INVALID</b> = -90, 
-<b>WRONG_SETTINGS_FILE_VERSION</b> = -91
+<b>WRONG_SETTINGS_FILE_VERSION</b> = -91, 
+<b>FILE_RENAME_FAILED</b> = -92
 <br />
  }</td></tr>
 <tr class="separator:a8bcc85d695e1fff66ea9b0abf4891a78"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a367257b39aefb98c08769d372c069820"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_e_s_p_m_a_n.html#a367257b39aefb98c08769d372c069820">ap_boot_mode_t</a> : int8_t { <br />
-&#160;&#160;<b>DISABLED</b> = -1, 
-<b>NO_STA_BOOT</b> = 0, 
-<b>NO_STA_BOOT_AP_5</b> = 5, 
-<b>NO_STA_BOOT_AP_10</b> = 10, 
-<br />
-&#160;&#160;<b>NO_STA_BOOT_AP_30</b> = 30, 
-<b>NO_STA_BOOT_AP_60</b> = 60
-<br />
- }</td></tr>
-<tr class="separator:a367257b39aefb98c08769d372c069820"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a48ab5fdcc0f24c796c52b63426135429"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429">no_sta_mode_t</a> : int8_t { <br />
-&#160;&#160;<a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429a14314da61ed24f4cca201b8c8fd6abe6">NO_STA_NOTHING</a> = -2, 
-<a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429a4bbe30b1c4def7a7c8bc430fb0e9cca0">NO_STA_REBOOT</a> = -1, 
-<b>NO_STA_START_AP</b> = 0, 
-<b>NO_STA_START_AP_5</b> = 5, 
-<br />
-&#160;&#160;<b>NO_STA_START_AP_10</b> = 10, 
-<b>NO_STA_START_AP_30</b> = 30, 
-<b>NO_STA_START_AP_60</b> = 60
-<br />
- }</td></tr>
-<tr class="separator:a48ab5fdcc0f24c796c52b63426135429"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -192,18 +158,6 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_UPDATE<
 <tr class="memitem:gafc55468f65374f59b140f2535b790652"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_CONSOLE</b> [] = &quot;console&quot;</td></tr>
 <tr class="separator:gafc55468f65374f59b140f2535b790652"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaa3226447bda4345ea70ef20169b85feb"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_ERROR</b> [] = &quot;ERROR [%i]&quot;</td></tr>
-<tr class="separator:gaa3226447bda4345ea70ef20169b85feb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf2782cf1e5ee59c6886318700b4930eb"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_ERROR2</b> [] = &quot;ERROR [%i] [%i]&quot;</td></tr>
-<tr class="separator:gaf2782cf1e5ee59c6886318700b4930eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2e7c732e447aac775495cb167c69f95b"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_ERROR2_toString</b> [] = &quot;ERROR [%s] [%s]&quot;</td></tr>
-<tr class="separator:ga2e7c732e447aac775495cb167c69f95b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga58bbde8742368b76bae6bae69a8f10e2"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_ERROR_toString</b> [] = &quot;ERROR [%s]&quot;</td></tr>
-<tr class="separator:ga58bbde8742368b76bae6bae69a8f10e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaa0077cafdba0c28c21d337e310eb4e5e"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_deviceid</b> [] = &quot;deviceid&quot;</td></tr>
 <tr class="separator:gaa0077cafdba0c28c21d337e310eb4e5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -228,15 +182,6 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_updateF
 <tr class="memitem:ga59f28a60926a378c6683b99dfe8829c5"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_OTApassword</b> [] = &quot;OTApassword&quot;</td></tr>
 <tr class="separator:ga59f28a60926a378c6683b99dfe8829c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab0add749d0f680bed01b49c7e8cb531d"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_GUIusername</b> [] = &quot;GUIusername&quot;</td></tr>
-<tr class="separator:gab0add749d0f680bed01b49c7e8cb531d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1a8513a8118a6d308def153550f9d161"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_GUIpassword</b> [] = &quot;GUIpassword&quot;</td></tr>
-<tr class="separator:ga1a8513a8118a6d308def153550f9d161"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaf06c58eac3e1727123e280cb6a366ac1"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_GUIhash</b> [] = &quot;GUIhash&quot;</td></tr>
-<tr class="separator:gaf06c58eac3e1727123e280cb6a366ac1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga1269f00c618112321c4c4f3871c54ff9"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_OTAport</b> [] = &quot;OTAport&quot;</td></tr>
 <tr class="separator:ga1269f00c618112321c4c4f3871c54ff9"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -258,9 +203,6 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_pass</b
 <tr class="memitem:ga7527d66100cefaee3b982615c3f02a0c"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_changed</b> [] = &quot;changed&quot;</td></tr>
 <tr class="separator:ga7527d66100cefaee3b982615c3f02a0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab68b95c715e8849a6aac632f21255fb1"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_usePerminantSettings</b> [] = &quot;usePerminantSettings&quot;</td></tr>
-<tr class="separator:gab68b95c715e8849a6aac632f21255fb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga53307054e3b8a067451b108b248c1e87"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_IP</b> [] = &quot;IP&quot;</td></tr>
 <tr class="separator:ga53307054e3b8a067451b108b248c1e87"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -273,21 +215,9 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_SN</b> 
 <tr class="memitem:gac304347daffa547c2017f298ead6ac16"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_MAC</b> [] = &quot;MAC&quot;</td></tr>
 <tr class="separator:gac304347daffa547c2017f298ead6ac16"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab04631eac7bf89a77afdf0d665ca86a8"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_autoconnect</b> [] = &quot;autoconnect&quot;</td></tr>
-<tr class="separator:gab04631eac7bf89a77afdf0d665ca86a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gae77204f01ca4b61ebe9d8f3dd2c65e69"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_autoreconnect</b> [] = &quot;autoreconnect&quot;</td></tr>
-<tr class="separator:gae77204f01ca4b61ebe9d8f3dd2c65e69"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga8fda377c48bdb453c5c7bc6d8f5c54d2"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_mode</b> [] = &quot;mode&quot;</td></tr>
 <tr class="separator:ga8fda377c48bdb453c5c7bc6d8f5c54d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga468843e56d3497be9d4f80f632ed8db8"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_ap_boot_mode</b> [] = &quot;ap_boot_mode&quot;</td></tr>
-<tr class="separator:ga468843e56d3497be9d4f80f632ed8db8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga68a8678a0a61adb43c030697aca846d9"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_no_sta_mode</b> [] = &quot;no_sta_mode&quot;</td></tr>
-<tr class="separator:ga68a8678a0a61adb43c030697aca846d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad04b20cc91e260e98169d63274732650"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_OTAupload</b> [] = &quot;OTAupload&quot;</td></tr>
 <tr class="separator:gad04b20cc91e260e98169d63274732650"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -309,21 +239,6 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_DNS1</b
 <tr class="memitem:ga9b4014dd7a91c70a1de85659b3f650af"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_DNS2</b> [] = &quot;DNS2&quot;</td></tr>
 <tr class="separator:ga9b4014dd7a91c70a1de85659b3f650af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga2fc0c9ed8c70cc24c4491b43870528df"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_syslog</b> [] = &quot;syslog&quot;</td></tr>
-<tr class="separator:ga2fc0c9ed8c70cc24c4491b43870528df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gaea40abd069e152ec751e6e246d9b77bb"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_usesyslog</b> [] = &quot;usesyslog&quot;</td></tr>
-<tr class="separator:gaea40abd069e152ec751e6e246d9b77bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga92b340b33f60cdf6f620c09b7a78143b"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_syslogIP</b> [] = &quot;syslogIP&quot;</td></tr>
-<tr class="separator:ga92b340b33f60cdf6f620c09b7a78143b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0e91475087760eec038d4b241fbd3dd9"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_syslogPort</b> [] = &quot;syslogPort&quot;</td></tr>
-<tr class="separator:ga0e91475087760eec038d4b241fbd3dd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga0dafc2f3271af53113796982e3c01706"><td class="memItemLeft" align="right" valign="top">
-const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_syslogProto</b> [] = &quot;syslogProto&quot;</td></tr>
-<tr class="separator:ga0dafc2f3271af53113796982e3c01706"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gae98ba47679640373e6ff40d3371787bb"><td class="memItemLeft" align="right" valign="top">
 const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_OK</b> [] = &quot;OK&quot;</td></tr>
 <tr class="separator:gae98ba47679640373e6ff40d3371787bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -331,21 +246,6 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_OK</b> 
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Contains tools for <a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a>. </p>
 </div><h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="a367257b39aefb98c08769d372c069820"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a367257b39aefb98c08769d372c069820">&#9670;&nbsp;</a></span>ap_boot_mode_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="namespace_e_s_p_m_a_n.html#a367257b39aefb98c08769d372c069820">ESPMAN::ap_boot_mode_t</a> : int8_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Enum actions if no wifi found on boot </p>
-
-</div>
-</div>
 <a id="a8bcc85d695e1fff66ea9b0abf4891a78"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8bcc85d695e1fff66ea9b0abf4891a78">&#9670;&nbsp;</a></span>ESPMAN_ERR_t</h2>
 
@@ -358,27 +258,6 @@ const char&#160;</td><td class="memItemRight" valign="bottom"><b>fstring_OK</b> 
       </table>
 </div><div class="memdoc">
 <p>Error codes for <a class="el" href="class_e_s_pmanager.html" title="Manager for ESP8266. ">ESPmanager</a>. </p>
-
-</div>
-</div>
-<a id="a48ab5fdcc0f24c796c52b63426135429"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a48ab5fdcc0f24c796c52b63426135429">&#9670;&nbsp;</a></span>no_sta_mode_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="namespace_e_s_p_m_a_n.html#a48ab5fdcc0f24c796c52b63426135429">ESPMAN::no_sta_mode_t</a> : int8_t</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Enum actions if wifi fails after boot </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a48ab5fdcc0f24c796c52b63426135429a14314da61ed24f4cca201b8c8fd6abe6"></a>NO_STA_NOTHING&#160;</td><td class="fielddoc"><p>Do nothing if there is no wifi connection on device boot. </p>
-</td></tr>
-<tr><td class="fieldname"><a id="a48ab5fdcc0f24c796c52b63426135429a4bbe30b1c4def7a7c8bc430fb0e9cca0"></a>NO_STA_REBOOT&#160;</td><td class="fielddoc"><p>Reboot if there is no wifi on device boot, device waits for ::AP_START_DELAY. </p>
-</td></tr>
-</table>
 
 </div>
 </div>

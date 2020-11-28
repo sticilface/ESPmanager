@@ -104,9 +104,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>remove</b> (const <a 
 <tr class="separator:ac7f0f5c335cc95c6c2fb6fa187bb1dfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a14bb0201e22d50abf59bbafa7b7271"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_task.html#a5a14bb0201e22d50abf59bbafa7b7271">run</a> (bool override=true)</td></tr>
 <tr class="separator:a5a14bb0201e22d50abf59bbafa7b7271"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2725058a9921c716449d63caccc4afb"><td class="memItemLeft" align="right" valign="top"><a id="ab2725058a9921c716449d63caccc4afb"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>runNow</b> ()</td></tr>
-<tr class="separator:ab2725058a9921c716449d63caccc4afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54f77e601c8388091a668e00b582296d"><td class="memItemLeft" align="right" valign="top"><a id="a54f77e601c8388091a668e00b582296d"></a>
+<a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>runNow</b> ()</td></tr>
+<tr class="separator:a54f77e601c8388091a668e00b582296d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6dc446361f4a543b808b14c6cb8cc7b2"><td class="memItemLeft" align="right" valign="top"><a id="a6dc446361f4a543b808b14c6cb8cc7b2"></a>
 <a class="el" href="class_task.html">Task</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>setType</b> (Task_t type)</td></tr>
 <tr class="separator:a6dc446361f4a543b808b14c6cb8cc7b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -140,9 +140,9 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getTimeout</b> ()
 <tr class="memitem:a5c551b1fda4f0fa39e8c5ebb15c79a8c"><td class="memItemLeft" align="right" valign="top"><a id="a5c551b1fda4f0fa39e8c5ebb15c79a8c"></a>
 String&#160;</td><td class="memItemRight" valign="bottom"><b>getName</b> ()</td></tr>
 <tr class="separator:a5c551b1fda4f0fa39e8c5ebb15c79a8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab4f3b11a9dbb8d9d0859a95f9e1a79c7"><td class="memItemLeft" align="right" valign="top"><a id="ab4f3b11a9dbb8d9d0859a95f9e1a79c7"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>dump</b> (Stream &amp;stream, int indent=0)</td></tr>
-<tr class="separator:ab4f3b11a9dbb8d9d0859a95f9e1a79c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad6bcb434e37502ae76daaf7cfdd80209"><td class="memItemLeft" align="right" valign="top"><a id="ad6bcb434e37502ae76daaf7cfdd80209"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>dump</b> (Print &amp;stream, int indent=0)</td></tr>
+<tr class="separator:ad6bcb434e37502ae76daaf7cfdd80209"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac228c21443f0fa19990aef9beebffbfb"><td class="memItemLeft" align="right" valign="top"><a id="ac228c21443f0fa19990aef9beebffbfb"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>canDelete</b> ()</td></tr>
 <tr class="separator:ac228c21443f0fa19990aef9beebffbfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -152,39 +152,3 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>reset</b> ()</td></tr
 <tr class="memitem:a5584315b28913f18eab1b999add4b5d6"><td class="memItemLeft" align="right" valign="top"><a id="a5584315b28913f18eab1b999add4b5d6"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>finished</b> ()</td></tr>
 <tr class="separator:a5584315b28913f18eab1b999add4b5d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Tasker for Arduino </p>
-</div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a5a14bb0201e22d50abf59bbafa7b7271"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5a14bb0201e22d50abf59bbafa7b7271">&#9670;&nbsp;</a></span>run()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool Task::run </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>override</em> = <code>true</code></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Need to allow countdown to be reset. ie... run 5 times then done, but if repeat set.. dont delete, but allow it to be reset to run another 5 times. </p>
-
-</div>
-</div>
-<hr/>The documentation for this class was generated from the following files:<ul>
-<li>src/Tasker/src/<a class="el" href="_tasker_8h_source.html">Tasker.h</a></li>
-<li>src/Tasker/src/Tasker.cpp</li>
-</ul>
-</div><!-- contents -->
-<!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.13
-</small></address>
-</body>
-</html>
