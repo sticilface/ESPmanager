@@ -18,6 +18,8 @@
 - new RTC class that allows structs/arrays to be written to the RTC. 
 - sketch MD5 is now written to RTC and compared on boot so the sketch knows when it has been upgraded, this allows the dreaded wifi config crash to be handled correctly.  no more rebooting after an upgrade. 
 - autoconnect and autoreconnect options removed.  wiFi now just connects... otherwise what is the point of the lib, and autoreconnect is true. 
+- remove all using ESPMAN napespaces.  just include it for this translation unit via anonimous namespace. 
+- Improve Debug level reporting with func,line and millis. 
 
 
 - Bugfixes

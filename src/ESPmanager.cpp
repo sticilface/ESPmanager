@@ -43,21 +43,21 @@ namespace
 #define ESPMANAGER_GIT_TAG "NOT DEFINED"
 #endif
 
-uint32_t jsonSize = 4096;
-//  move this out of global...
-uint32_t allocateJSON()
+namespace ESPMAN
 {
-    uint32_t value = ESP.getMaxFreeBlockSize() - 512;
-    if (value > jsonSize)
+    uint32_t allocateJSON()
     {
-        return jsonSize;
+        uint32_t value = ESP.getMaxFreeBlockSize() - 512;
+        if (value > MAX_BUFFER_SIZE)
+        {
+            return MAX_BUFFER_SIZE;
+        }
+        else
+        {
+            return value;
+        }
     }
-    else
-    {
-        return value;
-    }
-}
-
+}; // namespace ESPMAN
 /**
  *
  * @param [HTTP] pass an instance of AsyncWebServer. Optional.
@@ -563,7 +563,7 @@ String ESPmanager::getHostname()
  */
 ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 {
-    using namespace ESPMAN;
+   
 
     if (path.length())
     {
@@ -616,7 +616,7 @@ ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 #ifdef ESPMANAGER_UPDATER
 ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
 {
-    using namespace ESPMAN;
+   
 
     _getAllSettings();
 
@@ -926,7 +926,7 @@ void ESPmanager::event_send(const String &topic, const String &msg)
  */
 ESPMAN_ERR_t ESPmanager::save()
 {
-    using namespace ESPMAN;
+   
     _getAllSettings();
 
     if (_settings)
@@ -943,7 +943,7 @@ ESPMAN_ERR_t ESPmanager::save()
 
 ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char *url, const char *filename_c, const char *md5_true, bool overwrite)
 {
-    using namespace ESPMAN;
+   
     String filename = filename_c;
     HTTPClient http;
     FSInfo _FSinfo;
@@ -1135,7 +1135,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char *url, const char *filename_c, 
 
 ESPMAN_ERR_t ESPmanager::_parseUpdateJson(DynamicJsonDocument &json, const char *path)
 {
-    using namespace ESPMAN;
+   
     DEBUGESPMANAGERF("path = %s\n", path);
     WiFiClient client;
     HTTPClient http;
@@ -1790,7 +1790,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     _tasker.add([safety, newsettings, request, this, APChannelchange, channel](Task &t) {
                         //_syncCallback = [safety, newsettings, request, this, APChannelchange, channel]() {
 
-                        using namespace ESPMAN;
+                       
 
                         WiFiresult = 0;
                         uint32_t starttime = millis();
@@ -2064,7 +2064,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             {
 
                 _tasker.add([this, newsettings](Task &t) {
-                    using namespace ESPMAN;
+                   
                     event_send("", F("Updating WiFi Settings"));
 
                     delay(10);
@@ -2233,7 +2233,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                 _tasker.add([this, newsettings](Task &t) {
                     //_syncCallback = [this, newsettings] () {
 
-                    using namespace ESPMAN;
+                   
 
                     //event_printf(NULL, "Updating AP Settings");
                     //event_printf_P(NULL, PSTR("Updating AP Settings"));
@@ -2493,7 +2493,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 ESPMAN_ERR_t ESPmanager::_initialiseAP()
 {
-    using namespace ESPMAN;
+   
     //int ERROR = 0;
 
     //  get the settings from SPIFFS if settings PTR is null
@@ -2513,7 +2513,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseAP()
 
 ESPMAN_ERR_t ESPmanager::_initialiseAP(settings_t::AP_t &settings)
 {
-    using namespace ESPMAN;
+   
 
 #ifdef DEBUGESPMANAGER
     DEBUGESPMANAGERF("-------  PRE CONFIG ------\n");
@@ -2575,7 +2575,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseAP(settings_t::AP_t &settings)
 
 ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 {
-    using namespace ESPMAN;
+   
     ESPMAN_ERR_t ERROR = SUCCESS;
 
     if (!_settings)
@@ -2613,7 +2613,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 ESPMAN_ERR_t ESPmanager::_initialiseSTA(settings_t::STA_t &set)
 {
 
-    using namespace ESPMAN;
+   
 
 #ifdef DEBUGESPMANAGER
     DEBUGESPMANAGERF("-------  PRE CONFIG ------\n");
@@ -2718,7 +2718,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA(settings_t::STA_t &set)
 //  need to add in captive portal to setttings....
 ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown, int channel)
 {
-    using namespace ESPMAN;
+   
     DEBUGESPMANAGERF("***** EMERGENCY mode **** \n");
 
     IPAddress testIP = WiFi.softAPIP();
@@ -2766,7 +2766,7 @@ ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown, int channel)
 ESPMAN_ERR_t ESPmanager::_getAllSettings()
 {
 
-    using namespace ESPMAN;
+   
 
     if (!_settings)
     {
@@ -2811,7 +2811,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings()
 ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t &set)
 {
 
-    using namespace ESPMAN;
+   
     DynamicJsonDocument json(allocateJSON());
     uint8_t settingsversion = 0;
 
@@ -3001,7 +3001,7 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t &set)
 ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t &set)
 {
 
-    using namespace ESPMAN;
+   
 
     DynamicJsonDocument jsonBuffer(allocateJSON());
     JsonObject root = jsonBuffer.to<JsonObject>();
