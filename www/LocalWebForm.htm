@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html>
+   <head>
+      <meta name = "viewport" content = "width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0">
+      <title>ESP8266 Enter WiFi Details</title>
+      <style>
+         "body { background-color: #808080; font-family: Arial, Helvetica, Sans-Serif; Color: #000000; } "
+      </style>
+   </head>
+   <body>
+      <h1>ESP8266 Web Form Demo</h1>
+      <FORM action="/espman/quick" method="post">
+         <P>
+            Enter the WiFi network and Password.<br>
+            Current IP : %IP%<br>
+            Current STA: %STA%<br>
+            <INPUT type="text" name="sta" value="">Wifi STA<BR>
+            <INPUT type="text" name="pass" value="">Password<BR>
+            <INPUT type="submit" value="Send" name="submit"> <INPUT type=reset> <INPUT type="submit" value="Save" name="save">           
+         </P>
+      </FORM>
+   </body>
+</html>

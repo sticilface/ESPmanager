@@ -61,7 +61,7 @@
 #include "ESPdeviceFinder/src/ESPdeviceFinder.h"
 #include "ESPMAN.h" //  has to go after
 #include <ESP8266RTCMemory/src/ESP8266RTCMemory.h>
-#include "staticHandler/src/staticHandler.h"
+//#include "staticHandler/src/staticHandler.h"
 #include "rtcStruct.h"
 
 //  These are the Features that can be turned off to save more FLASH and RAM space.
@@ -205,7 +205,7 @@ private:
   /*
       New Variables added V3
   */
-  staticHandler _staticHandlerInstance; //  serves PROGMEM Javascript Files. 
+  //staticHandler _staticHandlerInstance; //  serves PROGMEM Javascript Files. 
   ESP8266RTCMemory<ESPMAN_rtc_data> _rtc;
   WiFiEventHandler _stationConnectedHandler;
   WiFiEventHandler _stationDisconnectedHandler;

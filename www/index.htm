@@ -1,0 +1,708 @@
+<!-- Version 1.01-->
+<!DOCTYPE html>
+<!-- <html manifest="site.appcache"> -->
+<html>
+
+<head>
+    <title>ESP Manager</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="version" content="1.00">
+    <!--  HERE IS CSS -->
+    <!-- <link rel="stylesheet" href="/main.css" inline> -->
+    <!-- <link rel="stylesheet" href="/jqm1.4.5.css"> -->
+    <!--  HERE IS /jq1.11.1.js -->
+    <!-- <script src="/jq1.11.1.js"></script> -->
+    <!--  HERE IS jqm1.4.5.js -->
+    <!-- <script src="/jqm1.4.5.js"></script> -->
+    <!--  HERE IS /jqColorPicker.min.js -->
+    <!-- <script src="/colors.js" inline></script> -->
+    <!-- <script src="/jqColorPicker.min.js" inline></script> -->
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+    <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+
+    <!--  HERE IS /PRE SCRIPT -->
+    <script src="/onload.js" inline inline-compress></script>
+    
+
+    <!--<link rel="stylesheet" href="/jquery/jqm1.4.5.css">-->
+    <!--<script src="/jquery/jq1.11.1.js"></script>-->
+    <!--<script src="/jquery/jqm1.4.5.js"></script>-->
+    <!--
+<script>
+  if (typeof jQuery == 'undefined')
+{
+    document.write(unescape("%3Cscript src='jquery-1.11.1.min.js' type='text/javascript'%3E%3C/script%3E"));
+}
+</script>
+
+<script>
+  if(typeof $.mobile == 'undefined')
+{
+    document.write(unescape("%3Cscript src='jquery.mobile-1.4.5.min.js' type='text/javascript'%3E%3C/script%3E"));
+}
+$(function() {
+    if($('.ui-helper-hidden:first').is(':visible') === true){
+        $('<link rel="stylesheet" type="text/css" href="jquery.mobile-1.4.5.min.css" />').appendTo('head');
+    }
+});
+</script>
+-->
+    <STYLE type="text/css">
+    .centerwrapper {
+        margin: 0 auto;
+        margin-left: auto;
+        margin-right: auto;
+        align: center;
+        text-align: center
+    }
+    
+    .ui-btn.my-tooltip-btn,
+    .ui-btn.my-tooltip-btn:hover,
+    .ui-btn.my-tooltip-btn:active {
+        background: none;
+        border: 0;
+    }
+    
+    .center {
+        text-align: center;
+    }
+    
+    .headerButton {
+        float: left;
+        margin-right: 5px!important;
+    }
+    
+    progress[value] {
+        width: 250px;
+        height: 20px;
+    }
+    </STYLE>
+    <style type="text/css">
+    body {
+        /*visibility: hidden*/
+    }
+    </style>
+</head>
+
+<body id="body">
+    <div class='ui-helper-hidden'></div>
+    <div data-role="header" data-theme="a" data-position="fixed" id="theheader">
+        <h1 class='myheader'><var class="devicename">ESP Manager</var></h1>
+        <a href="#leftpanel" data-role="button" data-icon="gear" class="ui-btn  ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext">Menu</a>
+        <!--<a href="#leftpanel" class="ui-btn ui-btn-left ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-bars">Menu</a>-->
+        <div class="ui-btn-right ui-btn ui-alt-icon ui-nodisc-icon ui-corner-all" data-role="controlgroup" data-type="horizontal">
+            <a href="#" id="savebutton" data-role="button" data-icon="alert" class="ui-btn  ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext">Save</a>
+            <a href="#rightpanel" data-role="button" data-icon="gear" class="ui-btn  ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext">More</a>
+            <!--<a href="#savebutton" data-role="button" data-icon="alert" data-iconpos="notext" class="">Save</a>-->
+        </div>
+        <!--<div class="ui-btn-right">-->
+        <!--  <a href="#rightpanel" class="headerButton ui-btn ui-btn-right ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-gear">Menu</a>-->
+        <!--  <a href="#savebutton" class="headerButton ui-btn ui-btn-right ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-alert">Save</a>-->
+        <!--</div>-->
+        <div data-role="popup" id="wsalert" class="ui-content" data-theme="a" style="max-width:350px;" data-transition="slidedown" data-position-to="#theheader"></div>
+        <div data-role="popup" id="upgradepopup" class="ui-content" data-theme="a" style="max-width:350px;" data-transition="pop" data-position-to="window" data-dismissible="false">
+            <!--<input type="range" name="slider-2" id="upgrade-slider" data-highlight="true" min="0" max="100" value="50">-->
+            <h3 id="updatebanner" class="centerwrapper"></h3>
+            <progress class="centerwrapper" id="upgrade-slider" value="0" max="100"></progress>
+            <div class="centerwrapper" id="upgrade_message"></div>
+        </div>
+        <!-- HOST POP_UP
+ -->
+        <div data-role="popup" id="set_host" data-theme="a" data-dismissible="true" style="max-width:400px;">
+            <div data-role="header">
+                <h2>Set Host</h2>
+            </div>
+            <div role="main" class="ui-content">
+                <form>
+                    <input type="text" data-mini="true" name="deviceid" id="text_home_device" value="">
+                    <a id="submithost" onclick=sethost() class="ui-btn ui-corner-all ui-shadow ui-btn-a" data-rel="back" data-transition="flow">Submit</a>
+                </form>
+                <!--    <h3 class="ui-title">Are you sure you want to Format SPIFFS?</h3>
+   <p>This action cannot be undone, and will require all javascript files to be uploaded to SPIFFs.</p>
+   <p>It will BREAK settings manager</p>
+   <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+   <a id="formatspiffsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a> -->
+            </div>
+        </div>
+    </div>
+    <div data-role="panel" id="leftpanel" data-position="left" data-display="overlay" data-theme="b">
+        <!-- panel content goes here -->
+        <div class="center">
+            <h1 class="center">Menu</h1>
+        </div>
+        <div>
+            <a href="/" id="home_href_link" data-ajax="false" data-role="button" class="ui-btn">Home</a>
+            <a href="#generalpage" data-role="button" class="ui-btn">ESPMAN</a>
+            <a href="#wifipage" data-role="button" class="ui-btn">WiFi - STA</a>
+            <a href="#appage" data-role="button" class="ui-btn">WiFi - AP</a>
+            <a href="#otapage" data-role="button" class="ui-btn">OTA</a>
+            <a href="#upgradepage" data-role="button" class="ui-btn">Upgrade</a>
+            <a href="#aboutpage" data-role="button" class="ui-btn">About</a>
+            <!-- <a href="#syslog
+" data-role="button" class="ui-btn">Syslog</a> -->
+            <a href="#console" data-role="button" class="ui-btn">Console</a>
+            <a href="#discover" data-role="button" class="ui-btn">Discover</a>
+            <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
+            <div id="git_ver"></div>
+        </div>
+    </div>
+    <div data-role="panel" id="rightpanel" data-position="right" data-display="overlay" data-theme="b">
+        <!-- panel content goes here -->
+        <div>
+            <h1>More</h1>
+            <a id="rebootbutton" data-role="button" class="ui-btn">Reboot</a>
+            <a href="#popupDialogClearWiFi" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Clear WiFi</a>
+            <a href="#popupDialogDeleteSettings" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Delete Settings</a>
+            <a href="#popupDialogSPIFFS" data-rel="popup" class="ui-btn" data-transition="pop" data-position-to="window">Format FS</a>
+            <a href="#my-header" data-rel="close" class="ui-btn upgradebutton">Upgrade</a>
+            <a href="#my-header" data-rel="close" class="ui-btn">Close</a>
+            <!--             <label for="removesaftey-1">Disable Checks:</label>
+            <select id="removesaftey-1" name="removesaftey" data-role="flipswitch" class="onesend">
+               <option>No</option>
+               <option>Yes</option>
+            </select> -->
+        </div>
+    </div>
+    <div id="popupDialogSPIFFS" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+        <div data-role="header" data-theme="a">
+            <h2>FORMAT FS?</h2>
+        </div>
+        <div role="main" class="ui-content">
+            <h3 class="ui-title">Are you sure you want to Format FS?</h3>
+            <p>This action cannot be undone, and will require all javascript files to be uploaded to FS.</p>
+            <p>It will BREAK settings manager</p>
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+            <a id="formatspiffsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+        </div>
+    </div>
+    <div id="popupDialogDeleteSettings" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+        <div data-role="header" data-theme="a">
+            <h2>Delete Settings?</h2>
+        </div>
+        <div role="main" class="ui-content">
+            <h3 class="ui-title">Are you sure you want to Delete Settings File?</h3>
+            <p>This action cannot be undone.</p>
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+            <a id="deletesettingsbutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+        </div>
+    </div>
+    <div id="popupDialogClearWiFi" data-overlay-theme="b" data-theme="b" data-dismissible="false" style="max-width:400px;">
+        <div data-role="header" data-theme="a">
+            <h2>Clear Wifi?</h2>
+        </div>
+        <div role="main" class="ui-content">
+            <h3 class="ui-title">Are you sure you want to Clear the WiFi?</h3>
+            <p>This action removed stored credentials from WiFi, you will have to supply them.</p>
+            <a href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back">NO</a>
+            <a id="clearwifibutton" href="#" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-b" data-rel="back" data-transition="flow">YES</a>
+        </div>
+    </div>
+    <!-- ***********************************************************************
+
+         General Page
+
+*********************************************************************** -->
+    <div data-role="page" id="generalpage">
+        <div data-role="header">
+            <h1>General Settings</h1>
+        </div>
+        <!-- /header -->
+        <div role="main" class="ui-content">
+            <div id="gen-page-status"></div>
+            <form id="general-form">
+                <div>
+                    <label for="device-name">
+                        <a href="#device-name-help" data-rel="popup" data-transition="pop" class="myToolTip" title="help">Device Name:</a>
+                        <div data-role="popup" id="device-name-help" class="ui-content" data-theme="a" style="max-width:350px;">
+                            <p><strong>Device Name</strong>
+                                <br> This is a unique name for your device. Accessable from devicename.local on your LAN</p>
+                        </div>
+                    </label>
+                    <input type="text" data-mini="true" name="deviceid" id="device-name" value="">
+                    <!-- <input type="text" data-mini="true" name="SN" id="text-STA-set-sn" value=""> -->
+                </div>
+                <!-- <div>
+                    <label for="select-AP-behav">
+                        <a href="#select-AP-behav-help" data-rel="popup" data-transition="pop" class="myToolTip" title="help">On boot if no WiFi:</a>
+                        <div data-role="popup" id="select-AP-behav-help" class="ui-content" data-theme="a" style="max-width:350px;">
+                            <p><strong>On boot if no WiFi</strong>
+                                <br> When ESP boots, if it is unable to connect to a WiFi access point, and WiFi is enabled, then do the following. Default is to make an access point.</p>
+                        </div>
+                    </label>
+                    <select name="ap_boot_mode" id="select-AP-behav">
+                        <option value="-1">Do Nothing</option>
+                        <option value="0">Make an AP</option>
+                        <option value="5">Make AP for 5min</option>
+                        <option value="10">Make AP for 10min</option>
+                        <option value="30">Make AP for 30min</option>
+                        <option value="60">Make AP for 60min</option>
+                    </select>
+                </div> -->
+                <!-- <div>
+                    <label for="select-STA-behav">
+                        <a href="#select-STA-behav-help" data-rel="popup" data-transition="pop" class="myToolTip" title="help">If WiFi Disconnected:</a>
+                        <div data-role="popup" id="select-STA-behav-help" class="ui-content" data-theme="a" style="max-width:350px;">
+                            <p><strong>If WiFi Disconnected</strong>
+                                <br> If WiFi (STA) is disconnected, after a successful connection at boot, then do the following. There is a 2min timeout to reestablish a connection before the selected behaviour is started.</p>
+                        </div>
+                    </label>
+                    <select name="no_sta_mode" id="select-STA-behav">
+                        <option value="-1">Reboot</option>
+                        <option value="-2">Do Nothing</option>
+                        <option value="0">Make an AP</option>
+                        <option value="5">Make AP for 5min</option>
+                        <option value="10">Make AP for 10min</option>
+                        <option value="30">Make AP for 30min</option>
+                        <option value="60">Make AP for 60min</option>
+                    </select>
+                </div> -->
+                <div></div>
+                <fieldset class="ui-grid-a">
+                    <!--<input type="submit" value="Submit" data-theme="a">-->
+                    <!--<input type="reset" value="Reset" data-theme="b">-->
+                    <div class="ui-block-a">
+                        <!--<div class="ui-field-contain">-->
+                        <label for="flip-mdnsenable">Enable mDNS:</label>
+                        <select id="flip-mdnsenable" name="mDNS" data-role="flipswitch">
+                            <option>off</option>
+                            <option>on</option>
+                        </select>
+                        <!--</div>-->
+                    </div>
+                    <div class="ui-block-b">
+                        <!--<div class="ui-field-contain">-->
+                        <!--      <label for="flip-usePerminantSettings">
+        <a href="#flip-usePerminantSettings-help" data-rel="popup" data-transition="pop" class="myToolTip" title="help">Use Sketch Credentials:</a>
+        <div data-role="popup" id="flip-usePerminantSettings-help" class="ui-content" data-theme="a" style="max-width:350px;">
+        <p><strong>Use Sketch Credentials:</strong><br> devicename, ssid and passphase can be hardcoded in the sketch.  If this is set to true, these values will override any settings in config file.</p>
+        </div>
+       </label>
+     <select id="flip-usePerminantSettings" name="usePerminantSettings" data-role="flipswitch">
+      <option>off</option>
+      <option>on</option>
+     </select> -->
+                        <!--</div>-->
+                    </div>
+                </fieldset>
+                <!--                  <div class="ui-field-contain">
+                  <label for="flip-wifimanage">Manage WiFi:</label>
+                  <select id="flip-wifimanage" name="wifimanage" data-role="flipswitch">
+                     <option>off</option>
+                     <option>on</option>
+                  </select>
+                  </div> -->
+                <input type="button" value="Submit" id="general-1-submit">
+            </form>
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         WiFi Page
+
+*********************************************************************** -->
+    <div data-role="page" id="wifipage">
+        <div data-role="header">
+            <h1>WiFi Settings</h1>
+        </div>
+        <!-- /header -->
+        <div role="main" class="ui-content">
+            <div data-role="tabs">
+                <div data-role="navbar">
+                    <ul>
+                        <li><a href="#WiFi_config" data-theme="a" data-ajax="false">Settings</a></li>
+                        <li><a href="#WiFi_networks" data-theme="a" data-ajax="false">Networks</a></li>
+                    </ul>
+                </div>
+                <!-- /two -->
+                <div id="WiFi_config" class="ui-content">
+                    <!--   THIRD TAB -->
+                    <h3>Station Settings</h3>
+                    <div id="STA_settings_div">
+                        <div id="STA_state"></div>
+                        <div id="STA_connectedto"></div>
+                        <div id="STA_channel"></div>
+                        <div id="STA_dhcp"></div>
+                        <div id="STA_ip"></div>
+                        <div id="STA_gateway"></div>
+                        <div id="STA_dns1"></div>
+                        <div id="STA_dns2"></div>
+                        <div id="STA_subnet"></div>
+                        <div id="STA_mac"></div>
+                    </div>
+                    <!--                <a href="#popup-STA-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline ui-btn-a" data-transition="pop">Edit</a> -->
+                    <div data-role="collapsible" id="stacollapse">
+                        <h4>Edit</h4>
+                        <form id="STAform">
+                            <!--                   <div style="padding:10px 20px;">
+ -->
+                            <h3>Edit Station</h3>
+                            <div class="ui-field-contain">
+                                <label for="flip-STA">Enable:</label>
+                                <select name="enable-STA" id="flip-STA" data-role="flipswitch" data-mini="true">
+                                    <option value="off">Off</option>
+                                    <option value="on">On</option>
+                                </select>
+                            </div>
+                            <div class="ui-field-contain">
+                                <label for="flip-dhcp">DHCP:</label>
+                                <select name="enable-dhcp" id="flip-dhcp" data-role="flipswitch" data-mini="true">
+                                    <option value="off">Off</option>
+                                    <option value="on">On</option>
+                                </select>
+                            </div>
+                            <div class="ui-field-contain">
+                                <label for="text-STA-set-ip">IP:</label>
+                                <input type="text" data-mini="true" name="IP" id="text-STA-set-ip" value="">
+                            </div>
+                            <div class="ui-field-contain">
+                                <label for="text-STA-set-gw">Gateway:</label>
+                                <input type="text" data-mini="true" name="GW" id="text-STA-set-gw" value="">
+                            </div>
+                            <div class="ui-field-contain">
+                                <label for="text-STA-set-sn">Subnet:</label>
+                                <input type="text" data-mini="true" name="SN" id="text-STA-set-sn" value="">
+                            </div>
+                            <div class="ui-field-contain">
+                                <label for="text-STA-set-DNS1">DNS1:</label>
+                                <input type="text" data-mini="true" name="DNS1" id="text-STA-set-DNS1" value="">
+                            </div>
+                            <div class="ui-field-contain">
+                                <label for="text-STA-set-DNS2">DNS2:</label>
+                                <input type="text" data-mini="true" name="DNS2" id="text-STA-set-DNS2" value="">
+                            </div>
+                            <!-- <div class="ui-field-contain">
+                                <label for="text-STA-set-mac">MAC:</label>
+                                <input type="text" data-mini="true" name="MAC" id="text-STA-set-mac" value="">
+                            </div> -->
+                            <button id="apply_sta" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+                            <!--                   </div>
+ -->
+                        </form>
+                    </div>
+                </div>
+                <div id="WiFi_networks" class="ui-content">
+                    <!--   SECOND TAB -->
+                    <div id="wifi_status"></div>
+                    <fieldset data-role="controlgroup" data-mini="true" id="wifinetworks-data"></fieldset>
+                    <form id="wifinetworks-form">
+                        <label for="ssid-1">SSID:</label>
+                        <input type="text" name="ssid" id="ssid-1" value="" data-clear-btn="true">
+                        <label for="pass-1">Password:</label>
+                        <input type="text" name="pass" id="pass-1" value="" data-clear-btn="true">
+                        <input type="button" value="More Info" id="ssid-1-moreinfo">
+                        <input type="button" value="Rescan" id="ssid-1-rescan">
+                        <input type="button" value="Connect" id="ssid-1-submit">
+                    </form>
+                </div>
+                <!--  POP UPS -->
+                <div id="wifiinsert" data-role="popup" data-theme="a" class="ui-content"> </div>
+            </div>
+            <!-- /tabs -->
+        </div>
+    </div>
+    <!-- /page -->
+    <!-- *******************************************************************
+
+         AP Page
+
+*********************************************************************** -->
+    <div data-role="page" id="appage">
+        <div data-role="header">
+            <h1>AP Settings</h1>
+            <!--<a id="refresh_data" class="ui-btn ui-btn-right ui-alt-icon ui-nodisc-icon ui-corner-all ui-btn-icon-notext ui-icon-refresh">Refresh</a>-->
+        </div>
+        <!-- /header -->
+        <div role="main" class="ui-content">
+            <div id="AP_settings_div">
+                <div id="AP_state"></div>
+                <div id="AP_ssid"></div>
+                <div id="AP_pass"></div>
+                <div id="AP_channel"></div>
+                <div id="AP_ip"></div>
+                <div id="AP_hidden"></div>
+                <div id="AP_mac"></div>
+            </div>
+            <!--                <a href="#popup-AP-edit" data-rel="popup" data-position-to="window" class="ui-btn ui-corner-all ui-shadow ui-btn-inline  ui-btn-a" data-transition="pop">Edit</a> -->
+            <div data-role="collapsible" id="apcollapse">
+                <h4>Edit</h4>
+                <form id="APform">
+                    <!--                   <div style="padding:10px 20px;">
+ -->
+                    <h3>Edit AP</h3>
+                    <fieldset data-role="fieldcontain">
+                        <div class="ui-field-contain">
+                            <label for="flip-AP">Enable:</label>
+                            <select name="enable-AP" id="flip-AP" data-role="flipswitch" data-mini="true">
+                                <option value="off">Off</option>
+                                <option value="on">On</option>
+                            </select>
+                        </div>
+                        <div class="ui-field-contain">
+                            <label for="flip-AP-hidden">Hidden:</label>
+                            <select name="APhidden" id="flip-AP-hidden" data-role="flipswitch" data-mini="true">
+                                <option value="off">No</option>
+                                <option value="on">Yes</option>
+                            </select>
+                        </div>
+                        <!--<div class="ui-field-contain">-->
+                        <!-- <label for="text-AP-set-ssid">SSID:</label>-->
+                        <!-- <input type="text" data-mini="true" name="ssid" id="text-AP-set-ssid" value="">-->
+                        <!--</div>-->
+                        <div class="ui-field-contain">
+                            <label for="text-AP-set-pass">Password:</label>
+                            <input type="text" data-mini="true" name="pass" id="text-AP-set-pass" value="">
+                        </div>
+                        <div class="ui-field-contain">
+                            <label for="text-AP-set-channel">Channel:</label>
+                            <input type="text" data-mini="true" name="channel" id="text-AP-set-channel" value="">
+                        </div>
+                        <div class="ui-field-contain">
+                            <label for="text-AP-set-ip">IP:</label>
+                            <input type="text" data-mini="true" name="IP" id="text-AP-set-ip" value="">
+                        </div>
+                        <!--<div class="ui-field-contain">-->
+                        <!-- <label for="text-AP-set-mac">MAC:</label>-->
+                        <!-- <input type="text" data-mini="true" name="MAC" id="text-AP-set-mac" value="">-->
+                        <!--</div>-->
+                    </fieldset>
+                    <button id="apply_ap" type="button" class="ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">Apply</button>
+                </form>
+            </div>
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         OTA Page
+
+*********************************************************************** -->
+    <div data-role="page" id="otapage">
+        <div data-role="header">
+            <h1>OTA Settings</h1>
+        </div>
+        <!-- /header -->
+        <div role="main" class="ui-content">
+            <!--<h3>OTA Firmware Upload</h3>-->
+            <div>
+                <p id="hasOTApassword"></p>
+            </div>
+            <form>
+                <!--<div class="ui-field-contain">-->
+                <!-- <label for="flip-OTAusechipID">Append ChipID to Host:</label>-->
+                <!-- <select id="flip-OTAusechipID" name="OTAusechipID" data-role="flipswitch">-->
+                <!--  <option>No</option>-->
+                <!--  <option>Yes</option>-->
+                <!-- </select>-->
+                <!--</div>-->
+                <div class="ui-field-contain">
+                    <label for="flip-otaenable">Enable OTA:</label>
+                    <select id="flip-otaenable" name="OTAupload" data-role="flipswitch">
+                        <option>off</option>
+                        <option>on</option>
+                    </select>
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-OTA-set-port">Set Port:</label>
+                    <input type="text" data-mini="true" name="OTAport" id="text-OTA-set-port" value="">
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-OTA-set-pass">Set Password:</label>
+                    <input type="password" data-mini="true" name="OTApassword" id="text-OTA-set-pass" value="">
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-OTA-set-pass-2">Confirm Password:</label>
+                    <input type="password" data-mini="true" name="OTApassword_confirm" id="text-OTA-set-pass-2" value="">
+                </div>
+                <button id="apply_ota" type="button" class="ui-btn ui-corner-all ui-shadow">Apply</button>
+            </form>
+            <!--<h3>File Upload</h3>-->
+            <!--<form id="updaterform" method='POST' action='/espman/upload' enctype='multipart/form-data'>-->
+            <!-- <input type='file' name='update'>-->
+            <!-- <input type='submit' value='Update'>-->
+            <!--</form>-->
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         About Page
+
+*********************************************************************** -->
+    <div data-role="page" id="aboutpage">
+        <div data-role="header">
+            <h1>About Device</h1>
+        </div>
+        <!-- /header -->
+        <div role="main" class="ui-content">
+            <div id="aboutvars"></div>
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         Upgrade Page
+
+*********************************************************************** -->
+    <div data-role="page" data-close-btn="right" data-dialog="true" id="upgradepage">
+        <div data-role="header">
+            <h1>Upgrade Device</h1>
+        </div>
+        <!-- /header -->
+        <div role="main" class="ui-content">
+            <p>
+                Enter here the url and frequency in min to check this url for updates. The url must be an HTTP link to a json files following <a href="#updaterrules">these</a> rules. Frequency can be left blank to perform manual updates. This can be done via the "More" menu. Must save after changing, to persist after boot.
+            </p>
+            <form id="upgradeform">
+                <div class="ui-field-contain">
+                    <label for="text-UpgradeURL">Url:</label>
+                    <input type="text" data-mini="true" name="updateURL" id="text-UpgradeURL" value="">
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-Upgrade-freq">Freq:</label>
+                    <input type="text" data-mini="true" name="updateFreq" id="text-Upgrade-freq" value="">
+                </div>
+                <a href="#generalpage" data-role="button" data-theme="a" data-icon="save" data-iconpos="notext" id="updatesubmitbutton" class=" ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">APPLY</a>
+                <a href="#generalpage" data-role="button" data-theme="a" data-icon="save" data-iconpos="notext" id="checkforupdatebutton" class=" ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check upgradebutton">CHECK NOW</a>
+            </form>
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         Upgrade Page
+
+*********************************************************************** -->
+    <div data-role="page" id="console" data-close-btn="right" data-dialog="true">
+        <div data-role="header">
+            <h1>Console Messages</h1>
+        </div>
+        <div data-role="content">
+            <div id="wsmessages"></div>
+        </div>
+    </div>
+    <!--  PAGE BOUNDARY -->
+    <!-- /page -->
+    <div data-role="page" id="updaterrules">
+        <div data-role="header">
+            <h1>Rules for HTTP JSON manifest file</h1>
+        </div>
+        <div data-role="content">
+            <p>I've had a look and I agree that the link doesn't work. I'll make an issue and fix that. The structure is a JSON object.&nbsp;&nbsp;<code>saveto</code>&nbsp;is the FS filename, must have the preceding&nbsp;<code>/</code>,&nbsp;<code>location</code>&nbsp;is the relative path to the manifest file that the file can be found,&nbsp;<code>md5</code>&nbsp;is the md5sum of the new file. This is used to compare against the current file to avoid downloading it if it is unchanged. The new binary must be called&nbsp;<code>firmware.bin</code>&nbsp;and save to = "sketch". Finally the keys&nbsp;<code>filecount</code>&nbsp;tell the updater how many to expect, and&nbsp;<code>overwrite</code>&nbsp;means the md5 is ignored and all files are written. there is an&nbsp;<code>isurl</code>&nbsp;option for each file as well, that can be used to specify that the location is a whole url, and not a relative one. Allows you to download external resources, otherwise the link is treated as relative.</p>
+            <div class="highlight highlight-source-json">
+                <pre>{  
+  "files":[  
+    {  
+      "saveto":"sketch",
+      "location":"/data/firmware.bin",
+      "md5":"bbec8986eea6a5836c7446d08c719923"
+    },
+    {  
+      "saveto":"/index.htm.gz",
+      "location":"/data/index.htm.gz",
+      "md5":"6816935f51673e61f76afd788e457400"
+    },
+    {  
+      "saveto":"/espman/ajax-loader.gif",
+      "location":"/data/espman/ajax-loader.gif",
+      "md5":"8fd7e719b06cd3f701c791adb62bd7a6"
+    },
+    {  
+      "saveto":"/espman/index.htm.gz",
+      "location":"/data/espman/index.htm.gz",
+      "md5":"844b0aa50d419bff1fb75b89b12392fe"
+    },
+    {  
+      "saveto":"/espman/settings.json",
+      "location":"/data/espman/settings.json",
+      "md5":"521186fb21259e7f65f45214916e8a9b"
+    },
+    {  
+      "saveto":"/espman/settingstempl.json",
+      "location":"/data/espman/settingstempl.json",
+      "md5":"521186fb21259e7f65f45214916e8a9b"
+    },
+    {  
+      "saveto":"/espman/setup.htm.gz",
+      "location":"/data/espman/setup.htm.gz",
+      "md5":"ca27027b685cab28e5a95bfa30926564"
+    }
+  ],
+  "overwrite":true,
+  "filecount":7
+}</pre>
+            </div>
+        </div>
+    </div>
+    <!--  PAGE BOUNDARY -->
+    <!-- <div data-role="page" id="syslog" data-close-btn="right" data-dialog="true">
+        <div data-role="header">
+            <h1>Syslog Configuration</h1>
+        </div>
+        <div data-role="content">
+            <form id="syslogform">
+                <div class="ui-field-contain">
+                    <label for="flip-syslogenable">Enable:</label>
+                    <select id="flip-syslogenable" name="usesyslog" data-role="flipswitch">
+                        <option>off</option>
+                        <option>on</option>
+                    </select>
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-syslogIP">IP:</label>
+                    <input type="text" data-mini="true" name="syslogIP" id="text-syslogIP" value="">
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-syslogPort">Port:</label>
+                    <input type="text" data-mini="true" name="syslogPort" id="text-syslogPort" value="">
+                </div>
+                <div class="ui-field-contain">
+                    <label for="text-syslogProto">Proto:</label>
+                    <input type="text" data-mini="true" name="syslogProto" id="text-syslogProto" value="">
+                </div>
+                <p>SYSLOG_PROTO_IETF = 0, SYSLOG_PROTO_BSD = 1 </p>
+                <a href="#generalpage" data-role="button" data-theme="a" data-icon="save" data-iconpos="notext" class="submitbutton ui-btn ui-corner-all ui-shadow ui-btn-b ui-btn-icon-left ui-icon-check">APPLY</a>
+            </form>
+        </div>
+    </div> -->
+    <!--  PAGE BOUNDARY -->
+    <!-- /page -->
+    <!-- ***********************************************************************
+
+         Discover Page
+
+*********************************************************************** -->
+    <div data-role="page" data-close-btn="right" id="discover">
+        <div data-role="header">
+            <h1>Discover Other ESPManager Devices</h1>
+        </div>
+        <div role="main" class="ui-content">
+            <div id="discover_status">Please Wait</div>
+            <div id="device_list"></div>
+             <div data-role="controlgroup" data-type="horizontal" align="center">
+                <a id="scan_btn" class="ui-btn  ui-btn-b" align="center">SCAN</a>
+            </div>           
+        </div>
+        <!-- /content -->
+    </div>
+    <!-- /page -->
+    <script src="/espman.js" inline inline-compress></script>
+    <style>
+    .myToolTip:link {
+        color: #333;
+        text-decoration: none;
+        font-weight: 400;
+    }
+    </style>
+</body>
+
+</html>

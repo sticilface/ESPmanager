@@ -18,17 +18,17 @@
 #include "Tasker/src/Tasker.h"
 #include "FlashWriter.h"
 #include "StreamString.h"
-#include "staticHandler/src/staticHandler.h"
-#include "staticHandler/src/jqueryStatic.h"
+// #include "staticHandler/src/staticHandler.h"
+// #include "staticHandler/src/jqueryStatic.h"
 #include "pgmspace.h"
 #include <cstdlib>
 #include "QuickSetup.h"
+#include "HTTPfile.h"
 
 extern "C"
 {
 #include "user_interface.h"
 }
-
 
 static const char _compile_date_time[] = __DATE__ " " __TIME__;
 static const uint16_t _ESPdeviceFinderPort = 8888;
@@ -66,21 +66,20 @@ namespace ESPMAN
  */
 ESPmanager::ESPmanager(
     AsyncWebServer &HTTP, FS &fs)
-    : _HTTP(HTTP), _fs(fs), _events("/espman/events")
-{
-    //  These need to be added here to force linking...
+    : _HTTP(HTTP), _fs(fs), _events("/espman/events"){
+//  These need to be added here to force linking...
 #ifdef USESTATICPROGMEMJQUERY
-    _staticHandlerInstance.add(JQUERYdata::JQdata);
-    _staticHandlerInstance.add(JQUERYdata::JQMdata);
-    _staticHandlerInstance.add(JQUERYdata::JQMCSSdata);
-    _staticHandlerInstance.enableRedirect() = true;
-#else 
-    _staticHandlerInstance.enableRedirect() = true;
+// _staticHandlerInstance.add(JQUERYdata::JQdata);
+// _staticHandlerInstance.add(JQUERYdata::JQMdata);
+// _staticHandlerInstance.add(JQUERYdata::JQMCSSdata);
+// _staticHandlerInstance.enableRedirect() = true;
+#else
+//_staticHandlerInstance.enableRedirect() = true;
 #endif
-    
-}
 
-ESPmanager::~ESPmanager()
+                            }
+
+      ESPmanager::~ESPmanager()
 {
 
     if (_settings)
@@ -88,11 +87,10 @@ ESPmanager::~ESPmanager()
         delete _settings;
     }
 
-    if (_devicefinder) {
-        delete _devicefinder; 
+    if (_devicefinder)
+    {
+        delete _devicefinder;
     }
-
-
 }
 
 /**
@@ -282,9 +280,6 @@ ESPMAN_ERR_t ESPmanager::begin(const String &ssid, const String &pass)
 
     return begin();
 }
-
-
-
 
 /**
  *  Loop task, must be included in loop();
@@ -563,7 +558,6 @@ String ESPmanager::getHostname()
  */
 ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 {
-   
 
     if (path.length())
     {
@@ -616,7 +610,6 @@ ESPMAN_ERR_t ESPmanager::upgrade(String path, bool runasync)
 #ifdef ESPMANAGER_UPDATER
 ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
 {
-   
 
     _getAllSettings();
 
@@ -926,7 +919,7 @@ void ESPmanager::event_send(const String &topic, const String &msg)
  */
 ESPMAN_ERR_t ESPmanager::save()
 {
-   
+
     _getAllSettings();
 
     if (_settings)
@@ -943,7 +936,7 @@ ESPMAN_ERR_t ESPmanager::save()
 
 ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char *url, const char *filename_c, const char *md5_true, bool overwrite)
 {
-   
+
     String filename = filename_c;
     HTTPClient http;
     FSInfo _FSinfo;
@@ -1135,7 +1128,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char *url, const char *filename_c, 
 
 ESPMAN_ERR_t ESPmanager::_parseUpdateJson(DynamicJsonDocument &json, const char *path)
 {
-   
+
     DEBUGESPMANAGERF("path = %s\n", path);
     WiFiClient client;
     HTTPClient http;
@@ -1425,7 +1418,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     {
                         _wifinetworksfound = MAX_WIFI_NETWORKS;
                     }
-                    String reply = String(_wifinetworksfound) + "Networks Found";
+                    String reply = String(_wifinetworksfound) + " Networks Found";
                     event_send("", reply);
 
                     std::list<std::pair<int, int>>::iterator it;
@@ -1790,8 +1783,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                     _tasker.add([safety, newsettings, request, this, APChannelchange, channel](Task &t) {
                         //_syncCallback = [safety, newsettings, request, this, APChannelchange, channel]() {
 
-                       
-
                         WiFiresult = 0;
                         uint32_t starttime = millis();
 
@@ -1802,9 +1793,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                             DEBUGESPMANAGERFRAW("Changing AP channel to %u :", channel);
 
-
                             event_send("", F("Changing AP Channel..."));
-
 
                             /*   struct softap_config {
                                 uint8 ssid[32];
@@ -1820,7 +1809,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
                             //bool result = _emergencyMode(true, channel);
                             bool result = false;
 
-                            struct softap_config * _currentconfig = new softap_config;
+                            struct softap_config *_currentconfig = new softap_config;
 
                             if (_currentconfig && wifi_softap_get_config(_currentconfig))
                             {
@@ -2064,7 +2053,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
             {
 
                 _tasker.add([this, newsettings](Task &t) {
-                   
                     event_send("", F("Updating WiFi Settings"));
 
                     delay(10);
@@ -2232,8 +2220,6 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
                 _tasker.add([this, newsettings](Task &t) {
                     //_syncCallback = [this, newsettings] () {
-
-                   
 
                     //event_printf(NULL, "Updating AP Settings");
                     //event_printf_P(NULL, PSTR("Updating AP Settings"));
@@ -2493,7 +2479,7 @@ void ESPmanager::_HandleDataRequest(AsyncWebServerRequest *request)
 
 ESPMAN_ERR_t ESPmanager::_initialiseAP()
 {
-   
+
     //int ERROR = 0;
 
     //  get the settings from SPIFFS if settings PTR is null
@@ -2513,7 +2499,6 @@ ESPMAN_ERR_t ESPmanager::_initialiseAP()
 
 ESPMAN_ERR_t ESPmanager::_initialiseAP(settings_t::AP_t &settings)
 {
-   
 
 #ifdef DEBUGESPMANAGER
     DEBUGESPMANAGERF("-------  PRE CONFIG ------\n");
@@ -2575,7 +2560,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseAP(settings_t::AP_t &settings)
 
 ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 {
-   
+
     ESPMAN_ERR_t ERROR = SUCCESS;
 
     if (!_settings)
@@ -2612,8 +2597,6 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA()
 
 ESPMAN_ERR_t ESPmanager::_initialiseSTA(settings_t::STA_t &set)
 {
-
-   
 
 #ifdef DEBUGESPMANAGER
     DEBUGESPMANAGERF("-------  PRE CONFIG ------\n");
@@ -2718,7 +2701,7 @@ ESPMAN_ERR_t ESPmanager::_initialiseSTA(settings_t::STA_t &set)
 //  need to add in captive portal to setttings....
 ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown, int channel)
 {
-   
+
     DEBUGESPMANAGERF("***** EMERGENCY mode **** \n");
 
     IPAddress testIP = WiFi.softAPIP();
@@ -2766,8 +2749,6 @@ ESPMAN_ERR_t ESPmanager::_emergencyMode(bool shutdown, int channel)
 ESPMAN_ERR_t ESPmanager::_getAllSettings()
 {
 
-   
-
     if (!_settings)
     {
         _settings = new settings_t;
@@ -2811,7 +2792,6 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings()
 ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t &set)
 {
 
-   
     DynamicJsonDocument json(allocateJSON());
     uint8_t settingsversion = 0;
 
@@ -3000,8 +2980,6 @@ ESPMAN_ERR_t ESPmanager::_getAllSettings(settings_t &set)
 
 ESPMAN_ERR_t ESPmanager::_saveAllSettings(settings_t &set)
 {
-
-   
 
     DynamicJsonDocument jsonBuffer(allocateJSON());
     JsonObject root = jsonBuffer.to<JsonObject>();
@@ -3493,22 +3471,41 @@ void ESPmanager::_initHTTP()
 {
     using namespace std::placeholders;
 
-    _HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
+    //_HTTP.rewrite("/espman/images/ajax-loader.gif", "/espman/ajax-loader.gif");
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1));
     _HTTP.on("/espman/quick", std::bind(&ESPmanager::_HandleQuickSTAsetup, this, _1)).setAuthentication("admin", "esprocks");
+    _HTTP.rewrite("/espman", "/espman/index.htm");
+
+    _WebHandler = &_HTTP.on("/espman/index.htm", [](AsyncWebServerRequest *request) { 
+        AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", http_file_htm_gz, http_file_htm_gz_len); 
+        if (response) {
+            response->addHeader( F("Content-Encoding"), F("gzip")); 
+            request->send(response); 
+        } else {
+            request->send(500); 
+        }
+    }).setAuthentication("admin", "esprocks");
+
+
     _HTTP.on(
         "/espman/upload", HTTP_POST, [this](AsyncWebServerRequest *request) {
             request->send(200);
         },
         std::bind(&ESPmanager::_handleFileUpload, this, _1, _2, _3, _4, _5, _6));
 
-    _WebHandler = &_HTTP.serveStatic("/espman/", _fs, "/espman/").setDefaultFile("index.htm").setLastModified(__DATE__ " " __TIME__ " GMT").setAuthentication("admin", "esprocks");
-    _HTTP.addHandler(&_staticHandlerInstance);
+    //_WebHandler = &_HTTP.serveStatic("/espman/", _fs, "/espman/").setDefaultFile("index.htm").setLastModified(__DATE__ " " __TIME__ " GMT").setAuthentication("admin", "esprocks");
+    //_HTTP.addHandler(&_staticHandlerInstance);
     _HTTP.addHandler(&_events);
 
     _events.onConnect([](AsyncEventSourceClient *client) {
         client->send(NULL, NULL, 0, 1000);
     });
+
+    // _HTTP.on("/*.jq1.11.1.js", [](AsyncWebServerRequest *request) { request->redirect("http://code.jquery.com/jquery-1.11.1.min.js"); });
+    // _HTTP.on("/*.jqm1.4.5.js", [](AsyncWebServerRequest *request) { request->redirect("http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"); });
+    // _HTTP.on("/*.jqm1.4.5.css", [](AsyncWebServerRequest *request) { request->redirect("http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"); });
+
+
 
     //  /*                      */     need to test these
 
@@ -3536,8 +3533,9 @@ void ESPmanager::_initAutoDiscover()
 {
 #ifdef ESPMANAGER_DEVICEFINDER
 
-    if (_devicefinder) {
-        delete _devicefinder; 
+    if (_devicefinder)
+    {
+        delete _devicefinder;
     }
 
     _devicefinder = new ESPdeviceFinder;
