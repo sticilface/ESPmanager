@@ -644,11 +644,12 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
     //DynamicJsonDocument json(ESP.getMaxFreeBlockSize() - 512);
     DynamicJsonDocument json(allocateJSON());
 
-    //**     event_send( FPSTR(fstring_UPGRADE) , F("begin")) ;
+    event_send( FPSTR(fstring_UPGRADE) , F("begin")) ;
     DEBUGESPMANAGERF("Checking for Updates: %s\n", path);
+    DEBUGESPMANAGERF("Free Heap: %u\n", ESP.getFreeHeap());
     String Spath = String(path);
     String rooturi = Spath.substring(0, Spath.lastIndexOf('/'));
-    //**    event_send( FPSTR(fstring_CONSOLE) , myStringf("%s", path )) ;
+    event_send( FPSTR(fstring_CONSOLE) , String(path) ) ;
     DEBUGESPMANAGERF("rooturi=%s\n", rooturi.c_str());
 
     //  save new update path for future update checks...  (if done via url only for example)
@@ -672,7 +673,8 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
     {
         DEBUGESPMANAGERF("MANIFEST ERROR part 1 [%u]\n", MANIFST_FILE_ERROR);
         DEBUGESPMANAGERF("MANIFEST ERROR part 2 [%u]\n", ret);
-        //**         event_send( FPSTR(fstring_UPGRADE), myStringf_P( fstring_ERROR2_toString, getError(MANIFST_FILE_ERROR).c_str(), getError(ret).c_str()));
+        String err = "ERROR" + String(MANIFST_FILE_ERROR); 
+        event_send( FPSTR(fstring_UPGRADE),  err ) ; 
         DEBUGESPMANAGERF("MANIFEST ERROR [%i]\n", ret);
         return MANIFST_FILE_ERROR;
     }
@@ -777,20 +779,20 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
                 //**                 event_send( FPSTR(fstring_CONSOLE), myStringf_P( PSTR("[%u/%u] (%s) : ERROR [%i]") , file_count, files_expected, filename.c_str(), ret ) );
             }
 
-            //**            event_send( FPSTR(fstring_UPGRADE), myStringf_P( PSTR("%u") , (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f)  ) );
+            event_send( FPSTR(fstring_UPGRADE), String (  (uint8_t ) (( (float)file_count / (float)files_expected) * 100.0f)  ) );
 
 #if defined(DEBUGESPMANAGER)
             if (ret == 0)
             {
-                DEBUGESPMANAGER.printf("SUCCESS \n");
+                DEBUGESPMANAGERF("SUCCESS \n");
             }
             else if (ret == FILE_NOT_CHANGED)
             {
-                DEBUGESPMANAGER.printf("FILE NOT CHANGED \n");
+                DEBUGESPMANAGERF("FILE NOT CHANGED \n");
             }
             else
             {
-                DEBUGESPMANAGER.printf("FAILED [%i]\n", ret);
+                DEBUGESPMANAGERF("FAILED [%i]\n", ret);
             }
 #endif
 
@@ -825,7 +827,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
                 DEBUGESPMANAGERF("New     Sketch MD5 = %s\n", item["md5"].as<String>().c_str());
 
                 DEBUGESPMANAGERF("START SKETCH DOWNLOAD (%s)\n", remote_path.c_str());
-                //**                event_send( FPSTR(fstring_UPGRADE), F("firmware"));
+                event_send( FPSTR(fstring_UPGRADE), F("firmware"));
                 delay(10);
                 _events.send("Upgrading sketch", nullptr, 0, 5000);
                 delay(10);
@@ -848,13 +850,13 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
                 case HTTP_UPDATE_NO_UPDATES:
                     DEBUGESPMANAGERF("HTTP_UPDATE_NO_UPDATES");
                     delay(100);
-                    //**                     event_send( FPSTR(fstring_UPGRADE), F("ERROR no update") );
+                    event_send( FPSTR(fstring_UPGRADE), F("ERROR no update") );
                     delay(100);
                     break;
 
                 case HTTP_UPDATE_OK:
                     DEBUGESPMANAGERF("HTTP_UPDATE_OK");
-                    //**                    event_send( FPSTR(fstring_UPGRADE), F("firmware-end") );
+                    event_send( FPSTR(fstring_UPGRADE), F("firmware-end") );
                     delay(100);
                     _events.close();
                     delay(1000);
@@ -864,7 +866,7 @@ ESPMAN_ERR_t ESPmanager::_upgrade(const char *path)
             }
             else
             {
-                //**                event_send( FPSTR(fstring_CONSOLE), F("No Change to firmware") );
+                event_send( FPSTR(fstring_CONSOLE), F("No Change to firmware") );
                 DEBUGESPMANAGERF("BINARY HAS SAME MD5 as current (%s)\n", item["md5"].as<const char *>());
             }
         }
@@ -999,8 +1001,10 @@ ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char *url, const char *filename_c, 
         {
 
             WiFiUDP::stopAll();
-
             WiFiClient::stopAllExcept(http.getStreamPtr());
+            //DEBUGESPMANAGERF("got to here\n"); 
+            yield(); 
+
             wifi_set_sleep_type(NONE_SLEEP_T);
 
             FlashWriter writer;
@@ -1008,6 +1012,7 @@ ESPMAN_ERR_t ESPmanager::_DownloadToFS(const char *url, const char *filename_c, 
 
             if (writer.begin(len))
             {
+                //DEBUGESPMANAGERF("got to here 2\n"); 
                 //uint32_t start_time = millis();
                 byteswritten = http.writeToStream(&writer); //  this writes to the 1Mb Flash partition for the OTA upgrade.  zero latency...
                 if (byteswritten > 0 && byteswritten == len)
@@ -1154,6 +1159,10 @@ ESPMAN_ERR_t ESPmanager::_parseUpdateJson(DynamicJsonDocument &json, const char 
 
     // get tcp stream
     WiFiClient *stream = http.getStreamPtr();
+
+    if (!stream) {
+        return HTTP_ERROR; 
+    }
 
     auto jsonError = deserializeJson(json, *stream);
 
@@ -3400,16 +3409,20 @@ void ESPmanager::_initOTA()
         .setName("OTA");
     ArduinoOTA.setHostname(_settings->GEN.host.c_str());
     ArduinoOTA.setPort(_settings->GEN.OTAport);
-    if (_settings->GEN.OTApassword)
+    if (_settings->GEN.OTApassword.length())
     {
         DEBUGESPMANAGERF("OTApassword: %s\n", _settings->GEN.OTApassword.c_str());
         ArduinoOTA.setPassword(_settings->GEN.OTApassword.c_str());
+    } else {
+        DEBUGESPMANAGERF("OTApassword not set\n");
     }
 
     ArduinoOTA.onStart(std::bind(&ESPmanager::_OTAonStart, this));
     ArduinoOTA.onProgress(std::bind(&ESPmanager::_OTAonProgress, this, _1, _2));
     ArduinoOTA.onEnd(std::bind(&ESPmanager::_OTAonEnd, this));
     ArduinoOTA.onError(std::bind(&ESPmanager::_OTAonError, this, _1));
+
+    ArduinoOTA.begin(); 
 }
 
 void ESPmanager::_OTAonStart()
@@ -3422,6 +3435,9 @@ void ESPmanager::_OTAonStart()
     _rtc.erase();
 
     event_send(F("update"), F("begin"));
+
+    delay(10); 
+
 #ifdef DEBUGESPMANAGER
     DEBUGESPMANAGER.print(F("[              Performing OTA Upgrade              ]\n["));
     //                     ("[--------------------------------------------------]\n ");
@@ -3475,6 +3491,7 @@ void ESPmanager::_initHTTP()
     _HTTP.on("/espman/data.esp", std::bind(&ESPmanager::_HandleDataRequest, this, _1));
     _HTTP.on("/espman/quick", std::bind(&ESPmanager::_HandleQuickSTAsetup, this, _1)).setAuthentication("admin", "esprocks");
     _HTTP.rewrite("/espman", "/espman/index.htm");
+    _HTTP.rewrite("/espman/", "/espman/index.htm");
 
     _WebHandler = &_HTTP.on("/espman/index.htm", [](AsyncWebServerRequest *request) { 
         AsyncWebServerResponse *response = request->beginResponse_P(200, "text/html", http_file_htm_gz, http_file_htm_gz_len); 
@@ -3485,6 +3502,8 @@ void ESPmanager::_initHTTP()
             request->send(500); 
         }
     }).setAuthentication("admin", "esprocks");
+    //.addInterestingHeader("blah");
+    //.setLastModified("Mon, 20 Jun 2016 14:00:00 GMT");
 
 
     _HTTP.on(
