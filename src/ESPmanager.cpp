@@ -464,7 +464,7 @@ void ESPmanager::sendJsontoHTTP(const T &root, AsyncWebServerRequest *request)
 
         if (response)
         {
-            response->addHeader(FPSTR(ESPMAN::fstring_CORS), "*");
+            //response->addHeader(FPSTR(ESPMAN::fstring_CORS), "*");
             response->addHeader(FPSTR(ESPMAN::fstring_CACHE_CONTROL), "no-store");
             //root.printTo(*response);
             serializeJson(root, *response);
@@ -3203,7 +3203,7 @@ void ESPmanager::factoryReset()
 void ESPmanager::_sendTextResponse(AsyncWebServerRequest *request, uint16_t code, const String &text)
 {
     AsyncWebServerResponse *response = request->beginResponse(code, "text/plain", text.c_str());
-    response->addHeader(FPSTR(ESPMAN::fstring_CORS), "*");
+    //response->addHeader(FPSTR(ESPMAN::fstring_CORS), "*");
     response->addHeader(FPSTR(ESPMAN::fstring_CACHE_CONTROL), "no-store");
     request->send(response);
 }
@@ -3541,7 +3541,7 @@ void ESPmanager::_initHTTP()
         }
     });
 
-    DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
+   // DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
 
 #ifdef ESPMANAGER_UPDATER
     _HTTP.on("/espman/update", std::bind(&ESPmanager::_HandleSketchUpdate, this, _1));

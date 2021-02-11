@@ -78,7 +78,7 @@ namespace ESPMAN
  *  @addtogroup progmem strings
  *  @{
  */
-    const char fstring_CORS[] PROGMEM = "Access-Control-Allow-Origin";
+    //const char fstring_CORS[] PROGMEM = "Access-Control-Allow-Origin";
     const char fstring_CACHE_CONTROL[] PROGMEM = "Cache-Control";
     const char fstring_UPGRADE[] PROGMEM = "upgrade";
     const char fstring_UPDATE[] PROGMEM = "update";
